@@ -1,5 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import { kidModeRedirect } from '@/core/auth/kidModeRedirect';
+import { KID_COOKIE } from '@/core/auth/kidSession';
 import { PATHS } from '@/core/routes';
 import type { Database } from '@/core/supabase/database.types';
 import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from '@/core/supabase/env';
@@ -30,6 +32,8 @@ export async function proxy(request: NextRequest) {
   if (!user && PROTECTED.some((root) => isUnder(path, root))) {
     return NextResponse.redirect(new URL(PATHS.login, request.url));
   }
+  const kidTarget = kidModeRedirect(path, request.cookies.has(KID_COOKIE));
+  if (kidTarget) return NextResponse.redirect(new URL(kidTarget, request.url));
   return response;
 }
 
