@@ -1,36 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Kids Destroyer
 
-## Getting Started
+App giao bài và luyện tập cho các cháu trong gia đình. Admin cấu hình danh mục và tài khoản, phụ huynh giao bài và chấm bài, trẻ làm bài trong chế độ trẻ (avatar + PIN).
 
-First, run the development server:
+- Thiết kế: [docs/superpowers/specs/](docs/superpowers/specs/)
+- Kế hoạch triển khai: [docs/superpowers/plans/](docs/superpowers/plans/)
+- Quy ước code (bắt buộc): [.claude/skills/fe-react-structure/SKILL.md](.claude/skills/fe-react-structure/SKILL.md)
+
+Stack: Next.js 16 (App Router, `proxy.ts`), React 19, Tailwind 4 + neobrutalism (shadcn), Supabase (Auth, Postgres + RLS), Vitest. Deploy lên Vercel.
+
+## Chạy ở máy (Supabase local, cần Docker)
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+nvm use                     # Node 24
+npm install
+npx supabase start          # chạy stack local
+npx supabase db reset       # áp migration + seed danh mục
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Tạo file `.env.development.local` (đã gitignore). `npm run dev` sẽ dùng file này thay cho `.env.local`, nên không đụng vào DB thật:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npx supabase status -o env  # lấy API_URL, PUBLISHABLE_KEY, SERVICE_ROLE_KEY
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+NEXT_PUBLIC_SUPABASE_URL=<API_URL>
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<PUBLISHABLE_KEY>
+SUPABASE_SERVICE_ROLE_KEY=<SERVICE_ROLE_KEY>
+KID_SESSION_SECRET=<openssl rand -base64 32>
+```
 
-## Learn More
+```bash
+node --env-file=.env.development.local scripts/create-admin.mjs --email admin@local.test --password 'password123'
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Kiểm tra
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Lệnh                                 | Việc                                                              |
+| ------------------------------------ | ----------------------------------------------------------------- |
+| `npm run lint` / `npm run typecheck` | ESLint (gồm luật ranh giới giữa các tầng) / TypeScript            |
+| `npm test`                           | Unit test (không cần DB)                                          |
+| `npm run test:db`                    | Test RLS trên Supabase local                                      |
+| `npm run db:types`                   | Sinh lại `src/core/supabase/database.types.ts` sau khi đổi schema |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Đưa lên Supabase thật + Vercel
 
-## Deploy on Vercel
+> Đây là thao tác ghi vào DB thật. Chỉ chạy khi đã chắc chắn.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. Áp migration (không chạy seed): `npx supabase db push --db-url "$POSTGRES_URL_NON_POOLING"`
+2. Trên dashboard Supabase: Authentication → tắt **Allow new users to sign up**.
+3. Tạo admin: `node --env-file=.env.local scripts/create-admin.mjs --email <email> --password '<mật khẩu>' --name '<tên>'`
+4. Trên Vercel: thêm các biến trong [.env.example](.env.example). `KID_SESSION_SECRET` sinh bằng `openssl rand -base64 32`. Sau đó deploy.
+5. Đăng nhập admin, nhập danh mục (môn, lớp), gia đình, phụ huynh, các bé.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Dữ liệu thật của gia đình (tên các bé...) chỉ nhập qua giao diện admin. Không đưa vào code hay seed.
