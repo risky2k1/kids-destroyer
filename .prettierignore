@@ -1,0 +1,11 @@
+.next
+node_modules
+.superpowers
+docs
+.claude
+specs
+package-lock.json
+src/core/supabase/database.types.ts
+supabase/.temp
+AGENTS.md
+CLAUDE.md
