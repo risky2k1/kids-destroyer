@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import type { ActionState } from '@/core/actions';
 import { clearKidCookie, setKidCookie } from '@/core/auth/kidCookie';
-import { requireArea } from '@/core/auth/session';
+import { requireArea, requireRole } from '@/core/auth/session';
 import { PATHS } from '@/core/routes';
 import { createClient } from '@/core/supabase/server';
 import { afterFailedPin, isLocked } from './lib/lockout';
@@ -50,11 +50,12 @@ export async function enterKidMode(_: ActionState, fd: FormData): Promise<Action
 
 /** Leaving kid mode requires the parent's password, so kids can't wander into the parent area. */
 export async function exitKidMode(_: ActionState, fd: FormData): Promise<ActionState> {
-  const user = await requireArea('kid');
+  // Any signed-in adult may clear kid mode on this device, but only with their password.
+  const user = await requireRole('admin', 'parent');
   const password = String(fd.get('password') ?? '');
   const sb = await createClient();
   const { error } = await sb.auth.signInWithPassword({ email: user.email, password });
   if (error) return { ok: false, error: 'Mật khẩu không đúng' };
   await clearKidCookie();
-  redirect(PATHS.parent.root);
+  redirect(user.role === 'admin' ? PATHS.admin.root : PATHS.parent.root);
 }

@@ -5,7 +5,8 @@ import { getCurrentKid } from '@/packages/family';
 
 export default async function KidLayout({ children }: { children: React.ReactNode }) {
   const kid = await getCurrentKid();
-  if (!kid) redirect(PATHS.kid.reset); // cookies can't be cleared from a layout
+  // Invalid/expired/foreign kid session: stay locked; only the parent password (exit page) leaves kid mode.
+  if (!kid) redirect(PATHS.kid.exit);
   return (
     <>
       <header className="border-border bg-secondary-background flex items-center gap-3 border-b-2 p-3">

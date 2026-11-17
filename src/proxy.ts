@@ -1,10 +1,11 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import { kidModeRedirect } from '@/core/auth/kidModeRedirect';
+import { redirectKeepingCookies } from '@/core/auth/redirectKeepingCookies';
 import { KID_COOKIE } from '@/core/auth/kidSession';
 import { PATHS } from '@/core/routes';
 import type { Database } from '@/core/supabase/database.types';
-import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from '@/core/supabase/env';
+import { AUTH_COOKIE_OPTIONS, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from '@/core/supabase/env';
 
 const PROTECTED = [PATHS.admin.root, PATHS.parent.root, PATHS.kid.root];
 const isUnder = (path: string, root: string) => path === root || path.startsWith(root + '/');
@@ -13,6 +14,7 @@ const isUnder = (path: string, root: string) => path === root || path.startsWith
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
   const supabase = createServerClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+    cookieOptions: AUTH_COOKIE_OPTIONS,
     cookies: {
       getAll: () => request.cookies.getAll(),
       setAll: (toSet, headers) => {
@@ -30,10 +32,10 @@ export async function proxy(request: NextRequest) {
 
   const path = request.nextUrl.pathname;
   if (!user && PROTECTED.some((root) => isUnder(path, root))) {
-    return NextResponse.redirect(new URL(PATHS.login, request.url));
+    return redirectKeepingCookies(response, new URL(PATHS.login, request.url));
   }
   const kidTarget = kidModeRedirect(path, request.cookies.has(KID_COOKIE));
-  if (kidTarget) return NextResponse.redirect(new URL(kidTarget, request.url));
+  if (kidTarget) return redirectKeepingCookies(response, new URL(kidTarget, request.url));
   return response;
 }
 

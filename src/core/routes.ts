@@ -7,5 +7,5 @@ export const PATHS = {
     family: (id: string) => `/admin/families/${id}`,
   },
   parent: { root: '/parent', kidMode: '/parent/kid-mode' },
-  kid: { root: '/kid', exit: '/kid/exit', reset: '/kid/reset' },
+  kid: { root: '/kid', exit: '/kid/exit' },
 } as const;

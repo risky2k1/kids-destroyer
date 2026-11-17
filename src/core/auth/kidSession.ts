@@ -1,7 +1,8 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 
 export const KID_COOKIE = 'kd_kid';
-export const KID_TTL_MS = 12 * 60 * 60 * 1000;
+// Long on purpose: kid mode must end only through the parent password, never by silently expiring.
+export const KID_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
 const sign = (payload: string, secret: string) =>
   createHmac('sha256', secret).update(payload).digest('base64url');

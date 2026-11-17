@@ -1,10 +1,18 @@
+import Link from 'next/link';
+import { requireRole } from '@/core/auth/session';
+import { PATHS } from '@/core/routes';
 import { ExitForm } from '@/packages/family';
 
-export default function KidExitPage() {
+// Outside the (play) layout on purpose: must work even when the kid session is invalid.
+export default async function KidExitPage() {
+  await requireRole('admin', 'parent');
   return (
-    <div className="flex flex-col gap-4 py-6">
+    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-4 p-4 py-10">
       <h1 className="text-center text-2xl">Bố/mẹ nhập mật khẩu để thoát</h1>
       <ExitForm />
-    </div>
+      <Link href={PATHS.kid.root} className="text-center underline">
+        ← Quay lại làm bài
+      </Link>
+    </main>
   );
 }
