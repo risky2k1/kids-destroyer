@@ -11,6 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/themes/neobrutal/ui/dialog';
+import { Trash2 } from 'lucide-react';
 import { useActionToast } from './useActionToast';
 
 type Props = {
@@ -25,8 +26,17 @@ export function ConfirmDelete({ id, label, action }: Props) {
   const [, formAction, pending] = useActionToast(action, 'Đã xóa');
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button variant="neutral" size="sm" aria-label={`Xóa ${label}`} />}>
-        Xóa
+      <DialogTrigger
+        render={
+          <button
+            type="button"
+            title="Xóa"
+            aria-label={`Xóa ${label}`}
+            className="inline-flex size-7 items-center justify-center rounded-base text-foreground/50 hover:bg-foreground/5 hover:text-foreground focus-visible:opacity-100 md:opacity-0 md:group-hover/row:opacity-100"
+          />
+        }
+      >
+        <Trash2 className="size-3.5" />
       </DialogTrigger>
       <DialogContent>
         <DialogTitle>Xóa “{label}”?</DialogTitle>

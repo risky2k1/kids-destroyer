@@ -15,6 +15,9 @@ const optionalId = z.uuid().optional().catch(undefined);
 async function finish(error: { code?: string } | null): Promise<ActionState> {
   if (error) return { ok: false, error: catalogErrorMessage(error) };
   revalidatePath(PATHS.admin.catalog);
+  revalidatePath(PATHS.admin.subjects);
+  revalidatePath(PATHS.admin.grades);
+  revalidatePath(PATHS.admin.topics);
   return { ok: true };
 }
 

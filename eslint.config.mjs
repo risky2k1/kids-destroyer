@@ -30,6 +30,11 @@ const eslintConfig = defineConfig([
     ),
   },
   {
+    // Registry sidebar skeleton uses Math.random for bar width. Do not edit the generated file.
+    files: ['src/themes/neobrutal/ui/sidebar.tsx'],
+    rules: { 'react-hooks/purity': 'off' },
+  },
+  {
     files: ['src/packages/**/*.{ts,tsx}'],
     rules: restrict(
       ban(['@/app/*'], 'packages không import app'),

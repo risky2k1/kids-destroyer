@@ -1,10 +1,14 @@
 import 'server-only';
 import { createClient } from '@/core/supabase/server';
+import { familyRow, type FamilyRow } from './lib/familyRow';
 
-export async function listFamilies() {
+const FAMILY_LIST =
+  'id, name, profiles!profiles_family_id_fkey(display_name), kids!kids_family_id_fkey(display_name, grades!kids_grade_id_fkey(name))';
+
+export async function listFamilies(): Promise<FamilyRow[]> {
   const sb = await createClient();
-  const { data } = await sb.from('families').select('id, name').order('name');
-  return data ?? [];
+  const { data } = await sb.from('families').select(FAMILY_LIST).order('name');
+  return (data ?? []).map((row) => familyRow(row));
 }
 
 /** Family with its parents and kids. Never selects pin_hash. */

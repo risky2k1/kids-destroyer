@@ -1,29 +1,30 @@
-import Link from 'next/link';
-import { PATHS } from '@/core/routes';
-import { Card, CardContent, CardHeader, CardTitle } from '@/themes/neobrutal/ui/card';
-import { FamilyNameForm } from './components/FamilyNameForm';
+import { Users } from 'lucide-react';
+import { PageHeader } from '@/core/ui/PageHeader';
+import { ViewBar } from '@/core/ui/ViewBar';
+import { Button } from '@/themes/neobrutal/ui/button';
+import { CreateFamilyDialog } from './components/CreateFamilyDialog';
+import { FamiliesTable } from './components/FamiliesTable';
 import { listFamilies } from './queries';
+
+const hardShadow = 'shadow-[2px_2px_0_0_var(--color-border)]';
 
 export async function FamiliesView() {
   const families = await listFamilies();
   return (
-    <Card className="max-w-xl">
-      <CardHeader>
-        <CardTitle>Gia đình</CardTitle>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-3">
-        {families.length === 0 && <p>Chưa có gia đình nào.</p>}
-        {families.map((f) => (
-          <Link
-            key={f.id}
-            href={PATHS.admin.family(f.id)}
-            className="rounded-base border-border bg-secondary-background shadow-shadow border-2 p-3 font-bold"
-          >
-            {f.name} →
-          </Link>
-        ))}
-        <FamilyNameForm />
-      </CardContent>
-    </Card>
+    <>
+      <PageHeader
+        icon={Users}
+        title="Gia đình"
+        actions={
+          <CreateFamilyDialog>
+            <Button type="button" size="sm" className={`h-7 border-2 ${hardShadow}`}>
+              + Tạo
+            </Button>
+          </CreateFamilyDialog>
+        }
+      />
+      <ViewBar label="gia đình" count={families.length} />
+      <FamiliesTable families={families} />
+    </>
   );
 }

@@ -1,16 +1,22 @@
 'use client';
 
 import { useState } from 'react';
+import { Tags } from 'lucide-react';
 import type { ActionState } from '@/core/actions';
 import { ConfirmDelete } from '@/core/ui/ConfirmDelete';
+import { RecordTable } from '@/core/ui/RecordTable';
 import { useActionToast } from '@/core/ui/useActionToast';
+import { ViewBar } from '@/core/ui/ViewBar';
 import { Button } from '@/themes/neobrutal/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/themes/neobrutal/ui/card';
 import { Input } from '@/themes/neobrutal/ui/input';
 import { NativeSelect } from '@/themes/neobrutal/ui/native-select';
 import type { Catalog } from '../queries';
 
 type Action = (prev: ActionState, fd: FormData) => Promise<ActionState>;
+
+const fieldClass =
+  'h-7 w-48 border-0 bg-transparent px-1 shadow-none focus-visible:ring-1 focus-visible:ring-offset-0';
+const selectClass = 'h-7 w-auto border px-2 py-0 text-[13px] shadow-none';
 
 export function TopicList({
   catalog,
@@ -28,51 +34,71 @@ export function TopicList({
   const shown = topics.filter((t) => t.subject_id === subjectId && t.grade_id === gradeId);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Chủ đề</CardTitle>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-3">
-        <div className="flex gap-2">
-          <NativeSelect
-            value={subjectId}
-            onChange={(e) => setSubjectId(e.target.value)}
-            aria-label="Môn"
-          >
-            {subjects.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
-            ))}
-          </NativeSelect>
-          <NativeSelect
-            value={gradeId}
-            onChange={(e) => setGradeId(e.target.value)}
-            aria-label="Lớp"
-          >
-            {grades.map((g) => (
-              <option key={g.id} value={g.id}>
-                {g.name}
-              </option>
-            ))}
-          </NativeSelect>
-        </div>
-        {shown.length === 0 && <p className="text-sm">Chưa có chủ đề.</p>}
-        {shown.map((t) => (
-          <div key={t.id} className="flex items-center justify-between gap-2">
-            <span>{t.name}</span>
-            <ConfirmDelete id={t.id} label={t.name} action={remove} />
-          </div>
-        ))}
-        <form action={addAction} className="flex gap-2">
-          <input type="hidden" name="subjectId" value={subjectId} />
-          <input type="hidden" name="gradeId" value={gradeId} />
-          <Input name="name" placeholder="Chủ đề mới" aria-label="Tên chủ đề" required />
-          <Button type="submit" size="sm" disabled={pending || !subjectId || !gradeId}>
-            Thêm
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+    <>
+      <ViewBar label="chủ đề" count={shown.length}>
+        <NativeSelect
+          value={subjectId}
+          onChange={(e) => setSubjectId(e.target.value)}
+          aria-label="Môn"
+          className={selectClass}
+        >
+          {subjects.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.name}
+            </option>
+          ))}
+        </NativeSelect>
+        <NativeSelect
+          value={gradeId}
+          onChange={(e) => setGradeId(e.target.value)}
+          aria-label="Lớp"
+          className={selectClass}
+        >
+          {grades.map((g) => (
+            <option key={g.id} value={g.id}>
+              {g.name}
+            </option>
+          ))}
+        </NativeSelect>
+      </ViewBar>
+      <RecordTable
+        columns={[
+          { key: 'name', label: 'Tên', icon: Tags, render: (topic) => topic.name },
+          {
+            key: 'actions',
+            label: '',
+            icon: Tags,
+            className: 'w-px',
+            render: (topic) => <ConfirmDelete id={topic.id} label={topic.name} action={remove} />,
+          },
+        ]}
+        rows={shown}
+        getId={(topic) => topic.id}
+        empty="Chưa có chủ đề."
+        addRow={
+          <form action={addAction} className="flex items-center gap-2">
+            <input type="hidden" name="subjectId" value={subjectId} />
+            <input type="hidden" name="gradeId" value={gradeId} />
+            <Input
+              id="new-topics"
+              name="name"
+              placeholder="Chủ đề mới"
+              aria-label="Tên chủ đề"
+              className={fieldClass}
+              required
+            />
+            <Button
+              type="submit"
+              variant="noShadow"
+              size="xs"
+              className="h-7 border"
+              disabled={pending || !subjectId || !gradeId}
+            >
+              Thêm
+            </Button>
+          </form>
+        }
+      />
+    </>
   );
 }

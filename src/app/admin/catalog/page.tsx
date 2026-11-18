@@ -1,5 +1,6 @@
-import { CatalogView } from '@/packages/catalog';
+import { redirect } from 'next/navigation';
+import { PATHS } from '@/core/routes';
 
 export default function CatalogPage() {
-  return <CatalogView />;
+  redirect(PATHS.admin.subjects);
 }

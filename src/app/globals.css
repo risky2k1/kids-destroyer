@@ -21,6 +21,12 @@
   --chart-active-dot: #000;
 }
 
+/* Sky-blue palette, opt-in per page; :has() so portaled Sheet/Dropdown pick it up too. */
+:root:has(.theme-blue) {
+  --background: hsl(199, 90%, 93%);
+  --main: hsl(199, 88%, 66%);
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

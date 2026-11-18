@@ -3,6 +3,9 @@ export const PATHS = {
   admin: {
     root: '/admin',
     catalog: '/admin/catalog',
+    subjects: '/admin/catalog/subjects',
+    grades: '/admin/catalog/grades',
+    topics: '/admin/catalog/topics',
     families: '/admin/families',
     family: (id: string) => `/admin/families/${id}`,
   },

@@ -8,4 +8,9 @@ describe('PATHS', () => {
   it('exposes kid root', () => {
     expect(PATHS.kid.root).toBe('/kid');
   });
+  it('splits catalog into its own screens', () => {
+    expect(PATHS.admin.subjects).toBe('/admin/catalog/subjects');
+    expect(PATHS.admin.grades).toBe('/admin/catalog/grades');
+    expect(PATHS.admin.topics).toBe('/admin/catalog/topics');
+  });
 });
