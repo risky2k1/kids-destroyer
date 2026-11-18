@@ -71,7 +71,7 @@ Luôn dùng `@/` (→ `src/`). Import tương đối chỉ dùng bên trong cùn
 - Biến bí mật (`SUPABASE_SERVICE_ROLE_KEY`, `KID_SESSION_SECRET`, ...) chỉ dùng trong file có `import 'server-only'`. Biến công khai dùng tiền tố `NEXT_PUBLIC_`. Mọi biến đều phải có trong `.env.example`.
 - Đáp án câu hỏi (`questions.answer`) không bao giờ được gửi xuống client của trẻ trước khi bài cho phép xem đáp án.
 - Lỗi DB đổi thành thông báo tiếng Việt bằng hàm thuần trong `lib/` (theo mã lỗi Postgres như `23503`, `23505`). Component không so sánh chuỗi message.
-- Migration SQL đặt trong `supabase/migrations/`. Sau khi đổi schema, chạy `npm run db:types`.
+- Migration SQL đặt trong `supabase/migrations/`. Sau khi đổi schema, chạy `pnpm db:types`.
 
 ## 5. Bên trong một module
 
@@ -108,8 +108,8 @@ Luôn dùng `@/` (→ `src/`). Import tương đối chỉ dùng bên trong cùn
 
 ## 9. Test
 
-- Vitest, test đặt cạnh code. `npm test` chạy test thuần (không cần DB).
-- `npm run test:db` chạy `*.db.test.ts` trên Supabase local (`npx supabase start`, cần Docker). Mọi thay đổi RLS phải có test ở đây.
+- Vitest, test đặt cạnh code. `pnpm test` chạy test thuần (không cần DB).
+- `pnpm test:db` chạy `*.db.test.ts` trên Supabase local (`pnpm exec supabase start`, cần Docker). Mọi thay đổi RLS phải có test ở đây.
 - Ưu tiên test `lib/`, `grade()` của plugin và RLS. Luồng giao diện kiểm tra thủ công trên điện thoại, tablet và laptop.
 
 ## 10. Tooling
@@ -122,11 +122,11 @@ Luôn dùng `@/` (→ `src/`). Import tương đối chỉ dùng bên trong cùn
 ## 11. Checklist khi thêm module mới
 
 1. Tạo `src/packages/<module>/` có `index.ts` và `<Module>View.tsx`.
-2. Nếu cần bảng mới: viết migration có RLS, test trong `*.db.test.ts`, chạy `npm run db:types`.
+2. Nếu cần bảng mới: viết migration có RLS, test trong `*.db.test.ts`, chạy `pnpm db:types`.
 3. Thêm path vào `PATHS`, tạo route mỏng trong `src/app/...` dưới đúng layout có guard.
 4. Server action: guard → zod → DB → `revalidatePath`.
 5. Dùng component từ `@/themes/neobrutal/ui`, không hard-code màu.
-6. Test cho `lib/`. `npm run lint && npm run typecheck && npm test` phải xanh.
+6. Test cho `lib/`. `pnpm lint && pnpm typecheck && pnpm test` phải xanh.
 
 ## 12. Anti-pattern
 

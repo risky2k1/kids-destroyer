@@ -44,7 +44,7 @@ async function createUser(
   return id;
 }
 
-// shortcut: unique suffix per run instead of idempotent upserts; `npx supabase db reset` clears leftovers.
+// shortcut: unique suffix per run instead of idempotent upserts; `pnpm exec supabase db reset` clears leftovers.
 export async function seedTwoFamilies() {
   const admin = adminClient();
   const run = Math.random().toString(36).slice(2, 8);

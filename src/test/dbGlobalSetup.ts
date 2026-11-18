@@ -1,9 +1,9 @@
 import { execSync } from 'node:child_process';
 import type { TestProject } from 'vitest/node';
 
-// Reads URL/keys of the LOCAL supabase stack (`npx supabase start`) — never the remote project.
+// Reads URL/keys of the LOCAL supabase stack (`pnpm exec supabase start`) — never the remote project.
 export default function setup(project: TestProject) {
-  const out = execSync('npx supabase status -o env', { encoding: 'utf8' });
+  const out = execSync('pnpm exec supabase status -o env', { encoding: 'utf8' });
   const env = Object.fromEntries(
     out
       .split('\n')

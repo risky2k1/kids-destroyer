@@ -12,15 +12,15 @@ Stack: Next.js 16 (App Router, `proxy.ts`), React 19, Tailwind 4 + neobrutalism 
 
 ```bash
 nvm use                     # Node 24
-npm install
-npx supabase start          # chạy stack local
-npx supabase db reset       # áp migration + seed danh mục
+pnpm install
+pnpm exec supabase start          # chạy stack local
+pnpm exec supabase db reset       # áp migration + seed danh mục
 ```
 
-Tạo file `.env.development.local` (đã gitignore). `npm run dev` sẽ dùng file này thay cho `.env.local`, nên không đụng vào DB thật:
+Tạo file `.env.development.local` (đã gitignore). `pnpm dev` sẽ dùng file này thay cho `.env.local`, nên không đụng vào DB thật:
 
 ```bash
-npx supabase status -o env  # lấy API_URL, PUBLISHABLE_KEY, SERVICE_ROLE_KEY
+pnpm exec supabase status -o env  # lấy API_URL, PUBLISHABLE_KEY, SERVICE_ROLE_KEY
 ```
 
 ```
@@ -32,23 +32,23 @@ KID_SESSION_SECRET=<openssl rand -base64 32>
 
 ```bash
 node --env-file=.env.development.local scripts/create-admin.mjs --email admin@local.test --password 'password123'
-npm run dev
+pnpm dev
 ```
 
 ## Kiểm tra
 
-| Lệnh                                 | Việc                                                              |
-| ------------------------------------ | ----------------------------------------------------------------- |
-| `npm run lint` / `npm run typecheck` | ESLint (gồm luật ranh giới giữa các tầng) / TypeScript            |
-| `npm test`                           | Unit test (không cần DB)                                          |
-| `npm run test:db`                    | Test RLS trên Supabase local                                      |
-| `npm run db:types`                   | Sinh lại `src/core/supabase/database.types.ts` sau khi đổi schema |
+| Lệnh                           | Việc                                                              |
+| ------------------------------ | ----------------------------------------------------------------- |
+| `pnpm lint` / `pnpm typecheck` | ESLint (gồm luật ranh giới giữa các tầng) / TypeScript            |
+| `pnpm test`                    | Unit test (không cần DB)                                          |
+| `pnpm test:db`                 | Test RLS trên Supabase local                                      |
+| `pnpm db:types`                | Sinh lại `src/core/supabase/database.types.ts` sau khi đổi schema |
 
 ## Đưa lên Supabase thật + Vercel
 
 > Đây là thao tác ghi vào DB thật. Chỉ chạy khi đã chắc chắn.
 
-1. Áp migration (không chạy seed): `npx supabase db push --db-url "$POSTGRES_URL_NON_POOLING"`
+1. Áp migration (không chạy seed): `pnpm exec supabase db push --db-url "$POSTGRES_URL_NON_POOLING"`
 2. Trên dashboard Supabase: Authentication → tắt **Allow new users to sign up**.
 3. Tạo admin: `node --env-file=.env.local scripts/create-admin.mjs --email <email> --password '<mật khẩu>' --name '<tên>'`
 4. Trên Vercel: thêm các biến trong [.env.example](.env.example). `KID_SESSION_SECRET` sinh bằng `openssl rand -base64 32`. Sau đó deploy.
