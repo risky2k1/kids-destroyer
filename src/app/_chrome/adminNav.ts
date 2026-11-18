@@ -1,12 +1,16 @@
 import { PATHS } from '@/core/routes';
 
-export type NavKey = 'home' | 'subjects' | 'grades' | 'topics' | 'families';
+export type NavKey =
+  'home' | 'subjects' | 'grades' | 'topics' | 'families' | 'questions' | 'quizzes' | 'plugins';
 
 const SECTIONS: { key: Exclude<NavKey, 'home'>; href: string }[] = [
   { key: 'subjects', href: PATHS.admin.subjects },
   { key: 'grades', href: PATHS.admin.grades },
   { key: 'topics', href: PATHS.admin.topics },
   { key: 'families', href: PATHS.admin.families },
+  { key: 'questions', href: PATHS.admin.questions },
+  { key: 'quizzes', href: PATHS.admin.quizzes },
+  { key: 'plugins', href: PATHS.admin.plugins },
 ];
 
 /** Exact match for `/admin`; prefix match for the other admin screens. */

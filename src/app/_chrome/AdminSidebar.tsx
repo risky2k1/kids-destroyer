@@ -8,8 +8,11 @@ import {
   BookOpen,
   ChevronDown,
   ChevronRight,
+  CircleHelp,
+  ClipboardList,
   GraduationCap,
   House,
+  Puzzle,
   Shapes,
   Tags,
   Users,
@@ -130,6 +133,28 @@ export function AdminSidebar({ userName }: { userName: string }) {
                   </SidebarMenuSub>
                 )}
               </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  isActive={active === 'questions'}
+                  tooltip="Câu hỏi"
+                  className={active === 'questions' ? activeItemClass : itemClass}
+                  render={<Link href={PATHS.admin.questions} />}
+                >
+                  <CircleHelp className="text-chart-2" />
+                  <span>Câu hỏi</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  isActive={active === 'quizzes'}
+                  tooltip="Đề"
+                  className={active === 'quizzes' ? activeItemClass : itemClass}
+                  render={<Link href={PATHS.admin.quizzes} />}
+                >
+                  <ClipboardList className="text-chart-3" />
+                  <span>Đề</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -158,6 +183,26 @@ export function AdminSidebar({ userName }: { userName: string }) {
                 >
                   <ArrowUpRight className="text-chart-3" />
                   <span>Khu phụ huynh</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        <SidebarGroup className="border-b-0! py-1">
+          <SidebarGroupLabel className="h-6 px-2 font-base! text-xs text-foreground/50">
+            Hệ thống
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  isActive={active === 'plugins'}
+                  tooltip="Dạng câu"
+                  className={active === 'plugins' ? activeItemClass : itemClass}
+                  render={<Link href={PATHS.admin.plugins} />}
+                >
+                  <Puzzle className="text-chart-1" />
+                  <span>Dạng câu</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>

@@ -13,4 +13,13 @@ describe('PATHS', () => {
     expect(PATHS.admin.grades).toBe('/admin/catalog/grades');
     expect(PATHS.admin.topics).toBe('/admin/catalog/topics');
   });
+  it('builds question, quiz, and plugin urls', () => {
+    expect(PATHS.admin.questions).toBe('/admin/questions');
+    expect(PATHS.admin.newQuestion).toBe('/admin/questions/new');
+    expect(PATHS.admin.question('abc')).toBe('/admin/questions/abc');
+    expect(PATHS.admin.quizzes).toBe('/admin/quizzes');
+    expect(PATHS.admin.newQuiz).toBe('/admin/quizzes/new');
+    expect(PATHS.admin.quiz('abc')).toBe('/admin/quizzes/abc');
+    expect(PATHS.admin.plugins).toBe('/admin/plugins');
+  });
 });
