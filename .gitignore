@@ -45,3 +45,6 @@ next-env.d.ts
 
 # local agent workspace
 /.superpowers/
+
+# design notes and plans: kept local only
+/docs/
