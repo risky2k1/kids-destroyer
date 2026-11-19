@@ -1,6 +1,7 @@
 import 'server-only';
 import { createClient } from '@/core/supabase/server';
 import { getCurrentKid } from '@/packages/family';
+import { getSettings } from '@/packages/settings';
 import {
   buildItemResults,
   canReveal,
@@ -52,6 +53,7 @@ type AssignmentListRow = {
 export async function listKidAssignments(): Promise<KidAssignmentSummary[]> {
   const kid = await getCurrentKid();
   if (!kid) return [];
+  const { allowRetry } = await getSettings();
 
   const sb = await createClient();
   const { data, error } = await sb
@@ -109,7 +111,7 @@ export async function listKidAssignments(): Promise<KidAssignmentSummary[]> {
     );
 
     const items: ItemResult[] = buildItemResults(quizQuestions, r1Responses, r2Responses);
-    const retries = retryQuestionIds(items);
+    const retries = allowRetry ? retryQuestionIds(items) : [];
 
     const round1Submitted = Boolean(round1 && round1.submitted_at);
     const round2Submitted = Boolean(round2 && round2.submitted_at);
@@ -227,6 +229,7 @@ type AssignmentDetailRow = {
 export async function getKidAssignment(id: string): Promise<KidAssignmentDetail | null> {
   const kid = await getCurrentKid();
   if (!kid) return null;
+  const { allowRetry } = await getSettings();
 
   const sb = await createClient();
   const { data, error } = await sb
@@ -294,7 +297,7 @@ export async function getKidAssignment(id: string): Promise<KidAssignmentDetail 
 
   const itemResults: ItemResult[] = buildItemResults(quizQuestions, r1Responses, r2Responses);
 
-  const retries = retryQuestionIds(itemResults);
+  const retries = allowRetry ? retryQuestionIds(itemResults) : [];
   const round1Submitted = Boolean(round1 && round1.submitted_at);
   const round2Submitted = Boolean(round2 && round2.submitted_at);
 

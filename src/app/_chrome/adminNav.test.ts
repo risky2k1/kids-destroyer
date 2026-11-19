@@ -14,6 +14,7 @@ describe('activeNav', () => {
     expect(activeNav(PATHS.admin.assignments)).toBe('assignments');
     expect(activeNav(PATHS.admin.assignment('x'))).toBe('assignments');
     expect(activeNav(PATHS.admin.plugins)).toBe('plugins');
+    expect(activeNav(PATHS.admin.settings)).toBe('settings');
     expect(activeNav(PATHS.admin.catalog)).toBeNull();
     expect(activeNav('/parent')).toBeNull();
   });

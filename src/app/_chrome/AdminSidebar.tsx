@@ -14,6 +14,7 @@ import {
   House,
   Puzzle,
   Send,
+  Settings,
   Shapes,
   Tags,
   Users,
@@ -58,7 +59,7 @@ const CATALOG: { key: NavKey; href: string; label: string; icon: typeof BookOpen
   { key: 'topics', href: PATHS.admin.topics, label: 'Chủ đề', icon: Tags },
 ];
 
-export function AdminSidebar({ userName }: { userName: string }) {
+export function AdminSidebar({ userName, siteName }: { userName: string; siteName: string }) {
   const pathname = usePathname();
   const active = activeNav(pathname);
   const catalogActive = active === 'subjects' || active === 'grades' || active === 'topics';
@@ -77,7 +78,7 @@ export function AdminSidebar({ userName }: { userName: string }) {
         >
           K
         </span>
-        <span className="min-w-0 flex-1 truncate text-sm font-heading">Kids CMS</span>
+        <span className="min-w-0 flex-1 truncate text-sm font-heading">{siteName}</span>
         <ChevronDown className="size-3.5 shrink-0 text-foreground/60" />
         <SidebarTrigger className="size-7 border-0 bg-transparent text-foreground/60 shadow-none hover:bg-foreground/5 hover:text-foreground" />
       </SidebarHeader>
@@ -215,6 +216,17 @@ export function AdminSidebar({ userName }: { userName: string }) {
                 >
                   <Puzzle className="text-chart-1" />
                   <span>Dạng câu</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  isActive={active === 'settings'}
+                  tooltip="Cài đặt"
+                  className={active === 'settings' ? activeItemClass : itemClass}
+                  render={<Link href={PATHS.admin.settings} />}
+                >
+                  <Settings className="text-chart-4" />
+                  <span>Cài đặt</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>

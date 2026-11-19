@@ -21,6 +21,7 @@ describe('PATHS', () => {
     expect(PATHS.admin.newQuiz).toBe('/admin/quizzes/new');
     expect(PATHS.admin.quiz('abc')).toBe('/admin/quizzes/abc');
     expect(PATHS.admin.plugins).toBe('/admin/plugins');
+    expect(PATHS.admin.settings).toBe('/admin/settings');
   });
   it('builds assignment urls for admin, parent, and kid', () => {
     expect(PATHS.admin.assignments).toBe('/admin/assignments');

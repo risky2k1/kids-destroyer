@@ -6,6 +6,7 @@ import { PATHS } from '@/core/routes';
 import type { Json } from '@/core/supabase/database.types';
 import { createClient } from '@/core/supabase/server';
 import { getCurrentKid } from '@/packages/family';
+import { getSettings } from '@/packages/settings';
 import { getPlugin } from '@/plugins/registry';
 import { assignmentErrorMessage } from './lib/errors';
 import { submitInput } from './lib/schemas';
@@ -73,6 +74,7 @@ type AssignmentLoadRow = {
 export async function submitRound(_: ActionState, fd: FormData): Promise<ActionState> {
   const kid = await getCurrentKid();
   if (!kid) return { ok: false, error: 'Phiên làm bài đã hết' };
+  const { allowRetry } = await getSettings();
 
   let responsesRaw: unknown = {};
   try {
@@ -165,7 +167,7 @@ export async function submitRound(_: ActionState, fd: FormData): Promise<ActionS
     targetQuestions = quizQuestions;
   } else {
     const r1Items = buildItemResults(quizQuestions, r1Responses);
-    const retries = retryQuestionIds(r1Items);
+    const retries = allowRetry ? retryQuestionIds(r1Items) : [];
     const retrySet = new Set(retries);
 
     if (retries.length === 0) {
@@ -297,6 +299,7 @@ export async function submitRound(_: ActionState, fd: FormData): Promise<ActionS
 export async function skipRetry(_: ActionState, fd: FormData): Promise<ActionState> {
   const kid = await getCurrentKid();
   if (!kid) return { ok: false, error: 'Phiên làm bài đã hết' };
+  const { allowRetry } = await getSettings();
 
   const assignmentId = String(fd.get('assignmentId') ?? '');
   if (!assignmentId) return { ok: false, error: 'Thiếu mã bài' };
@@ -352,7 +355,7 @@ export async function skipRetry(_: ActionState, fd: FormData): Promise<ActionSta
 
   const r1Responses = new Map((round1Attempt?.responses ?? []).map((r) => [r.question_id, r]));
   const r1Items = buildItemResults(quizQuestions, r1Responses);
-  const retries = retryQuestionIds(r1Items);
+  const retries = allowRetry ? retryQuestionIds(r1Items) : [];
 
   const step = nextStep({
     round1Submitted: Boolean(round1Attempt && round1Attempt.submitted_at),

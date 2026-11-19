@@ -9,7 +9,8 @@ export type NavKey =
   | 'questions'
   | 'quizzes'
   | 'assignments'
-  | 'plugins';
+  | 'plugins'
+  | 'settings';
 
 const SECTIONS: { key: Exclude<NavKey, 'home'>; href: string }[] = [
   { key: 'subjects', href: PATHS.admin.subjects },
@@ -20,6 +21,7 @@ const SECTIONS: { key: Exclude<NavKey, 'home'>; href: string }[] = [
   { key: 'quizzes', href: PATHS.admin.quizzes },
   { key: 'assignments', href: PATHS.admin.assignments },
   { key: 'plugins', href: PATHS.admin.plugins },
+  { key: 'settings', href: PATHS.admin.settings },
 ];
 
 /** Exact match for `/admin`; prefix match for the other admin screens. */
