@@ -111,3 +111,25 @@ describe('FK restrict', () => {
     expect(error?.code).toBe('23503');
   });
 });
+
+describe('Storage: voice bucket is per family', () => {
+  const audio = () => new Blob([new Uint8Array([1, 2, 3])], { type: 'audio/webm' });
+
+  it('parent uploads under own family folder, other family cannot read it', async () => {
+    const path = `${s.famA}/${s.kidA}/${crypto.randomUUID()}.webm`;
+    const up = await s.parentA.client.storage.from('voice').upload(path, audio());
+    expect(up.error).toBeNull();
+    const own = await s.parentA.client.storage.from('voice').createSignedUrl(path, 60);
+    expect(own.error).toBeNull();
+    const other = await s.parentB.client.storage.from('voice').createSignedUrl(path, 60);
+    expect(other.data).toBeNull();
+    const admin = await s.admin.client.storage.from('voice').createSignedUrl(path, 60);
+    expect(admin.error).toBeNull();
+  });
+
+  it('parent cannot upload into another family folder', async () => {
+    const path = `${s.famB}/${s.kidB}/${crypto.randomUUID()}.webm`;
+    const { error } = await s.parentA.client.storage.from('voice').upload(path, audio());
+    expect(error).not.toBeNull();
+  });
+});
