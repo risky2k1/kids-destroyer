@@ -10,6 +10,8 @@ export async function KidAssignmentView({ id }: { id: string }) {
   if (assignment.step === 'play1' || assignment.step === 'play2') {
     return (
       <KidPlayer
+        // round 2 has a different question list: remount so index/answers reset
+        key={assignment.step}
         assignmentId={assignment.id}
         quizTitle={assignment.quizTitle}
         round={assignment.step === 'play1' ? 1 : 2}
