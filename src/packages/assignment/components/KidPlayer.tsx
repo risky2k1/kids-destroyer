@@ -3,6 +3,7 @@
 import { startTransition, useActionState, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { initialActionState } from '@/core/actions';
+import { SpeakButton } from '@/core/ui/SpeakButton';
 import { getPlugin } from '@/plugins/registry';
 import { Button } from '@/themes/neobrutal/ui/button';
 import { submitRound, skipRetry } from '../kidActions';
@@ -136,7 +137,14 @@ export function KidPlayer({
           </span>
         </div>
 
-        <h2 className="text-xl font-bold">{currentQuestion.prompt}</h2>
+        <div className="flex items-start gap-3">
+          <h2 className="flex-1 text-xl font-bold">{currentQuestion.prompt}</h2>
+          <SpeakButton
+            key={currentQuestion.id}
+            text={currentQuestion.prompt}
+            lang={currentQuestion.lang}
+          />
+        </div>
 
         <div className="min-h-36 py-2 text-lg">
           {PluginPlayer ? (
