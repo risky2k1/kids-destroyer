@@ -7,6 +7,7 @@ import { matchPlugin } from './question-match';
 import { mcqPlugin } from './question-mcq';
 import { numberPlugin } from './question-number';
 import { orderPlugin } from './question-order';
+import { voicePlugin } from './question-voice';
 
 export const PLUGINS: Record<string, QuestionTypePlugin<any, any, any>> = {
   mcq: mcqPlugin,
@@ -15,6 +16,7 @@ export const PLUGINS: Record<string, QuestionTypePlugin<any, any, any>> = {
   order: orderPlugin,
   match: matchPlugin,
   essay: essayPlugin,
+  voice: voicePlugin,
 };
 
 export function getPlugin(id: string): QuestionTypePlugin<any, any, any> | undefined {
