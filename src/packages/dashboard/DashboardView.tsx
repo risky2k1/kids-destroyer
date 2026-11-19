@@ -17,13 +17,14 @@ export async function DashboardView() {
     { label: 'Phụ huynh', value: data.parents, href: PATHS.admin.families },
     { label: 'Các bé', value: data.kids, href: PATHS.admin.families },
     { label: 'Chủ đề', value: data.topics, href: PATHS.admin.topics },
+    { label: 'Chờ chấm', value: data.pendingReview, href: PATHS.admin.assignments },
   ];
 
   return (
     <>
       <PageHeader icon={House} title="Trang chủ" />
       <div className="flex flex-col gap-4 p-4">
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
           {tiles.map((tile) => (
             <Link key={tile.label} href={tile.href} className={TILE}>
               <div className="text-2xl font-heading">{tile.value}</div>
