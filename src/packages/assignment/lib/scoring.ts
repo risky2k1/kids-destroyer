@@ -50,3 +50,30 @@ export function nextStep(state: {
   if (state.round2Submitted || state.retryCount === 0) return 'done';
   return 'play2';
 }
+
+/** Builds ItemResult array from quiz questions and attempt responses. */
+export function buildItemResults(
+  quizQuestions: { question_id: string; points: number }[],
+  r1Responses: Map<string, { auto_score: number | null; manual_score?: number | null }>,
+  r2Responses?: Map<string, { auto_score: number | null }>,
+): ItemResult[] {
+  return quizQuestions.map((qq) => {
+    const r1 = r1Responses.get(qq.question_id);
+    const r2 = r2Responses?.get(qq.question_id);
+    // submitRound leaves auto_score null exactly for questions a person must mark.
+    const needsManual = r1 !== undefined && r1.auto_score === null;
+    return {
+      questionId: qq.question_id,
+      points: Number(qq.points),
+      needsManual,
+      r1:
+        r1?.auto_score !== null && r1?.auto_score !== undefined ? Number(r1.auto_score) : undefined,
+      r2:
+        r2?.auto_score !== null && r2?.auto_score !== undefined ? Number(r2.auto_score) : undefined,
+      manual:
+        r1?.manual_score !== null && r1?.manual_score !== undefined
+          ? Number(r1.manual_score)
+          : null,
+    };
+  });
+}

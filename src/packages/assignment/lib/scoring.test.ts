@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildItemResults,
   canReveal,
   itemScore,
   nextStep,
@@ -55,5 +56,38 @@ describe('scoring', () => {
     );
     expect(nextStep({ round1Submitted: true, round2Submitted: false, retryCount: 0 })).toBe('done');
     expect(nextStep({ round1Submitted: true, round2Submitted: true, retryCount: 2 })).toBe('done');
+  });
+
+  it('builds ItemResult from quiz questions and responses correctly', () => {
+    const quizQuestions = [
+      { question_id: 'q1', points: 2 },
+      { question_id: 'q2', points: 1 },
+      { question_id: 'q3', points: 3 },
+    ];
+    const r1 = new Map([
+      ['q1', { auto_score: 1, manual_score: null }],
+      ['q2', { auto_score: 0, manual_score: null }],
+      ['q3', { auto_score: null, manual_score: 0.8 }],
+    ]);
+    const r2 = new Map([['q2', { auto_score: 1 }]]);
+
+    const results = buildItemResults(quizQuestions, r1, r2);
+    expect(results).toEqual([
+      { questionId: 'q1', points: 2, needsManual: false, r1: 1, r2: undefined, manual: null },
+      { questionId: 'q2', points: 1, needsManual: false, r1: 0, r2: 1, manual: null },
+      { questionId: 'q3', points: 3, needsManual: true, r1: undefined, r2: undefined, manual: 0.8 },
+    ]);
+    expect(totalOutOf10(results)).toBe(9); // (2*1 + 1*1 + 3*0.8) / 6 * 10 = (2+1+2.4)/6*10 = 5.4/6*10 = 9.0
+
+    const resultsWithoutR2 = buildItemResults(quizQuestions, r1);
+    expect(resultsWithoutR2[1]).toEqual({
+      questionId: 'q2',
+      points: 1,
+      needsManual: false,
+      r1: 0,
+      r2: undefined,
+      manual: null,
+    });
+    expect(retryQuestionIds(resultsWithoutR2)).toEqual(['q2']);
   });
 });
