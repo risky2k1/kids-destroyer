@@ -13,6 +13,7 @@ import {
   GraduationCap,
   House,
   Puzzle,
+  Send,
   Shapes,
   Tags,
   Users,
@@ -173,6 +174,17 @@ export function AdminSidebar({ userName }: { userName: string }) {
                 >
                   <Users className="text-chart-4" />
                   <span>Gia đình</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  isActive={active === 'assignments'}
+                  tooltip="Giao bài"
+                  className={active === 'assignments' ? activeItemClass : itemClass}
+                  render={<Link href={PATHS.admin.assignments} />}
+                >
+                  <Send className="text-chart-3" />
+                  <span>Giao bài</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>

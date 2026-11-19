@@ -1,7 +1,15 @@
 import { PATHS } from '@/core/routes';
 
 export type NavKey =
-  'home' | 'subjects' | 'grades' | 'topics' | 'families' | 'questions' | 'quizzes' | 'plugins';
+  | 'home'
+  | 'subjects'
+  | 'grades'
+  | 'topics'
+  | 'families'
+  | 'questions'
+  | 'quizzes'
+  | 'assignments'
+  | 'plugins';
 
 const SECTIONS: { key: Exclude<NavKey, 'home'>; href: string }[] = [
   { key: 'subjects', href: PATHS.admin.subjects },
@@ -10,6 +18,7 @@ const SECTIONS: { key: Exclude<NavKey, 'home'>; href: string }[] = [
   { key: 'families', href: PATHS.admin.families },
   { key: 'questions', href: PATHS.admin.questions },
   { key: 'quizzes', href: PATHS.admin.quizzes },
+  { key: 'assignments', href: PATHS.admin.assignments },
   { key: 'plugins', href: PATHS.admin.plugins },
 ];
 

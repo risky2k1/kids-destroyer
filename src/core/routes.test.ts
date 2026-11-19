@@ -22,4 +22,10 @@ describe('PATHS', () => {
     expect(PATHS.admin.quiz('abc')).toBe('/admin/quizzes/abc');
     expect(PATHS.admin.plugins).toBe('/admin/plugins');
   });
+  it('builds assignment urls for admin, parent, and kid', () => {
+    expect(PATHS.admin.assignments).toBe('/admin/assignments');
+    expect(PATHS.admin.assignment('abc')).toBe('/admin/assignments/abc');
+    expect(PATHS.parent.assignment('abc')).toBe('/parent/assignments/abc');
+    expect(PATHS.kid.assignment('abc')).toBe('/kid/a/abc');
+  });
 });

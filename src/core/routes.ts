@@ -14,8 +14,18 @@ export const PATHS = {
     quizzes: '/admin/quizzes',
     newQuiz: '/admin/quizzes/new',
     quiz: (id: string) => `/admin/quizzes/${id}`,
+    assignments: '/admin/assignments',
+    assignment: (id: string) => `/admin/assignments/${id}`,
     plugins: '/admin/plugins',
   },
-  parent: { root: '/parent', kidMode: '/parent/kid-mode' },
-  kid: { root: '/kid', exit: '/kid/exit' },
+  parent: {
+    root: '/parent',
+    kidMode: '/parent/kid-mode',
+    assignment: (id: string) => `/parent/assignments/${id}`,
+  },
+  kid: {
+    root: '/kid',
+    exit: '/kid/exit',
+    assignment: (id: string) => `/kid/a/${id}`,
+  },
 } as const;

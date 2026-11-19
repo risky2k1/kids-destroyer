@@ -3,7 +3,7 @@ import { PATHS } from '@/core/routes';
 
 /** Where "Quay lại" goes, or null on a screen that is already a root. */
 export function backTarget(path: string, role?: Role): { href: string; label: string } | null {
-  if (path === PATHS.parent.kidMode) {
+  if (path === PATHS.parent.kidMode || path.startsWith('/parent/assignments/')) {
     return { href: PATHS.parent.root, label: 'Phụ huynh' };
   }
   if (path === PATHS.parent.root && role === 'admin') {

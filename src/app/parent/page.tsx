@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { canEnter } from '@/core/acl/access';
 import { getCurrentUser } from '@/core/auth/session';
 import { PATHS } from '@/core/routes';
+import { AssignmentsView } from '@/packages/assignment';
 import { Button } from '@/themes/neobrutal/ui/button';
 
 export default async function ParentHome() {
@@ -19,6 +20,7 @@ export default async function ParentHome() {
           🎒 Cho bé làm bài
         </Button>
       )}
+      <AssignmentsView basePath="parent" />
     </div>
   );
 }

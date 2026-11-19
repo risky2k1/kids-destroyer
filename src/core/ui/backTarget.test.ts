@@ -21,6 +21,10 @@ describe('backTarget', () => {
       href: PATHS.parent.root,
       label: 'Phụ huynh',
     });
+    expect(backTarget(PATHS.parent.assignment('x'))).toEqual({
+      href: PATHS.parent.root,
+      label: 'Phụ huynh',
+    });
   });
 
   it('leaves kid play and login without a back target', () => {
