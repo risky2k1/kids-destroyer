@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import type { ActionState } from '@/core/actions';
-import { requireRole } from '@/core/auth/session';
+import { requirePermission } from '@/core/auth/session';
 import { PATHS } from '@/core/routes';
 import { createClient } from '@/core/supabase/server';
 import { quizErrorMessage } from './lib/errors';
@@ -84,7 +84,7 @@ async function gateLocked(sb: Awaited<ReturnType<typeof createClient>>, id: stri
 }
 
 export async function saveQuiz(_: ActionState, fd: FormData): Promise<ActionState> {
-  await requireRole('admin');
+  await requirePermission('quizzes.manage');
   const parsed = readInput(fd);
   if (!parsed.ok) return { ok: false, error: parsed.error };
   const sb = await createClient();
@@ -122,7 +122,7 @@ export async function saveQuiz(_: ActionState, fd: FormData): Promise<ActionStat
 }
 
 export async function archiveQuiz(_: ActionState, fd: FormData): Promise<ActionState> {
-  await requireRole('admin');
+  await requirePermission('quizzes.manage');
   const id = optionalId.safeParse(fd.get('id'));
   if (!id.success) return { ok: false, error: 'Có lỗi, thử lại' };
   const sb = await createClient();
@@ -139,7 +139,7 @@ export async function archiveQuiz(_: ActionState, fd: FormData): Promise<ActionS
 }
 
 export async function duplicateQuiz(_: ActionState, fd: FormData): Promise<ActionState> {
-  await requireRole('admin');
+  await requirePermission('quizzes.manage');
   const id = optionalId.safeParse(fd.get('id'));
   if (!id.success) return { ok: false, error: 'Có lỗi, thử lại' };
   const sb = await createClient();

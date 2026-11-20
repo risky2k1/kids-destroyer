@@ -51,16 +51,16 @@ describe('RLS: no privilege escalation', () => {
   it('parent cannot promote self to admin', async () => {
     const { data } = await s.parentA.client
       .from('profiles')
-      .update({ role: 'admin' })
+      .update({ role_id: 'super_admin' })
       .eq('id', s.parentA.id)
       .select('id');
     expect(data ?? []).toEqual([]);
     const { data: me } = await adminClient()
       .from('profiles')
-      .select('role')
+      .select('role_id')
       .eq('id', s.parentA.id)
       .single();
-    expect(me!.role).toBe('parent');
+    expect(me!.role_id).toBe('parent');
   });
 
   it('parent cannot move self to another family', async () => {

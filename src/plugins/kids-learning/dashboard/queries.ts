@@ -14,7 +14,7 @@ export async function getDashboard(): Promise<{
   const sb = await createClient();
   const [families, parents, kids, topics, recent, grades, kidGrades, pending] = await Promise.all([
     sb.from('families').select('id', { count: 'exact', head: true }),
-    sb.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'parent'),
+    sb.from('profiles').select('id', { count: 'exact', head: true }).eq('role_id', 'parent'),
     sb.from('kids').select('id', { count: 'exact', head: true }),
     sb.from('topics').select('id', { count: 'exact', head: true }),
     sb

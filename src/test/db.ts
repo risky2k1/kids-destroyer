@@ -25,7 +25,7 @@ export async function signInAs(email: string, password: string): Promise<Client>
 const PASSWORD = 'test-password-123';
 
 async function createUser(
-  role: 'admin' | 'parent',
+  roleId: 'super_admin' | 'parent',
   email: string,
   familyId: string | null,
 ): Promise<string> {
@@ -39,7 +39,7 @@ async function createUser(
   const id = data.user.id;
   const { error: pErr } = await admin
     .from('profiles')
-    .insert({ id, role, family_id: familyId, display_name: email.split('@')[0] });
+    .insert({ id, role_id: roleId, family_id: familyId, display_name: email.split('@')[0] });
   if (pErr) throw pErr;
   return id;
 }
@@ -66,7 +66,7 @@ export async function seedTwoFamilies() {
     parentA: `pa-${run}@test.local`,
     parentB: `pb-${run}@test.local`,
   };
-  const adminId = await createUser('admin', emails.admin, null);
+  const adminId = await createUser('super_admin', emails.admin, null);
   const parentAId = await createUser('parent', emails.parentA, famA);
   const parentBId = await createUser('parent', emails.parentB, famB);
 

@@ -16,6 +16,14 @@ import { PATHS } from '@/core/routes';
 export const kidsLearningManifest: ModuleManifest = {
   id: 'kids-learning',
   name: 'Học tập cho trẻ',
+  permissions: [
+    { key: 'catalog.manage', label: 'Danh mục' },
+    { key: 'questions.manage', label: 'Câu hỏi' },
+    { key: 'quizzes.manage', label: 'Đề' },
+    { key: 'families.manage', label: 'Gia đình' },
+    { key: 'assignments.manage', label: 'Giao bài' },
+    { key: 'plugins.manage', label: 'Dạng câu' },
+  ],
   nav: [
     {
       group: 'content',
@@ -30,6 +38,7 @@ export const kidsLearningManifest: ModuleManifest = {
           label: 'Môn học',
           icon: BookOpen,
           iconClass: 'text-chart-5',
+          permission: 'catalog.manage',
         },
         {
           key: 'grades',
@@ -37,6 +46,7 @@ export const kidsLearningManifest: ModuleManifest = {
           label: 'Lớp',
           icon: GraduationCap,
           iconClass: 'text-chart-5',
+          permission: 'catalog.manage',
         },
         {
           key: 'topics',
@@ -44,6 +54,7 @@ export const kidsLearningManifest: ModuleManifest = {
           label: 'Chủ đề',
           icon: Tags,
           iconClass: 'text-chart-5',
+          permission: 'catalog.manage',
         },
       ],
     },
@@ -54,6 +65,7 @@ export const kidsLearningManifest: ModuleManifest = {
       label: 'Câu hỏi',
       icon: CircleHelp,
       iconClass: 'text-chart-2',
+      permission: 'questions.manage',
     },
     {
       group: 'content',
@@ -62,6 +74,7 @@ export const kidsLearningManifest: ModuleManifest = {
       label: 'Đề',
       icon: ClipboardList,
       iconClass: 'text-chart-3',
+      permission: 'quizzes.manage',
     },
     {
       group: 'users',
@@ -70,6 +83,7 @@ export const kidsLearningManifest: ModuleManifest = {
       label: 'Gia đình',
       icon: Users,
       iconClass: 'text-chart-4',
+      permission: 'families.manage',
     },
     {
       group: 'users',
@@ -78,6 +92,7 @@ export const kidsLearningManifest: ModuleManifest = {
       label: 'Giao bài',
       icon: Send,
       iconClass: 'text-chart-3',
+      permission: 'assignments.manage',
     },
     {
       group: 'users',
@@ -94,6 +109,7 @@ export const kidsLearningManifest: ModuleManifest = {
       label: 'Dạng câu',
       icon: Puzzle,
       iconClass: 'text-chart-1',
+      permission: 'plugins.manage',
     },
   ],
 };

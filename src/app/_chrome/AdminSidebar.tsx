@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ChevronDown, ChevronRight, House } from 'lucide-react';
 import { signOut } from '@/app/(auth)/login/actions';
-import { isParent } from '@/core/modules';
+import { can, type Principal } from '@/core/acl/access';
+import { isParent, visibleNav, type NavSection } from '@/core/modules';
 import { PATHS } from '@/core/routes';
 import { Avatar, AvatarFallback } from '@/themes/neobrutal/ui/avatar';
 import {
@@ -40,17 +41,28 @@ const itemClass =
 const activeItemClass = `${itemClass} border-2 border-border bg-main font-heading shadow-[2px_2px_0_0_var(--color-border)] hover:bg-main data-active:bg-main data-active:text-foreground data-active:outline-transparent`;
 
 /** Key of the parent item that holds the active link, if any. */
-function parentOf(key: string | null): string | null {
-  for (const section of ADMIN_NAV)
+function parentOf(key: string | null, nav: NavSection[]): string | null {
+  for (const section of nav)
     for (const item of section.items)
       if (isParent(item) && item.children.some((child) => child.key === key)) return item.key;
   return null;
 }
 
-export function AdminSidebar({ userName, siteName }: { userName: string; siteName: string }) {
+export function AdminSidebar({
+  userName,
+  siteName,
+  principal,
+  roleName,
+}: {
+  userName: string;
+  siteName: string;
+  principal: Principal;
+  roleName: string;
+}) {
+  const nav = visibleNav(ADMIN_NAV, (p) => can(principal, p));
   const pathname = usePathname();
   const active = activeNav(pathname);
-  const activeParent = parentOf(active);
+  const activeParent = parentOf(active, nav);
   const [openParents, setOpenParents] = useState<Record<string, boolean>>(() =>
     activeParent ? { [activeParent]: true } : {},
   );
@@ -87,7 +99,7 @@ export function AdminSidebar({ userName, siteName }: { userName: string; siteNam
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
-        {ADMIN_NAV.map((section) => (
+        {nav.map((section) => (
           <SidebarGroup key={section.id} className="border-b-0! py-1">
             <SidebarGroupLabel className="h-6 px-2 font-base! text-xs text-foreground/50">
               {section.label}
@@ -168,7 +180,7 @@ export function AdminSidebar({ userName, siteName }: { userName: string; siteNam
             </Avatar>
             <span className="min-w-0 truncate text-left text-sm">
               {userName}
-              <span className="block text-xs font-base text-foreground/60">Quản trị</span>
+              <span className="block text-xs font-base text-foreground/60">{roleName}</span>
             </span>
           </DropdownMenuTrigger>
           <DropdownMenuContent side="top" align="start">

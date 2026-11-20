@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import type { ActionState } from '@/core/actions';
-import { requireRole } from '@/core/auth/session';
+import { requireUser } from '@/core/auth/session';
 import { PATHS } from '@/core/routes';
 import { createClient } from '@/core/supabase/server';
 import { assignmentErrorMessage } from './lib/errors';
@@ -11,7 +11,7 @@ import { assignInput, reviewInput } from './lib/schemas';
 import { totalOutOf10, type ItemResult } from './lib/scoring';
 
 export async function assign(_: ActionState, fd: FormData): Promise<ActionState> {
-  await requireRole('admin', 'parent');
+  await requireUser();
   const parsed = assignInput.safeParse({
     quizId: fd.get('quizId'),
     kidIds: fd.getAll('kidIds'),
@@ -38,7 +38,7 @@ export async function assign(_: ActionState, fd: FormData): Promise<ActionState>
 }
 
 export async function deleteAssignment(_: ActionState, fd: FormData): Promise<ActionState> {
-  await requireRole('admin', 'parent');
+  await requireUser();
   const id = String(fd.get('id') ?? '');
   if (!id) return { ok: false, error: 'Thiếu mã bài' };
 
@@ -80,7 +80,7 @@ type AssignmentQuizRel = {
 };
 
 export async function saveReview(_: ActionState, fd: FormData): Promise<ActionState> {
-  await requireRole('admin', 'parent');
+  await requireUser();
 
   let itemsRaw: unknown = [];
   try {

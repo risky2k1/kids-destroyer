@@ -6,7 +6,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const user = await requireArea('admin');
   const { siteName } = await getSettings();
   return (
-    <AdminShell userName={user.displayName} siteName={siteName}>
+    <AdminShell
+      userName={user.displayName}
+      siteName={siteName}
+      principal={{ roleId: user.roleId, permissions: user.permissions, familyId: user.familyId }}
+      roleName={user.roleName}
+    >
       {children}
     </AdminShell>
   );

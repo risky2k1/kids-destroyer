@@ -5,7 +5,7 @@ import { LoginForm } from './LoginForm';
 
 export default async function LoginPage() {
   const user = await getCurrentUser();
-  if (user) redirect(homeFor(user.role));
+  if (user) redirect(homeFor(user));
   return (
     <main className="flex flex-1 items-center justify-center p-4">
       <Card className="w-full max-w-sm">

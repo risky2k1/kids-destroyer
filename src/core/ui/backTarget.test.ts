@@ -12,11 +12,11 @@ describe('backTarget', () => {
   });
 
   it('sends an admin on the parent home back to admin, and a parent nowhere', () => {
-    expect(backTarget(PATHS.parent.root, 'admin')).toEqual({
+    expect(backTarget(PATHS.parent.root, true)).toEqual({
       href: PATHS.admin.root,
       label: 'Quản trị',
     });
-    expect(backTarget(PATHS.parent.root, 'parent')).toBeNull();
+    expect(backTarget(PATHS.parent.root, false)).toBeNull();
     expect(backTarget(PATHS.parent.kidMode)).toEqual({
       href: PATHS.parent.root,
       label: 'Phụ huynh',

@@ -3,7 +3,8 @@ import { PATHS } from '@/core/routes';
 import { PACKAGES } from '@/packages/registry';
 import { PLUGINS } from '@/plugins/registry';
 
-export const ADMIN_NAV = buildNav([...PLUGINS, ...PACKAGES]);
+export const MODULES = [...PLUGINS, ...PACKAGES];
+export const ADMIN_NAV = buildNav(MODULES);
 
 /** 'home' for /admin; otherwise the matching nav key. Paths outside /admin never match. */
 export function activeNav(pathname: string): string | null {

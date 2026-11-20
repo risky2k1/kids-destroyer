@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import type { ActionState } from '@/core/actions';
-import { requireRole } from '@/core/auth/session';
+import { requirePermission } from '@/core/auth/session';
 import { PATHS } from '@/core/routes';
 import { createClient } from '@/core/supabase/server';
 import { catalogErrorMessage } from './lib/errors';
@@ -22,7 +22,7 @@ async function finish(error: { code?: string } | null): Promise<ActionState> {
 }
 
 async function saveNamed(table: 'subjects' | 'grades', fd: FormData): Promise<ActionState> {
-  await requireRole('admin');
+  await requirePermission('catalog.manage');
   const parsed = subjectInput.safeParse({ name: fd.get('name'), sort: fd.get('sort') });
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
   const id = optionalId.parse(fd.get('id') || undefined);
@@ -34,7 +34,7 @@ async function saveNamed(table: 'subjects' | 'grades', fd: FormData): Promise<Ac
 }
 
 async function remove(table: Table, fd: FormData): Promise<ActionState> {
-  await requireRole('admin');
+  await requirePermission('catalog.manage');
   const id = z.uuid().safeParse(fd.get('id'));
   if (!id.success) return { ok: false, error: 'Có lỗi, thử lại' };
   const sb = await createClient();
@@ -49,7 +49,7 @@ export const deleteGrade = async (_: ActionState, fd: FormData) => remove('grade
 export const deleteTopic = async (_: ActionState, fd: FormData) => remove('topics', fd);
 
 export async function saveTopic(_: ActionState, fd: FormData): Promise<ActionState> {
-  await requireRole('admin');
+  await requirePermission('catalog.manage');
   const parsed = topicInput.safeParse({
     name: fd.get('name'),
     subjectId: fd.get('subjectId'),

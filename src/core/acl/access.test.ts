@@ -1,24 +1,57 @@
 import { describe, expect, it } from 'vitest';
-import { canEnter } from './access';
+import { ADMIN_ACCESS, can, canEnter, SUPER_ADMIN, type Principal } from './access';
 
-describe('canEnter', () => {
-  const admin = { role: 'admin', familyId: null } as const;
-  const parent = { role: 'parent', familyId: 'f1' } as const;
-  const orphan = { role: 'parent', familyId: null } as const;
+describe('ACL access', () => {
+  const superAdmin: Principal = {
+    roleId: SUPER_ADMIN,
+    permissions: [],
+    familyId: null,
+  };
 
-  it('admin enters admin and parent areas, not kid mode', () => {
-    expect(canEnter('admin', admin)).toBe(true);
-    expect(canEnter('parent', admin)).toBe(true);
-    expect(canEnter('kid', admin)).toBe(false);
+  const adminRole: Principal = {
+    roleId: 'admin',
+    permissions: [ADMIN_ACCESS],
+    familyId: null,
+  };
+
+  const parent: Principal = {
+    roleId: 'parent',
+    permissions: [],
+    familyId: 'f1',
+  };
+
+  const orphan: Principal = {
+    roleId: 'parent',
+    permissions: [],
+    familyId: null,
+  };
+
+  it('super admin can do anything and enter admin area', () => {
+    expect(can(superAdmin, 'any.permission')).toBe(true);
+    expect(can(superAdmin, ADMIN_ACCESS)).toBe(true);
+    expect(canEnter('admin', superAdmin)).toBe(true);
+    expect(canEnter('parent', superAdmin)).toBe(true);
+    expect(canEnter('kid', superAdmin)).toBe(false);
   });
 
-  it('parent with a family enters parent and kid, not admin', () => {
+  it('role with admin.access enters admin area', () => {
+    expect(can(adminRole, ADMIN_ACCESS)).toBe(true);
+    expect(canEnter('admin', adminRole)).toBe(true);
+    expect(canEnter('parent', adminRole)).toBe(true);
+  });
+
+  it('parent (empty permissions, has family) cannot enter admin but enters kid', () => {
     expect(canEnter('admin', parent)).toBe(false);
     expect(canEnter('parent', parent)).toBe(true);
     expect(canEnter('kid', parent)).toBe(true);
   });
 
-  it('parent without family cannot enter kid mode', () => {
+  it('user without family cannot enter kid mode', () => {
     expect(canEnter('kid', orphan)).toBe(false);
+  });
+
+  it('can returns false for missing permission', () => {
+    expect(can(adminRole, 'other.permission')).toBe(false);
+    expect(can(parent, 'any.permission')).toBe(false);
   });
 });

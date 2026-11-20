@@ -29,7 +29,7 @@ if (error) {
 }
 const { error: pErr } = await sb
   .from('profiles')
-  .insert({ id: data.user.id, role: 'admin', family_id: null, display_name: name });
+  .insert({ id: data.user.id, role_id: 'super_admin', family_id: null, display_name: name });
 if (pErr) {
   await sb.auth.admin.deleteUser(data.user.id); // no orphan auth user
   console.error('Create profile failed:', pErr.message);

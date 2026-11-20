@@ -1,11 +1,11 @@
-import { requireRole } from '@/core/auth/session';
+import { requireUser } from '@/core/auth/session';
 import { PATHS } from '@/core/routes';
 import { BackLink } from '@/core/ui/BackLink';
 import { ExitForm } from '@/plugins/kids-learning/family';
 
 // Outside the (play) layout on purpose: must work even when the kid session is invalid.
 export default async function KidExitPage() {
-  await requireRole('admin', 'parent');
+  await requireUser();
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-4 p-4 py-10">
       <BackLink href={PATHS.kid.root} label="Làm bài" />

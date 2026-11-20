@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import type { ActionState } from '@/core/actions';
-import { requireRole } from '@/core/auth/session';
+import { requirePermission } from '@/core/auth/session';
 import { enabledMap } from '@/plugins/kids-learning/question-types/server';
 import { PATHS } from '@/core/routes';
 import type { Json } from '@/core/supabase/database.types';
@@ -56,7 +56,7 @@ function refresh(id?: string) {
 }
 
 export async function saveQuestion(_: ActionState, fd: FormData): Promise<ActionState> {
-  await requireRole('admin');
+  await requirePermission('questions.manage');
   const meta = readMeta(fd);
   if (!meta.success) return { ok: false, error: meta.error.issues[0].message };
   const plugin = getPlugin(meta.data.type);
@@ -113,7 +113,7 @@ export async function saveQuestion(_: ActionState, fd: FormData): Promise<Action
 }
 
 export async function archiveQuestion(_: ActionState, fd: FormData): Promise<ActionState> {
-  await requireRole('admin');
+  await requirePermission('questions.manage');
   const id = optionalId.safeParse(fd.get('id'));
   if (!id.success) return { ok: false, error: 'Có lỗi, thử lại' };
   const sb = await createClient();
@@ -130,7 +130,7 @@ export async function archiveQuestion(_: ActionState, fd: FormData): Promise<Act
 }
 
 export async function duplicateQuestion(_: ActionState, fd: FormData): Promise<ActionState> {
-  await requireRole('admin');
+  await requirePermission('questions.manage');
   const id = optionalId.safeParse(fd.get('id'));
   if (!id.success) return { ok: false, error: 'Có lỗi, thử lại' };
   const sb = await createClient();
@@ -156,7 +156,7 @@ export async function duplicateQuestion(_: ActionState, fd: FormData): Promise<A
 }
 
 export async function setPluginEnabled(_: ActionState, fd: FormData): Promise<ActionState> {
-  await requireRole('admin');
+  await requirePermission('plugins.manage');
   const id = z.string().safeParse(fd.get('id'));
   if (!id.success || !PLUGIN_IDS.includes(id.data))
     return { ok: false, error: 'Dạng câu không tồn tại' };

@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import type { ActionState } from '@/core/actions';
-import { requireRole } from '@/core/auth/session';
+import { requirePermission } from '@/core/auth/session';
 import { PATHS } from '@/core/routes';
 import { createAdminClient } from '@/core/supabase/admin';
 import { createClient } from '@/core/supabase/server';
@@ -21,7 +21,7 @@ function done(familyId?: string): ActionState {
 }
 
 export async function saveFamily(_: ActionState, fd: FormData): Promise<ActionState> {
-  await requireRole('admin');
+  await requirePermission('families.manage');
   const parsed = familyInput.safeParse({ name: fd.get('name') });
   if (!parsed.success) return firstIssue(parsed.error);
   const id = optionalId.parse(fd.get('id') || undefined);
@@ -34,7 +34,7 @@ export async function saveFamily(_: ActionState, fd: FormData): Promise<ActionSt
 }
 
 export async function createParent(_: ActionState, fd: FormData): Promise<ActionState> {
-  await requireRole('admin');
+  await requirePermission('families.manage');
   const parsed = parentInput.safeParse(Object.fromEntries(fd));
   if (!parsed.success) return firstIssue(parsed.error);
   const { email, password, displayName, familyId } = parsed.data;
@@ -52,7 +52,12 @@ export async function createParent(_: ActionState, fd: FormData): Promise<Action
 
   const { error: pErr } = await admin
     .from('profiles')
-    .insert({ id: data.user.id, role: 'parent', family_id: familyId, display_name: displayName });
+    .insert({
+      id: data.user.id,
+      role_id: 'parent',
+      family_id: familyId,
+      display_name: displayName,
+    });
   if (pErr) {
     // Never leave an auth user without a profile.
     await admin.auth.admin.deleteUser(data.user.id);
@@ -63,7 +68,7 @@ export async function createParent(_: ActionState, fd: FormData): Promise<Action
 
 /** Create or edit a kid. A new PIN (required on create) also clears any PIN lockout. */
 export async function saveKid(_: ActionState, fd: FormData): Promise<ActionState> {
-  await requireRole('admin');
+  await requirePermission('families.manage');
   const parsed = kidInput.safeParse(Object.fromEntries(fd));
   if (!parsed.success) return firstIssue(parsed.error);
   const { displayName, avatar, gradeId, familyId, pin } = parsed.data;

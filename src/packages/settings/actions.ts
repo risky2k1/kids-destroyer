@@ -2,12 +2,12 @@
 
 import { revalidatePath } from 'next/cache';
 import type { ActionState } from '@/core/actions';
-import { requireRole } from '@/core/auth/session';
+import { requirePermission } from '@/core/auth/session';
 import { createClient } from '@/core/supabase/server';
 import { settingsInput } from './lib/schemas';
 
 export async function saveSettings(_: ActionState, fd: FormData): Promise<ActionState> {
-  await requireRole('admin');
+  await requirePermission('settings.manage');
   const parsed = settingsInput.safeParse({
     siteName: fd.get('siteName'),
     allowRetry: fd.get('allowRetry') === 'on',

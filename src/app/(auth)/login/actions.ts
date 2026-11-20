@@ -17,7 +17,7 @@ export async function signIn(_prev: ActionState, formData: FormData): Promise<Ac
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
   if (error) return { ok: false, error: WRONG };
   const user = await getCurrentUser();
-  redirect(user ? homeFor(user.role) : PATHS.login);
+  redirect(user ? homeFor(user) : PATHS.login);
 }
 
 export async function signOut() {

@@ -8,6 +8,8 @@ export const NAV_GROUPS: { id: NavGroupId; label: string }[] = [
   { id: 'system', label: 'Hệ thống' },
 ];
 
+export type PermissionDef = { key: string; label: string };
+
 export type NavLink = {
   key: string;
   label: string;
@@ -15,6 +17,7 @@ export type NavLink = {
   icon: ComponentType<{ className?: string }>;
   /** Literal Tailwind class (e.g. 'text-chart-5') so the scanner sees it. */
   iconClass: string;
+  permission?: string;
 };
 export type NavParent = Omit<NavLink, 'href'> & { children: NavLink[] };
 export type NavItem = NavLink | NavParent;
@@ -22,6 +25,7 @@ export type NavItem = NavLink | NavParent;
 export type ModuleManifest = {
   id: string;
   name: string;
+  permissions: PermissionDef[];
   nav: (NavItem & { group: NavGroupId })[];
 };
 
@@ -37,6 +41,29 @@ export function buildNav(modules: ModuleManifest[]): NavSection[] {
 
 export function isParent(item: NavItem): item is NavParent {
   return 'children' in item;
+}
+
+export function visibleNav(
+  sections: NavSection[],
+  allowed: (permission: string) => boolean,
+): NavSection[] {
+  return sections
+    .map((section) => ({
+      ...section,
+      items: section.items
+        .map((item) => {
+          if (isParent(item)) {
+            if (item.permission && !allowed(item.permission)) return null;
+            const children = item.children.filter((c) => !c.permission || allowed(c.permission));
+            if (children.length === 0) return null;
+            return { ...item, children };
+          }
+          if (item.permission && !allowed(item.permission)) return null;
+          return item;
+        })
+        .filter((item): item is NavItem => item !== null),
+    }))
+    .filter((section) => section.items.length > 0);
 }
 
 /** Key of the link whose href equals pathname or is its prefix at a segment boundary. */

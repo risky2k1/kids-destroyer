@@ -5,6 +5,7 @@ import { PATHS } from '@/core/routes';
 export const settingsManifest: ModuleManifest = {
   id: 'settings',
   name: 'Cài đặt',
+  permissions: [{ key: 'settings.manage', label: 'Cài đặt' }],
   nav: [
     {
       group: 'system',
@@ -13,6 +14,7 @@ export const settingsManifest: ModuleManifest = {
       label: 'Cài đặt',
       icon: SettingsIcon,
       iconClass: 'text-chart-4',
+      permission: 'settings.manage',
     },
   ],
 };

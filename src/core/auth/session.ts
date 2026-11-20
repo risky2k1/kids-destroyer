@@ -1,20 +1,19 @@
 import 'server-only';
 import { redirect } from 'next/navigation';
 import { cache } from 'react';
-import { canEnter, type Area, type Role } from '@/core/acl/access';
+import { can, canEnter, type Area, type Principal } from '@/core/acl/access';
 import { PATHS } from '@/core/routes';
 import { createClient } from '@/core/supabase/server';
 
-export type { Role };
-export type CurrentUser = {
+export type CurrentUser = Principal & {
   id: string;
   email: string;
-  role: Role;
-  familyId: string | null;
+  roleName: string;
   displayName: string;
 };
 
-export const homeFor = (role: Role) => (role === 'admin' ? PATHS.admin.root : PATHS.parent.root);
+export const homeFor = (user: Principal) =>
+  canEnter('admin', user) ? PATHS.admin.root : PATHS.parent.root;
 
 /** Verified against the Auth server (getUser), memoized per request. */
 export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
@@ -25,30 +24,38 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
   if (!user) return null;
   const { data: profile } = await supabase
     .from('profiles')
-    .select('role, family_id, display_name')
+    .select('role_id, family_id, display_name, roles(name, role_permissions(permission))')
     .eq('id', user.id)
     .single();
   if (!profile) return null;
   return {
     id: user.id,
     email: user.email ?? '',
-    role: profile.role,
+    roleId: profile.role_id,
+    roleName: profile.roles?.name ?? profile.role_id,
+    permissions: profile.roles?.role_permissions.map((r) => r.permission) ?? [],
     familyId: profile.family_id,
     displayName: profile.display_name,
   };
 });
 
+export async function requireUser(): Promise<CurrentUser> {
+  const user = await getCurrentUser();
+  if (!user) redirect(PATHS.login);
+  return user;
+}
+
 /** Guard for layouts and server actions. Wrong area → user's own home. */
 export async function requireArea(area: Area): Promise<CurrentUser> {
   const user = await getCurrentUser();
   if (!user) redirect(PATHS.login);
-  if (!canEnter(area, user)) redirect(homeFor(user.role));
+  if (!canEnter(area, user)) redirect(homeFor(user));
   return user;
 }
 
-export async function requireRole(...roles: Role[]): Promise<CurrentUser> {
+export async function requirePermission(permission: string): Promise<CurrentUser> {
   const user = await getCurrentUser();
   if (!user) redirect(PATHS.login);
-  if (!roles.includes(user.role)) redirect(homeFor(user.role));
+  if (!can(user, permission)) redirect(homeFor(user));
   return user;
 }
