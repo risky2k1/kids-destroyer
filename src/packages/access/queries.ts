@@ -1,4 +1,5 @@
 import 'server-only';
+import { createAdminClient } from '@/core/supabase/admin';
 import { createClient } from '@/core/supabase/server';
 
 export type RoleSummary = {
@@ -19,6 +20,7 @@ export type RoleDetail = {
 export type AccountSummary = {
   id: string;
   displayName: string;
+  email: string | null;
   roleId: string;
   familyName: string | null;
 };
@@ -87,10 +89,16 @@ export async function listAccounts(): Promise<{
   roles: RoleSummary[];
 }> {
   const sb = await createClient();
-  const [profilesRes, roles] = await Promise.all([
+  const admin = createAdminClient();
+
+  // shortcut: first 1000 auth users only; paginate when the household outgrows it.
+  const [profilesRes, roles, authRes] = await Promise.all([
     sb.from('profiles').select('id, display_name, role_id, families(name)').order('display_name'),
     listRoles(),
+    admin.auth.admin.listUsers({ perPage: 1000 }),
   ]);
+
+  const emailMap = new Map((authRes.data?.users ?? []).map((u) => [u.id, u.email ?? null]));
 
   type ProfileRow = {
     id: string;
@@ -102,6 +110,7 @@ export async function listAccounts(): Promise<{
   const accounts = ((profilesRes.data ?? []) as unknown as ProfileRow[]).map((row) => ({
     id: row.id,
     displayName: row.display_name,
+    email: emailMap.get(row.id) ?? null,
     roleId: row.role_id,
     familyName: oneFamilyName(row.families),
   }));

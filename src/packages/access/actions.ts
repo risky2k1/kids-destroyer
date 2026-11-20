@@ -5,10 +5,18 @@ import { z } from 'zod';
 import type { ActionState } from '@/core/actions';
 import { requirePermission } from '@/core/auth/session';
 import { PATHS } from '@/core/routes';
+import { createAdminClient } from '@/core/supabase/admin';
 import { createClient } from '@/core/supabase/server';
+import { canManage } from './lib/canManage';
 import { permissionDiff } from './lib/diff';
 import { accessErrorMessage } from './lib/errors';
-import { permissionKeys, roleInput, roleNameInput } from './lib/schemas';
+import {
+  accountInput,
+  passwordInput,
+  permissionKeys,
+  roleInput,
+  roleNameInput,
+} from './lib/schemas';
 
 const accountRoleInput = z.object({
   userId: z.string().min(1, 'Thiếu mã tài khoản'),
@@ -16,6 +24,34 @@ const accountRoleInput = z.object({
 });
 
 const roleIdInput = z.string().min(1, 'Thiếu mã vai trò');
+const userIdInput = z.string().min(1, 'Thiếu mã tài khoản');
+
+async function loadTarget(
+  userId: string,
+): Promise<{ roleId: string; permissions: string[] } | null> {
+  const sb = await createClient();
+  const { data } = await sb
+    .from('profiles')
+    .select('id, role_id, roles(role_permissions(permission))')
+    .eq('id', userId)
+    .maybeSingle();
+
+  if (!data) return null;
+
+  type TargetRoleRel =
+    | { role_permissions: { permission: string }[] | null }
+    | { role_permissions: { permission: string }[] | null }[]
+    | null;
+
+  const roles = data.roles as unknown as TargetRoleRel;
+  const role = Array.isArray(roles) ? roles[0] : roles;
+  const permissions = (role?.role_permissions ?? []).map((rp) => rp.permission);
+
+  return {
+    roleId: data.role_id,
+    permissions,
+  };
+}
 
 export async function createRole(_: ActionState, fd: FormData): Promise<ActionState> {
   await requirePermission('access.manage');
@@ -131,6 +167,116 @@ export async function setAccountRole(_: ActionState, fd: FormData): Promise<Acti
     .select('id');
   if (error) return { ok: false, error: accessErrorMessage(error) };
   if (!data || data.length === 0) return { ok: false, error: 'Không tìm thấy tài khoản' };
+
+  revalidatePath(PATHS.admin.users);
+  return { ok: true };
+}
+
+export async function createAccount(_: ActionState, fd: FormData): Promise<ActionState> {
+  await requirePermission('access.manage');
+  const parsed = accountInput.safeParse({
+    email: fd.get('email'),
+    displayName: fd.get('displayName'),
+    password: fd.get('password'),
+    roleId: fd.get('roleId'),
+  });
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
+
+  if (parsed.data.roleId === 'parent') {
+    return { ok: false, error: 'Tài khoản phụ huynh tạo trong mục Gia đình' };
+  }
+
+  const admin = createAdminClient();
+  const { data: authData, error: authError } = await admin.auth.admin.createUser({
+    email: parsed.data.email,
+    password: parsed.data.password,
+    email_confirm: true,
+  });
+
+  if (authError || !authData.user) {
+    if (authError?.message?.toLowerCase().includes('already')) {
+      return { ok: false, error: 'Email đã được dùng' };
+    }
+    return { ok: false, error: 'Không tạo được tài khoản' };
+  }
+
+  const sb = await createClient();
+  const { error: profileError } = await sb.from('profiles').insert({
+    id: authData.user.id,
+    role_id: parsed.data.roleId,
+    display_name: parsed.data.displayName,
+  });
+
+  if (profileError) {
+    await admin.auth.admin.deleteUser(authData.user.id);
+    return { ok: false, error: accessErrorMessage(profileError) };
+  }
+
+  revalidatePath(PATHS.admin.users);
+  return { ok: true };
+}
+
+export async function resetPassword(_: ActionState, fd: FormData): Promise<ActionState> {
+  const actor = await requirePermission('access.manage');
+  const userIdParsed = userIdInput.safeParse(fd.get('userId'));
+  if (!userIdParsed.success) return { ok: false, error: userIdParsed.error.issues[0].message };
+
+  const passwordParsed = passwordInput.safeParse(fd.get('password'));
+  if (!passwordParsed.success) return { ok: false, error: passwordParsed.error.issues[0].message };
+
+  const target = await loadTarget(userIdParsed.data);
+  if (!target) return { ok: false, error: 'Không tìm thấy tài khoản' };
+
+  if (!canManage(actor, target)) {
+    return { ok: false, error: 'Bạn không có quyền với tài khoản này' };
+  }
+
+  const admin = createAdminClient();
+  const { error } = await admin.auth.admin.updateUserById(userIdParsed.data, {
+    password: passwordParsed.data,
+  });
+  if (error) return { ok: false, error: 'Không đặt lại được mật khẩu' };
+
+  return { ok: true };
+}
+
+export async function deleteAccount(_: ActionState, fd: FormData): Promise<ActionState> {
+  const actor = await requirePermission('access.manage');
+  const userIdParsed = userIdInput.safeParse(fd.get('userId') ?? fd.get('id'));
+  if (!userIdParsed.success) return { ok: false, error: userIdParsed.error.issues[0].message };
+  const userId = userIdParsed.data;
+
+  if (userId === actor.id) {
+    return { ok: false, error: 'Không thể xoá chính mình' };
+  }
+
+  const target = await loadTarget(userId);
+  if (!target) return { ok: false, error: 'Không tìm thấy tài khoản' };
+
+  if (!canManage(actor, target)) {
+    return { ok: false, error: 'Bạn không có quyền với tài khoản này' };
+  }
+
+  const sb = await createClient();
+  const { data, error } = await sb.from('profiles').delete().eq('id', userId).select('id');
+  if (error) {
+    if (error.code === '23503') {
+      return {
+        ok: false,
+        error:
+          'Tài khoản đã tạo câu hỏi, đề hoặc giao bài nên không xoá được. Hãy đổi vai trò thay vì xoá.',
+      };
+    }
+    return { ok: false, error: accessErrorMessage(error) };
+  }
+  if (!data || data.length === 0) {
+    return { ok: false, error: 'Không xoá được tài khoản' };
+  }
+
+  // The profile is gone so the account can no longer sign in to the app.
+  await createAdminClient()
+    .auth.admin.deleteUser(userId)
+    .catch(() => {});
 
   revalidatePath(PATHS.admin.users);
   return { ok: true };

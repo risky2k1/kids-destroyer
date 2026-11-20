@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { permissionKeys, roleInput, roleNameInput } from './schemas';
+import { accountInput, passwordInput, permissionKeys, roleInput, roleNameInput } from './schemas';
 
 describe('roleInput', () => {
   it('accepts valid role id and name', () => {
@@ -44,5 +44,107 @@ describe('permissionKeys', () => {
   it('enforces maximum 200 items', () => {
     const excessive = Array.from({ length: 201 }, (_, i) => `mod.perm-${i}`);
     expect(permissionKeys.safeParse(excessive).success).toBe(false);
+  });
+});
+
+describe('passwordInput', () => {
+  it('accepts valid passwords between 8 and 72 characters', () => {
+    expect(passwordInput.safeParse('12345678').success).toBe(true);
+    expect(passwordInput.safeParse('a'.repeat(72)).success).toBe(true);
+  });
+
+  it('rejects passwords shorter than 8 characters', () => {
+    const res = passwordInput.safeParse('1234567');
+    expect(res.success).toBe(false);
+    if (!res.success) {
+      expect(res.error.issues[0].message).toBe('Mật khẩu tối thiểu 8 ký tự');
+    }
+  });
+
+  it('rejects passwords longer than 72 characters', () => {
+    expect(passwordInput.safeParse('a'.repeat(73)).success).toBe(false);
+  });
+});
+
+describe('accountInput', () => {
+  it('accepts valid account input and normalizes email', () => {
+    const res = accountInput.safeParse({
+      email: '  USER@example.COM  ',
+      displayName: '  Nguyễn Văn A  ',
+      password: 'password123',
+      roleId: 'teacher',
+    });
+    expect(res.success).toBe(true);
+    if (res.success) {
+      expect(res.data.email).toBe('user@example.com');
+      expect(res.data.displayName).toBe('Nguyễn Văn A');
+      expect(res.data.password).toBe('password123');
+      expect(res.data.roleId).toBe('teacher');
+    }
+  });
+
+  it('rejects invalid email', () => {
+    const res = accountInput.safeParse({
+      email: 'not-an-email',
+      displayName: 'Nguyễn Văn A',
+      password: 'password123',
+      roleId: 'teacher',
+    });
+    expect(res.success).toBe(false);
+    if (!res.success) {
+      expect(res.error.issues[0].message).toBe('Email không hợp lệ');
+    }
+  });
+
+  it('rejects empty or whitespace-only displayName', () => {
+    const res = accountInput.safeParse({
+      email: 'user@example.com',
+      displayName: '   ',
+      password: 'password123',
+      roleId: 'teacher',
+    });
+    expect(res.success).toBe(false);
+    if (!res.success) {
+      expect(res.error.issues[0].message).toBe('Nhập tên');
+    }
+  });
+
+  it('rejects displayName longer than 50 characters', () => {
+    const res = accountInput.safeParse({
+      email: 'user@example.com',
+      displayName: 'a'.repeat(51),
+      password: 'password123',
+      roleId: 'teacher',
+    });
+    expect(res.success).toBe(false);
+    if (!res.success) {
+      expect(res.error.issues[0].message).toBe('Tên tối đa 50 ký tự');
+    }
+  });
+
+  it('rejects invalid password', () => {
+    const res = accountInput.safeParse({
+      email: 'user@example.com',
+      displayName: 'Nguyễn Văn A',
+      password: 'short',
+      roleId: 'teacher',
+    });
+    expect(res.success).toBe(false);
+    if (!res.success) {
+      expect(res.error.issues[0].message).toBe('Mật khẩu tối thiểu 8 ký tự');
+    }
+  });
+
+  it('rejects empty roleId', () => {
+    const res = accountInput.safeParse({
+      email: 'user@example.com',
+      displayName: 'Nguyễn Văn A',
+      password: 'password123',
+      roleId: '',
+    });
+    expect(res.success).toBe(false);
+    if (!res.success) {
+      expect(res.error.issues[0].message).toBe('Chọn vai trò');
+    }
   });
 });
