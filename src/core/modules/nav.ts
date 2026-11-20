@@ -1,10 +1,11 @@
 import type { ComponentType } from 'react';
 
-export type NavGroupId = 'content' | 'users' | 'system';
+export type NavGroupId = 'content' | 'users' | 'apps' | 'system';
 
 export const NAV_GROUPS: { id: NavGroupId; label: string }[] = [
   { id: 'content', label: 'Nội dung' },
   { id: 'users', label: 'Người dùng' },
+  { id: 'apps', label: 'Ứng dụng' },
   { id: 'system', label: 'Hệ thống' },
 ];
 

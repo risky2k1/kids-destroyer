@@ -12,6 +12,9 @@ export * from './lib/draft';
 export * from './lib/patch';
 export * from './lib/patchGear';
 export * from './lib/t';
+export * from './lib/legacy.types';
+export * from './lib/legacyState';
+export * from './lib/studioLegacy';
 
 export * from './ui/field';
 export * from './ui/quality-picker';
