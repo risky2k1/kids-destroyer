@@ -31,7 +31,7 @@ import {
   SidebarMenuSubItem,
   SidebarTrigger,
 } from '@/themes/neobrutal/ui/sidebar';
-import { activeNav, ADMIN_NAV } from './adminNav';
+import { activeNav, adminNav } from './adminNav';
 import { BrandMark } from './BrandMark';
 
 const itemClass =
@@ -53,14 +53,16 @@ export function AdminSidebar({
   logoUrl,
   principal,
   roleName,
+  disabledIds = [],
 }: {
   userName: string;
   siteName: string;
   logoUrl?: string | null;
   principal: Principal;
   roleName: string;
+  disabledIds?: readonly string[];
 }) {
-  const nav = visibleNav(ADMIN_NAV, (p) => can(principal, p));
+  const nav = visibleNav(adminNav(disabledIds), (p) => can(principal, p));
   const pathname = usePathname();
   const active = activeNav(pathname);
   const activeParent = parentOf(active, nav);

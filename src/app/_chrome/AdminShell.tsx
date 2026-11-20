@@ -11,6 +11,7 @@ export function AdminShell({
   logoUrl,
   principal,
   roleName,
+  disabledIds = [],
   children,
 }: {
   userName: string;
@@ -18,6 +19,7 @@ export function AdminShell({
   logoUrl?: string | null;
   principal: Principal;
   roleName: string;
+  disabledIds?: readonly string[];
   children: ReactNode;
 }) {
   return (
@@ -31,6 +33,7 @@ export function AdminShell({
         logoUrl={logoUrl}
         principal={principal}
         roleName={roleName}
+        disabledIds={disabledIds}
       />
       <SidebarInset className="min-w-0 overflow-hidden">
         <div className="min-h-0 flex-1 overflow-auto">{children}</div>

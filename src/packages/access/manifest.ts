@@ -5,6 +5,8 @@ import { PATHS } from '@/core/routes';
 export const accessManifest: ModuleManifest = {
   id: 'access',
   name: 'Phân quyền',
+  description: 'Vai trò, quyền và tài khoản',
+  version: '1.0.0',
   permissions: [
     { key: 'admin.access', label: 'Vào khu quản trị' },
     { key: 'access.manage', label: 'Quản lý vai trò và gán vai trò' },

@@ -5,6 +5,8 @@ import { SXS_PATHS } from './studio/lib/paths';
 export const swordXStaffManifest: ModuleManifest = {
   id: 'sword-x-staff',
   name: 'Sword x Staff',
+  description: 'Quản lý nhân vật Sword x Staff và sinh prompt',
+  version: '1.0.0',
   permissions: [{ key: 'sxs.use', label: 'Dùng Sword x Staff studio' }],
   nav: [
     {

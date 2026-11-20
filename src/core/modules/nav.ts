@@ -26,6 +26,8 @@ export type NavItem = NavLink | NavParent;
 export type ModuleManifest = {
   id: string;
   name: string;
+  description: string;
+  version: string;
   permissions: PermissionDef[];
   nav: (NavItem & { group: NavGroupId })[];
 };

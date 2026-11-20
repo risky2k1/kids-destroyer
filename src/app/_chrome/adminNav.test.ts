@@ -14,8 +14,21 @@ describe('activeNav', () => {
     expect(activeNav(PATHS.admin.assignments)).toBe('assignments');
     expect(activeNav(PATHS.admin.assignment('x'))).toBe('assignments');
     expect(activeNav(PATHS.admin.plugins)).toBe('plugins');
+    expect(activeNav(PATHS.admin.modules)).toBe('modules');
     expect(activeNav(PATHS.admin.settings)).toBe('settings');
     expect(activeNav(PATHS.admin.catalog)).toBeNull();
     expect(activeNav('/parent')).toBeNull();
+  });
+
+  it('filters out disabled modules in adminNav', async () => {
+    const { adminNav } = await import('./adminNav');
+    const full = adminNav([]);
+    const withoutKids = adminNav(['kids-learning']);
+    const fullKeys = full.flatMap((s) => s.items.map((i) => i.key));
+    const withoutKidsKeys = withoutKids.flatMap((s) => s.items.map((i) => i.key));
+
+    expect(fullKeys).toContain('catalog');
+    expect(withoutKidsKeys).not.toContain('catalog');
+    expect(withoutKidsKeys).toContain('modules');
   });
 });

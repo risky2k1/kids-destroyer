@@ -17,6 +17,7 @@ export const PATHS = {
     assignments: '/admin/assignments',
     assignment: (id: string) => `/admin/assignments/${id}`,
     plugins: '/admin/plugins',
+    modules: '/admin/modules',
     settings: '/admin/settings',
     roles: '/admin/access/roles',
     role: (id: string) => `/admin/access/roles/${id}`,

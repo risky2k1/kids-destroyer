@@ -6,6 +6,10 @@ import { PLUGINS } from '@/plugins/registry';
 export const MODULES = [...PLUGINS, ...PACKAGES];
 export const ADMIN_NAV = buildNav(MODULES);
 
+export function adminNav(disabledIds: readonly string[]) {
+  return buildNav(MODULES.filter((m) => !disabledIds.includes(m.id)));
+}
+
 /** 'home' for /admin; otherwise the matching nav key. Paths outside /admin never match. */
 export function activeNav(pathname: string): string | null {
   if (pathname === PATHS.admin.root) return 'home';

@@ -1,11 +1,13 @@
 import { canEnter } from '@/core/acl/access';
 import { requireArea } from '@/core/auth/session';
+import { requireModule } from '@/core/modules/server';
 import { PATHS } from '@/core/routes';
 import { AppHeader } from '@/app/_chrome/AppHeader';
 import { PageBack } from '@/app/_chrome/PageBack';
 import { getSettings } from '@/packages/settings';
 
 export default async function ParentLayout({ children }: { children: React.ReactNode }) {
+  await requireModule('kids-learning');
   const user = await requireArea('parent');
   const { siteName, logoUrl } = await getSettings();
   const canAdmin = canEnter('admin', user);

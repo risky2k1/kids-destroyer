@@ -9,6 +9,8 @@ describe('nav', () => {
     const moduleWithReversedGroups: ModuleManifest = {
       id: 'test-module',
       name: 'Test Module',
+      description: 'Test description',
+      version: '1.0.0',
       permissions: [],
       nav: [
         {
@@ -40,6 +42,8 @@ describe('nav', () => {
     const moduleWithOnlyUsers: ModuleManifest = {
       id: 'test-users',
       name: 'Test Users',
+      description: 'Test description',
+      version: '1.0.0',
       permissions: [],
       nav: [
         {
@@ -61,6 +65,8 @@ describe('nav', () => {
     const testManifest: ModuleManifest = {
       id: 'test-manifest',
       name: 'Test Manifest',
+      description: 'Test description',
+      version: '1.0.0',
       permissions: [],
       nav: [
         {

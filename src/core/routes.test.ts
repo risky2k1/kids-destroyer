@@ -21,6 +21,7 @@ describe('PATHS', () => {
     expect(PATHS.admin.newQuiz).toBe('/admin/quizzes/new');
     expect(PATHS.admin.quiz('abc')).toBe('/admin/quizzes/abc');
     expect(PATHS.admin.plugins).toBe('/admin/plugins');
+    expect(PATHS.admin.modules).toBe('/admin/modules');
     expect(PATHS.admin.settings).toBe('/admin/settings');
     expect(PATHS.admin.roles).toBe('/admin/access/roles');
     expect(PATHS.admin.role('abc')).toBe('/admin/access/roles/abc');

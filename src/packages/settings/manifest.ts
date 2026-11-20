@@ -5,6 +5,8 @@ import { PATHS } from '@/core/routes';
 export const settingsManifest: ModuleManifest = {
   id: 'settings',
   name: 'Cài đặt',
+  description: 'Tên site, logo, favicon và tuỳ chọn chung',
+  version: '1.0.0',
   permissions: [{ key: 'settings.manage', label: 'Cài đặt' }],
   nav: [
     {

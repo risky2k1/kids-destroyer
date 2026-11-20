@@ -16,6 +16,8 @@ import { PATHS } from '@/core/routes';
 export const kidsLearningManifest: ModuleManifest = {
   id: 'kids-learning',
   name: 'Học tập cho trẻ',
+  description: 'Bài tập, đề, giao bài và chấm cho các bé',
+  version: '1.0.0',
   permissions: [
     { key: 'catalog.manage', label: 'Danh mục' },
     { key: 'questions.manage', label: 'Câu hỏi' },
