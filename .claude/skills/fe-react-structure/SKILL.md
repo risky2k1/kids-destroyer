@@ -21,20 +21,26 @@ src/
 ├─ core/                 # kernel, KHÔNG biết domain hay plugin cụ thể
 │  ├─ supabase/          # server.ts, browser.ts, admin.ts (server-only), database.types.ts
 │  ├─ auth/  acl/        # phiên, role, guard, phiên trẻ
-│  ├─ plugins/           # kiểu QuestionTypePlugin, đọc trạng thái bật/tắt
+│  ├─ modules/           # ModuleManifest, NAV_GROUPS, buildNav, activeKey
 │  ├─ routes.ts          # PATHS: nguồn duy nhất cho mọi URL
 │  └─ actions.ts         # ActionState dùng chung cho server action
-├─ packages/             # module domain luôn bật (tương đương "features")
-│  └─ <module>/
+├─ packages/             # hạ tầng DÙNG CHUNG cho mọi site (settings, sau này access, branding...)
+│  ├─ registry.ts        # PACKAGES: ModuleManifest[]
+│  └─ <module>/          # cấu trúc module chuẩn, áp dụng cả cho module trong plugin
+│     ├─ manifest.ts     # khai báo nav (sau này: quyền, setting). Chỉ import PATHS + icon
 │     ├─ index.ts        # public API: thứ duy nhất tầng khác được import
 │     ├─ <Module>View.tsx    # màn hình gốc (server component)
 │     ├─ actions.ts      # server action ('use server')
 │     ├─ queries.ts      # đọc dữ liệu phía server
 │     ├─ components/  hooks/
 │     └─ lib/            # hàm thuần: schema zod, mapping, tính toán (+ test)
-├─ plugins/              # bật/tắt được (dạng câu hỏi, ai-assist)
-│  ├─ registry.ts        # danh sách plugin tĩnh: file DUY NHẤT tầng khác được import
-│  └─ <plugin>/          # manifest + Editor/Player/Review + grade.ts (+ test)
+├─ plugins/              # plugin TÍNH NĂNG (nghiệp vụ của một sản phẩm)
+│  ├─ registry.ts        # PLUGINS: ModuleManifest[] (thứ tự = thứ tự sidebar)
+│  └─ kids-learning/     # plugin đầu tiên: app học tập cho trẻ
+│     ├─ manifest.ts
+│     ├─ assignment/ catalog/ dashboard/ family/ question-bank/ quiz/   # module chuẩn
+│     └─ question-types/ # điểm mở rộng của question-bank: index.ts (types + registry),
+│                        # server.ts (enabledMap), <type>/ = Editor/Player/Review + grade.ts
 ├─ themes/neobrutal/     # ui/ (shadcn neobrutalism), lib/utils.ts. Không chứa nghiệp vụ.
 └─ test/                 # helper test dùng chung (db.ts, ...)
 supabase/                # config.toml, migrations/*.sql, seed.sql
@@ -46,16 +52,17 @@ Không đặt ở gốc repo: tài liệu PoC, demo, dữ liệu cá nhân. `/sp
 ## 2. Quy tắc phụ thuộc (ESLint ép buộc)
 
 ```
-app ──► plugins/registry, packages/*(index), core, themes
-plugins/<p> ──► packages/*(index), core, themes
-packages/<a> ──► packages/<b>(index), core, themes, plugins/registry (ngoại lệ duy nhất đi ngược)
+app ──► core, themes, packages/*(index), packages/registry, plugins/registry, plugins/<p>/<module>(index)
+plugins/<p>/<module> ──► core, themes, packages/*(index), plugins/<p>/<module khác>(index)
+packages/<a> ──► core, themes, packages/<b>(index); KHÔNG import plugins
 core ──► themes (chỉ khi thật cần); KHÔNG import packages/plugins/app
 themes ──► chỉ thư viện ngoài
 ```
 
-- Không import sâu vào file nội bộ (`@/packages/x/lib/y`). Nếu cần thì export qua `index.ts`, hoặc chuyển xuống `core/` nếu đó là hạ tầng.
+- Không import sâu vào file nội bộ (`@/packages/x/lib/y`, `@/plugins/p/x/lib/y`). Ngoại lệ duy nhất: entry server-only `@/plugins/<p>/<module>/server`. Nếu cần thì export qua `index.ts`, hoặc chuyển xuống `core/` nếu đó là hạ tầng.
 - Hai module cùng cần một thứ hạ tầng → đưa thứ đó vào `core/`.
-- Plugin không import plugin khác.
+- Plugin không import plugin khác. Package không import plugin.
+- Tính năng dùng lại được cho site khác → `packages/`. Nghiệp vụ riêng của một sản phẩm → module trong plugin. Không thêm kiến thức domain vào `core/`.
 - Không có vòng phụ thuộc.
 - Lưu ý `index.ts`: không gộp chung code `'use server'`, `server-only` và component client vào một barrel nếu làm hỏng bundle client. Khi cần, tách thêm entry `@/packages/x/client`.
 
@@ -82,9 +89,10 @@ Luôn dùng `@/` (→ `src/`). Import tương đối chỉ dùng bên trong cùn
 
 ## 6. Plugin
 
-- Mỗi dạng câu hỏi là một plugin tuân theo `QuestionTypePlugin` trong `@/core/plugins`: gồm `contentSchema`, `answerSchema`, `responseSchema`, `Editor`, `Player`, `Review`, `grade()`.
+- Plugin tính năng = thư mục trong `src/plugins/` có `manifest.ts`, đăng ký trong `src/plugins/registry.ts`. Sidebar admin được sinh từ `[...PLUGINS, ...PACKAGES]` (`src/app/_chrome/adminNav.ts`), không hard-code menu.
+- Dạng câu hỏi (trong `kids-learning/question-types/`) tuân theo `QuestionTypePlugin` của `@/plugins/kids-learning/question-types`: gồm `contentSchema`, `answerSchema`, `responseSchema`, `Editor`, `Player`, `Review`, `grade()`.
 - `grade()` là hàm thuần, chỉ chạy ở server, bắt buộc có test.
-- Đăng ký plugin trong `src/plugins/registry.ts`. Admin bật/tắt qua bảng `plugins`, plugin bị tắt vẫn render được dữ liệu cũ.
+- Đăng ký dạng câu hỏi trong `question-types/registry.ts`. Admin bật/tắt qua bảng `plugins`, plugin bị tắt vẫn render được dữ liệu cũ.
 
 ## 7. Routing, state, giao diện
 
@@ -121,7 +129,7 @@ Luôn dùng `@/` (→ `src/`). Import tương đối chỉ dùng bên trong cùn
 
 ## 11. Checklist khi thêm module mới
 
-1. Tạo `src/packages/<module>/` có `index.ts` và `<Module>View.tsx`.
+1. Chọn chỗ: dùng chung → `src/packages/<module>/`; nghiệp vụ → `src/plugins/<plugin>/<module>/`. Tạo `index.ts` và `<Module>View.tsx`. Có màn admin → thêm item nav vào `manifest.ts` của package/plugin.
 2. Nếu cần bảng mới: viết migration có RLS, test trong `*.db.test.ts`, chạy `pnpm db:types`.
 3. Thêm path vào `PATHS`, tạo route mỏng trong `src/app/...` dưới đúng layout có guard.
 4. Server action: guard → zod → DB → `revalidatePath`.
