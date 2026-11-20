@@ -8,6 +8,8 @@ describe('settings', () => {
       fromRows([
         { key: 'allow_retry', value: 'no' },
         { key: 'site_name', value: '  ' },
+        { key: 'logo_url', value: 'javascript:alert(1)' },
+        { key: 'favicon_url', value: 12345 },
       ]),
     ).toEqual(DEFAULT_SETTINGS);
   });
@@ -17,8 +19,15 @@ describe('settings', () => {
       fromRows([
         { key: 'site_name', value: 'Nhà mình' },
         { key: 'allow_retry', value: false },
+        { key: 'logo_url', value: 'https://example.com/logo.png' },
+        { key: 'favicon_url', value: 'http://example.com/favicon.ico' },
       ]),
-    ).toEqual({ siteName: 'Nhà mình', allowRetry: false });
+    ).toEqual({
+      siteName: 'Nhà mình',
+      allowRetry: false,
+      logoUrl: 'https://example.com/logo.png',
+      faviconUrl: 'http://example.com/favicon.ico',
+    });
   });
 
   it('rejects an empty site name', () => {

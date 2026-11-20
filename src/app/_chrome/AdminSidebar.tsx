@@ -32,8 +32,7 @@ import {
   SidebarTrigger,
 } from '@/themes/neobrutal/ui/sidebar';
 import { activeNav, ADMIN_NAV } from './adminNav';
-
-const hardShadow = 'shadow-[2px_2px_0_0_var(--color-border)]';
+import { BrandMark } from './BrandMark';
 
 const itemClass =
   'h-7 border-0 font-base text-sm text-foreground outline-0 shadow-none hover:bg-foreground/5 hover:text-foreground hover:outline-transparent';
@@ -51,11 +50,13 @@ function parentOf(key: string | null, nav: NavSection[]): string | null {
 export function AdminSidebar({
   userName,
   siteName,
+  logoUrl,
   principal,
   roleName,
 }: {
   userName: string;
   siteName: string;
+  logoUrl?: string | null;
   principal: Principal;
   roleName: string;
 }) {
@@ -76,11 +77,7 @@ export function AdminSidebar({
   return (
     <Sidebar className="border-r-border/10! group-data-[side=left]:border-r! **:data-[slot=sidebar-inner]:bg-background">
       <SidebarHeader className="h-10 flex-row items-center gap-1 border-b! border-b-border/10! p-2">
-        <span
-          className={`flex size-5 shrink-0 items-center justify-center rounded-sm border-2 border-border bg-main text-xs font-bold ${hardShadow}`}
-        >
-          K
-        </span>
+        <BrandMark logoUrl={logoUrl} siteName={siteName} size={5} />
         <span className="min-w-0 flex-1 truncate text-sm font-heading">{siteName}</span>
         <ChevronDown className="size-3.5 shrink-0 text-foreground/60" />
         <SidebarTrigger className="size-7 border-0 bg-transparent text-foreground/60 shadow-none hover:bg-foreground/5 hover:text-foreground" />

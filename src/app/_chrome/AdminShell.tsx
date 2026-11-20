@@ -8,12 +8,14 @@ const hardShadow = 'shadow-[2px_2px_0_0_var(--color-border)]';
 export function AdminShell({
   userName,
   siteName,
+  logoUrl,
   principal,
   roleName,
   children,
 }: {
   userName: string;
   siteName: string;
+  logoUrl?: string | null;
   principal: Principal;
   roleName: string;
   children: ReactNode;
@@ -26,6 +28,7 @@ export function AdminShell({
       <AdminSidebar
         userName={userName}
         siteName={siteName}
+        logoUrl={logoUrl}
         principal={principal}
         roleName={roleName}
       />
