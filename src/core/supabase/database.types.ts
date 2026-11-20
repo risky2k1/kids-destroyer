@@ -353,6 +353,40 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"sxs_characters": {
+                  Row: {
+                    "created_at": string,"data": NonNullable<Json>,"id": string,"last_opened_at": string,"name": string,"server_id": string | null,"updated_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"data"?: NonNullable<Json>,"id"?: string,"last_opened_at"?: string,"name": string,"server_id"?: string | null,"updated_at"?: string,"user_id"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"data"?: NonNullable<Json>,"id"?: string,"last_opened_at"?: string,"name"?: string,"server_id"?: string | null,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "sxs_characters_server_id_fkey"
+      columns: ["server_id"]
+isOneToOne: false
+      referencedRelation: "sxs_servers"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"sxs_servers": {
+                  Row: {
+                    "created_at": string,"id": string,"name": string,"opened_on": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"name": string,"opened_on": string,"user_id"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"name"?: string,"opened_on"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"topics": {
                   Row: {
                     "grade_id": string,"id": string,"name": string,"subject_id": string
