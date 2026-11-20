@@ -136,9 +136,8 @@ export function OverviewView({ studio }: { studio: Studio }) {
           <h3 className="font-heading text-lg">{t('overview.resources')}</h3>
         </div>
         <Field label={t('overview.dawnium')}>
+          {/* Text, not number: the game shows amounts like "8.51K". */}
           <Input
-            type="number"
-            min={0}
             defaultValue={character.morning_star}
             onBlur={(event) => save({ morningStar: event.target.value })}
           />
