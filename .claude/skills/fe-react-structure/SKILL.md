@@ -73,7 +73,8 @@ Luôn dùng `@/` (→ `src/`). Import tương đối chỉ dùng bên trong cùn
 ## 4. Dữ liệu: đọc, ghi, bảo mật
 
 - **Đọc:** trong server component, dùng `createClient()` từ `@/core/supabase/server`, đặt trong `queries.ts` của module. Chỉ select những cột cần dùng.
-- **Ghi:** dùng server action trong `actions.ts`. Mỗi action **bắt đầu bằng guard** (`requireRole(...)` hoặc `getCurrentKid()`), validate input bằng zod, trả về `ActionState` (`{ ok, error? }`), rồi `revalidatePath(PATHS...)`.
+- **Ghi:** dùng server action trong `actions.ts`. Mỗi action **bắt đầu bằng guard** (`requirePermission('<khu>.<hành động>')`, `requireUser()` hoặc `getCurrentKid()`), validate input bằng zod, trả về `ActionState` (`{ ok, error? }`), rồi `revalidatePath(PATHS...)`.
+- **Quyền (RBAC):** vai trò là tập quyền, lưu ở `roles` và `role_permissions`. Mỗi module khai báo quyền trong `manifest.ts` (`permissions: [{ key, label }]`) và gắn `permission` cho từng link nav. Trong DB, policy dùng `has_permission('<khoá>')`. Thêm quyền mới thì phải: khai báo trong manifest, guard trong action và `layout.tsx` của màn, viết policy, rồi test trong `rbac.db.test.ts`. Quyền ('được làm gì') và `family_id` ('dữ liệu của ai') là hai trục riêng.
 - **RLS là tuyến phòng thủ chính.** Mọi bảng đều bật RLS. Service role (`@/core/supabase/admin`) chỉ dùng cho thao tác admin cần thiết, ví dụ tạo user auth.
 - Biến bí mật (`SUPABASE_SERVICE_ROLE_KEY`, `KID_SESSION_SECRET`, ...) chỉ dùng trong file có `import 'server-only'`. Biến công khai dùng tiền tố `NEXT_PUBLIC_`. Mọi biến đều phải có trong `.env.example`.
 - Đáp án câu hỏi (`questions.answer`) không bao giờ được gửi xuống client của trẻ trước khi bài cho phép xem đáp án.
@@ -148,4 +149,5 @@ Luôn dùng `@/` (→ `src/`). Import tương đối chỉ dùng bên trong cùn
 | `getSession()` để kiểm quyền ở server | `getUser()` |
 | Gửi `answer` xuống client của trẻ | Chỉ select `content` |
 | Hard-code `'/admin/...'` | `PATHS` |
+| So `roleId === '...'` để kiểm quyền | `can(user, '<khoá>')` / `requirePermission` |
 | Tên thật của trẻ trong code hay seed | Admin nhập qua giao diện |
