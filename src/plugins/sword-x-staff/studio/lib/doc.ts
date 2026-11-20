@@ -43,6 +43,7 @@ export const characterProfileDocSchema = z.object({
   goddess_statues: z.string().max(2000).default(''),
   shop_routine: z.string().max(2000).default(''),
   custom_question: z.string().max(4000).default(''),
+  gear_summary: z.string().max(200).default(''),
   server_day: z.number().int().optional(),
 });
 
@@ -97,7 +98,7 @@ export const fantomonDocSchema = z.object({
   fantomon_id: z.string().max(200),
   owned: z.boolean().default(false),
   quality: z.string().max(100).default('Epic'),
-  stars: z.number().int().min(1).max(20).default(1),
+  stars: z.number().int().min(0).max(20).default(1),
   equipped_slot: z.number().int().min(0).max(10).default(0),
 });
 
@@ -213,6 +214,7 @@ export function blankDoc(): CharacterDoc {
       goddess_statues: '',
       shop_routine: '',
       custom_question: '',
+      gear_summary: '',
     },
     equipment: base.equipment.map((item) => ({
       ...item,

@@ -13,8 +13,10 @@
     "currentMap": "Cinder Ridge",
     "mirageTower": "F85",
     "dailyDungeonStatus": "Used 2/2 free runs",
-    "spendingTier": "Light spend / monthly card"
+    "spendingTier": "Light spend / monthly card",
+    "gearSummary": "Set Huyền thoại +12, vũ khí Thần thoại"
   },
+  "gearSummary": "Set Huyền thoại +12, vũ khí Thần thoại",
   "equipment": {
     "weapon": {
       "name": "Main Weapon",

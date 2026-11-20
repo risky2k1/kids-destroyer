@@ -1,6 +1,5 @@
 import type { CustomSkillRow, SkillStateRow, Studio } from '../types';
 import { NUMBER_FIELDS, TEXT_FIELDS } from './fields';
-import { LOADOUT_PRESETS, type PresetKey } from './presets';
 
 export type SkillPatch = {
   owned?: boolean;
@@ -88,31 +87,6 @@ export function patchCustomSkill(studio: Studio, skillId: string, patch: SkillPa
   };
 }
 
-export function patchPreset(studio: Studio, preset: PresetKey): Studio {
-  const spec = LOADOUT_PRESETS[preset];
-  let next: Studio = {
-    ...studio,
-    skills: studio.skills.map((row) => ({ ...row, equipped_slot: 0 })),
-    customSkills: studio.customSkills.map((row) => ({
-      ...row,
-      equipped_slot: 0,
-    })),
-  };
-  spec.active.forEach((id, index) => {
-    next = patchCatalogSkill(next, id, 'active', {
-      equippedSlot: index + 1,
-      owned: true,
-    });
-  });
-  spec.passive.forEach((id, index) => {
-    next = patchCatalogSkill(next, id, 'passive', {
-      equippedSlot: index + 1,
-      owned: true,
-    });
-  });
-  return next;
-}
-
 export function patchCharacter(studio: Studio, patch: Record<string, string | number>): Studio {
   const character = { ...studio.character };
   for (const [key, value] of Object.entries(patch)) {
@@ -130,4 +104,16 @@ export function patchServer(studio: Studio, serverId: string): Studio {
     ...studio,
     character: { ...studio.character, server_id: serverId, servers: server },
   };
+}
+
+export function patchServerOpenedOn(studio: Studio, serverId: string, openedOn: string): Studio {
+  const servers = studio.servers.map((item) =>
+    item.id === serverId ? { ...item, opened_on: openedOn } : item,
+  );
+  const activeServer = servers.find((item) => item.id === serverId) ?? null;
+  const character =
+    studio.character.server_id === serverId
+      ? { ...studio.character, servers: activeServer }
+      : studio.character;
+  return { ...studio, servers, character };
 }

@@ -1,35 +1,42 @@
 import { describe, expect, it } from 'vitest';
 
-import { skillInSlot, type SkillCardModel } from './mergeSkills';
+import type { Studio } from '@/plugins/sword-x-staff/studio';
+import { mergeSkills } from './mergeSkills';
 
-function skill(id: string, type: SkillCardModel['type'], equippedSlot: number): SkillCardModel {
-  return {
-    id,
-    custom: false,
-    type,
-    tierClass: 'R1',
-    vn: id,
-    en: id,
-    cn: id,
-    element: 'Physical',
-    tier: 'A',
-    owned: true,
-    quality: 'Epic',
-    stars: 1,
-    equippedSlot,
-    iconKey: id,
-  };
-}
+describe('mergeSkills', () => {
+  it('merges catalog skills and saved state, allowing 0 stars', () => {
+    const studio = {
+      skills: [
+        {
+          character_id: 'c1',
+          skill_id: 'slash',
+          owned: true,
+          quality: 'Legendary',
+          stars: 0,
+          equipped_slot: 0,
+        },
+      ],
+      customSkills: [],
+      catalog: [
+        {
+          id: 'slash',
+          tier_class: 'R1',
+          skill_type: 'active',
+          vn: 'Xoáy Kiếm',
+          en: 'Whirlwind Slash',
+          cn: '旋风斩',
+          cd: '1 Turn',
+          element: 'Physical',
+          tier: 'S+',
+          description: 'Test',
+          icon_key: 'slash',
+        },
+      ],
+    } as unknown as Studio;
 
-describe('skillInSlot', () => {
-  const skills = [skill('whirlwind', 'active', 1), skill('guard', 'passive', 1)];
-
-  it('returns the skill in that slot', () => {
-    expect(skillInSlot(skills, 'active', 1, [])?.id).toBe('whirlwind');
-  });
-
-  it('treats a pending unequip as an empty slot', () => {
-    expect(skillInSlot(skills, 'active', 1, ['whirlwind'])).toBeUndefined();
-    expect(skillInSlot(skills, 'passive', 1, ['whirlwind'])?.id).toBe('guard');
+    const merged = mergeSkills(studio);
+    expect(merged[0].stars).toBe(0);
+    expect(merged[0].owned).toBe(true);
+    expect(merged[0].quality).toBe('Legendary');
   });
 });

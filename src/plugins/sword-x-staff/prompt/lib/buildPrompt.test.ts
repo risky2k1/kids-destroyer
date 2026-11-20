@@ -19,10 +19,19 @@ const flame: LegacySkill = {
 };
 
 describe('buildPrompt', () => {
-  it('includes the character and the equipped skill', () => {
+  it('includes the character and the owned skill', () => {
     const prompt = buildPrompt(mergeLegacy({}), [flame]);
     expect(prompt).toContain('Aquariuss');
     expect(prompt).toContain('Flame Aura');
-    expect(prompt).toContain('Resonance +35');
+    expect(prompt).toContain('Set Huyền thoại +12, vũ khí Thần thoại');
+    expect(prompt).toContain('1. PROFILE:');
+    expect(prompt).toContain('2. GEAR:');
+    expect(prompt).toContain('3. OWNED SKILLS:');
+    expect(prompt).toContain('4. RESOURCES:');
+    expect(prompt).toContain('5. COMPANIONS, FANTOMON & RELICS:');
+    expect(prompt).not.toContain('Resonance');
+    expect(prompt).not.toContain('HOME:');
+    expect(prompt).not.toContain('EQUIPPED SKILLS:');
+    expect(prompt).not.toContain('Rank:');
   });
 });

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Studio } from '../types';
-import { patchCatalogSkill, patchCharacter } from './patch';
+import { patchCatalogSkill, patchCharacter, patchServerOpenedOn } from './patch';
 
 function studio(): Studio {
   return {
@@ -102,7 +102,18 @@ describe('patchCatalogSkill', () => {
 
 describe('patchCharacter', () => {
   it('updates the header field immediately', () => {
-    const next = patchCharacter(studio(), { morningStar: '9' });
+    const next = patchCharacter(studio(), { morningStar: '9', gearSummary: 'New Set +15' });
     expect(next.character.morning_star).toBe('9');
+    expect(next.character.gear_summary).toBe('New Set +15');
+  });
+});
+
+describe('patchServerOpenedOn', () => {
+  it('updates opened_on on both servers and character', () => {
+    const s = studio();
+    s.servers = [{ id: 's1', name: 'A', opened_on: '2026-01-01' }];
+    const next = patchServerOpenedOn(s, 's1', '2026-02-15');
+    expect(next.servers[0].opened_on).toBe('2026-02-15');
+    expect(next.character.servers?.opened_on).toBe('2026-02-15');
   });
 });

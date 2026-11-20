@@ -6,10 +6,8 @@ import { usePathname } from 'next/navigation';
 import { Swords } from 'lucide-react';
 
 import { CompanionsView } from '@/plugins/sword-x-staff/companions';
-import { EquipmentView } from '@/plugins/sword-x-staff/equipment';
 import { OverviewView } from '@/plugins/sword-x-staff/overview';
 import { PromptView } from '@/plugins/sword-x-staff/prompt';
-import { ResourcesView } from '@/plugins/sword-x-staff/resources';
 import { SkillsView } from '@/plugins/sword-x-staff/skills';
 import { StudioActions } from './StudioActions';
 import {
@@ -29,8 +27,6 @@ import { cn } from '@/themes/neobrutal/lib/utils';
 const NAV: { tab: StudioTab; label: string }[] = [
   { tab: 'overview', label: 'nav.overview' },
   { tab: 'skills', label: 'nav.skills' },
-  { tab: 'equipment', label: 'nav.equipment' },
-  { tab: 'resources', label: 'nav.resources' },
   { tab: 'companions', label: 'nav.companions' },
   { tab: 'prompt', label: 'nav.prompt' },
 ];
@@ -38,8 +34,6 @@ const NAV: { tab: StudioTab; label: string }[] = [
 const VIEWS = {
   overview: OverviewView,
   skills: SkillsView,
-  equipment: EquipmentView,
-  resources: ResourcesView,
   companions: CompanionsView,
   prompt: PromptView,
 };
@@ -68,6 +62,8 @@ function StudioFrame({ children }: { children: ReactNode }) {
   const [picked, setPicked] = useState<StudioTab | null>(null);
   const active = picked ?? routeTab;
   const character = studio.character;
+  const activeServer =
+    studio.servers.find((s) => s.id === character.server_id) ?? character.servers;
   const owned =
     studio.skills.filter((skill) => skill.owned).length +
     studio.customSkills.filter((skill) => skill.owned).length;
@@ -91,8 +87,8 @@ function StudioFrame({ children }: { children: ReactNode }) {
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3">
           <div className="flex flex-wrap gap-2 text-sm font-heading">
             <span className="border-2 border-border bg-background px-2 py-1">
-              {character.servers?.name ?? 'Server'} · Day{' '}
-              {character.servers ? serverDay(character.servers.opened_on) : 1} · Lv.
+              {activeServer?.name ?? 'Server'} · Day{' '}
+              {activeServer ? serverDay(activeServer.opened_on) : 1} · Lv.
               {character.level}
             </span>
             <span className="border-2 border-border bg-main px-2 py-1">

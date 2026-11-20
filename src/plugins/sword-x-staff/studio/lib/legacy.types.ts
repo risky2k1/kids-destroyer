@@ -34,7 +34,9 @@ export type LegacyState = {
     mirageTower: string;
     dailyDungeonStatus: string;
     spendingTier: string;
+    gearSummary?: string;
   };
+  gearSummary?: string;
   equipment: Record<
     string,
     {

@@ -18,6 +18,7 @@ function profileOf(c: CharacterRow): LegacyState['profile'] {
     mirageTower: c.mirage_tower,
     dailyDungeonStatus: c.daily_dungeon_status,
     spendingTier: c.spending_tier,
+    gearSummary: c.gear_summary ?? '',
   };
 }
 
@@ -86,6 +87,7 @@ export function studioToLegacy(studio: Studio): LegacyState {
   }
   return {
     profile: profileOf(studio.character),
+    gearSummary: studio.character.gear_summary ?? '',
     equipment,
     skillSlotsLevel: studio.skillSlots.map((slot) => ({
       slot: slot.slot_index,

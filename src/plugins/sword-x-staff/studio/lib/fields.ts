@@ -22,6 +22,7 @@ export const TEXT_FIELDS = {
   goddessStatues: 'goddess_statues',
   shopRoutine: 'shop_routine',
   customQuestion: 'custom_question',
+  gearSummary: 'gear_summary',
 } as const satisfies Record<string, keyof CharacterRow>;
 
 export const NUMBER_FIELDS = {

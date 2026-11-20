@@ -7,7 +7,6 @@ import { requirePermission } from '@/core/auth/session';
 import { createClient } from '@/core/supabase/server';
 import { NUMBER_FIELDS, TEXT_FIELDS } from './lib/fields';
 import { QUALITIES } from './lib/options';
-import { LOADOUT_PRESETS, type PresetKey } from './lib/presets';
 import { shiftCalendarDay } from './lib/serverDay';
 import { blankDoc, characterDocSchema, starterDoc, type CharacterDoc } from './lib/doc';
 import catalogData from './lib/catalog.json';
@@ -65,7 +64,7 @@ const patchSchema = z
     dailyDungeonStatus: text.optional(),
     spendingTier: text.optional(),
     gold: text.optional(),
-    morningStar: text.optional(),
+    morningStar: z.union([text, z.number().transform((v) => String(v))]).optional(),
     coloredDiamond: text.optional(),
     stamina: text.optional(),
     battleEssence: text.optional(),
@@ -77,6 +76,7 @@ const patchSchema = z
     goddessStatues: text.optional(),
     shopRoutine: text.optional(),
     customQuestion: z.string().max(4000).optional(),
+    gearSummary: z.string().max(200).optional(),
     level: z.number().int().min(1).max(400).optional(),
     totalJobLevel: z.number().int().min(0).max(400).optional(),
     warriorJobLevel: z.number().int().min(0).max(400).optional(),
@@ -381,96 +381,6 @@ export async function addCustomSkill(characterId: string, input: unknown) {
   refresh(characterId);
 }
 
-export async function applyPreset(characterId: string, preset: PresetKey) {
-  const spec = LOADOUT_PRESETS[preset];
-  await mutateDoc(characterId, (doc) => {
-    doc.skills.forEach((s) => {
-      s.equipped_slot = 0;
-    });
-    doc.custom_skills.forEach((s) => {
-      s.equipped_slot = 0;
-    });
-
-    const entries = [
-      ...spec.active.map((id, index) => ({ id, slot: index + 1 })),
-      ...spec.passive.map((id, index) => ({ id, slot: index + 1 })),
-    ];
-
-    for (const entry of entries) {
-      const existing = doc.skills.find((s) => s.skill_id === entry.id);
-      if (existing) {
-        existing.owned = true;
-        existing.equipped_slot = entry.slot;
-      } else {
-        doc.skills.push({
-          skill_id: entry.id,
-          owned: true,
-          quality: 'Epic',
-          stars: 1,
-          equipped_slot: entry.slot,
-        });
-      }
-    }
-  });
-  refresh(characterId);
-}
-
-export async function updateEquipment(characterId: string, slotKey: string, patch: unknown) {
-  const parsed = z
-    .object({
-      level: z.number().int().min(0).max(400).optional(),
-      quality: z.enum(QUALITIES).optional(),
-      notes: z.string().max(200).optional(),
-    })
-    .parse(patch);
-
-  await mutateDoc(characterId, (doc) => {
-    const existing = doc.equipment.find((item) => item.slot_key === slotKey);
-    if (existing) {
-      if (parsed.level !== undefined) existing.level = parsed.level;
-      if (parsed.quality !== undefined) existing.quality = parsed.quality;
-      if (parsed.notes !== undefined) existing.notes = parsed.notes;
-    } else {
-      doc.equipment.push({
-        slot_key: slotKey,
-        name: slotKey,
-        icon_key: '',
-        level: parsed.level ?? 0,
-        quality: parsed.quality ?? 'Rare',
-        notes: parsed.notes ?? '',
-      });
-    }
-  });
-  refresh(characterId);
-}
-
-export async function updateSkillSlot(characterId: string, slotIndex: number, level: number) {
-  const lv = z.number().int().min(1).max(400).parse(level);
-  await mutateDoc(characterId, (doc) => {
-    const existing = doc.skill_slots.find((s) => s.slot_index === slotIndex);
-    if (existing) {
-      existing.level = lv;
-    } else {
-      doc.skill_slots.push({
-        slot_index: slotIndex,
-        slot_kind: slotIndex <= 4 ? 'Technique' : 'Charm',
-        level: lv,
-      });
-    }
-  });
-  refresh(characterId);
-}
-
-export async function setAllSkillSlots(characterId: string, level: number) {
-  const lv = z.number().int().min(1).max(400).parse(level);
-  await mutateDoc(characterId, (doc) => {
-    doc.skill_slots.forEach((s) => {
-      s.level = lv;
-    });
-  });
-  refresh(characterId);
-}
-
 export async function addCompanion(characterId: string, companionId: string) {
   const id = z.string().min(1).max(80).parse(companionId);
   await mutateDoc(characterId, (doc) => {
@@ -506,7 +416,7 @@ export async function updateCompanion(characterId: string, companionId: string, 
 const fantomonPatchSchema = z.object({
   owned: z.boolean().optional(),
   quality: z.enum(QUALITIES).optional(),
-  stars: z.number().int().min(1).max(5).optional(),
+  stars: z.number().int().min(0).max(5).optional(),
   equippedSlot: z.number().int().min(0).max(4).optional(),
 });
 
@@ -581,4 +491,26 @@ export async function assignServer(characterId: string, serverId: string): Promi
   );
 
   refresh(characterId);
+}
+
+export async function updateServerOpenedOn(serverId: string, openedOn: string): Promise<void> {
+  await requirePermission('sxs.use');
+  const validServerId = z.string().uuid().parse(serverId);
+  const validOpenedOn = z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .parse(openedOn);
+  const supabase = await createClient();
+
+  fail(
+    (
+      await supabase
+        .from('sxs_servers')
+        .update({ opened_on: validOpenedOn })
+        .eq('id', validServerId)
+    ).error,
+  );
+
+  revalidatePath('/admin/sxs', 'layout');
+  revalidatePath('/admin/sxs');
 }

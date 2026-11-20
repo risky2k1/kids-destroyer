@@ -51,6 +51,7 @@ export type CharacterRow = {
   goddess_statues: string;
   shop_routine: string;
   custom_question: string;
+  gear_summary: string;
   server_day?: number;
 };
 

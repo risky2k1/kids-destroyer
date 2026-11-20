@@ -3,7 +3,7 @@
 import {
   updateCharacter,
   assignServer,
-  type CharacterRow,
+  updateServerOpenedOn,
   type Studio,
   CLASS_OPTIONS,
   SPENDING_OPTIONS,
@@ -13,6 +13,7 @@ import {
   GameIcon,
   patchCharacter,
   patchServer,
+  patchServerOpenedOn,
   SaveNote,
   useSave,
 } from '@/plugins/sword-x-staff/studio';
@@ -20,66 +21,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/themes/neobrutal/ui/
 import { Input } from '@/themes/neobrutal/ui/input';
 import { NativeSelect } from '@/themes/neobrutal/ui/native-select';
 
-const TEXT_FIELDS: {
-  key: string;
-  label: string;
-  value: (c: CharacterRow) => string;
-}[] = [
-  { key: 'name', label: 'overview.playerName', value: (c) => c.name },
-  {
-    key: 'combatPower',
-    label: 'overview.combatPower',
-    value: (c) => c.combat_power,
-  },
-  { key: 'rankTier', label: 'overview.rankTier', value: (c) => c.rank_tier },
-  {
-    key: 'currentMap',
-    label: 'overview.currentMap',
-    value: (c) => c.current_map,
-  },
-  {
-    key: 'mirageTower',
-    label: 'overview.mirageTower',
-    value: (c) => c.mirage_tower,
-  },
-  {
-    key: 'dailyDungeonStatus',
-    label: 'overview.dailyDungeonStatus',
-    value: (c) => c.daily_dungeon_status,
-  },
-];
-
-const NUMBER_FIELDS: {
-  key: string;
-  label: string;
-  value: (c: CharacterRow) => number;
-}[] = [
-  { key: 'level', label: 'overview.level', value: (c) => c.level },
-  {
-    key: 'totalJobLevel',
-    label: 'overview.totalJobLevel',
-    value: (c) => c.total_job_level,
-  },
-  {
-    key: 'warriorJobLevel',
-    label: 'overview.warriorJobLevel',
-    value: (c) => c.warrior_job_level,
-  },
-  {
-    key: 'duelistJobLevel',
-    label: 'overview.duelistJobLevel',
-    value: (c) => c.duelist_job_level,
-  },
-  {
-    key: 'mageJobLevel',
-    label: 'overview.mageJobLevel',
-    value: (c) => c.mage_job_level,
-  },
-];
-
 export function OverviewView({ studio }: { studio: Studio }) {
   const { run, status } = useSave();
   const character = studio.character;
+  const selectedServer =
+    studio.servers.find((server) => server.id === character.server_id) ?? character.servers;
+
   const save = (patch: Record<string, string | number>) =>
     run(
       () => updateCharacter(character.id, patch),
@@ -96,7 +43,7 @@ export function OverviewView({ studio }: { studio: Studio }) {
         <SaveNote status={status} />
       </CardHeader>
       <CardContent className="grid gap-3 sm:grid-cols-2">
-        <Field label="Server">
+        <Field label={t('overview.server')}>
           <NativeSelect
             value={character.server_id}
             onChange={(event) => {
@@ -114,33 +61,52 @@ export function OverviewView({ studio }: { studio: Studio }) {
             ))}
           </NativeSelect>
         </Field>
-        <Field label="Day">
-          <Input readOnly value={character.servers ? serverDay(character.servers.opened_on) : ''} />
+        <Field label={t('overview.serverOpenedOn')}>
+          <Input
+            type="date"
+            value={selectedServer?.opened_on ?? ''}
+            onChange={(event) => {
+              const openedOn = event.target.value;
+              if (!selectedServer || !openedOn) return;
+              void run(
+                () => updateServerOpenedOn(selectedServer.id, openedOn),
+                (current) => patchServerOpenedOn(current, selectedServer.id, openedOn),
+              );
+            }}
+          />
         </Field>
-        {TEXT_FIELDS.map((field) => (
-          <Field key={field.key} label={t(field.label)}>
-            <Input
-              defaultValue={field.value(character)}
-              onBlur={(event) => save({ [field.key]: event.target.value })}
-            />
-          </Field>
-        ))}
-        {NUMBER_FIELDS.map((field) => (
-          <Field key={field.key} label={t(field.label)}>
-            <Input
-              type="number"
-              defaultValue={field.value(character)}
-              onBlur={(event) => save({ [field.key]: Number(event.target.value) })}
-            />
-          </Field>
-        ))}
+        <Field label={t('overview.serverDay')}>
+          <Input readOnly value={selectedServer ? serverDay(selectedServer.opened_on) : ''} />
+        </Field>
+        <Field label={t('overview.playerName')}>
+          <Input
+            defaultValue={character.name}
+            onBlur={(event) => save({ name: event.target.value })}
+          />
+        </Field>
+        <Field label={t('overview.combatPower')}>
+          <Input
+            defaultValue={character.combat_power}
+            onBlur={(event) => save({ combatPower: event.target.value })}
+          />
+        </Field>
+        <Field label={t('overview.level')}>
+          <Input
+            type="number"
+            min={1}
+            defaultValue={character.level}
+            onBlur={(event) => save({ level: Math.max(1, Number(event.target.value)) })}
+          />
+        </Field>
         <Field label={t('overview.currentClass')}>
           <NativeSelect
             defaultValue={character.current_class}
             onChange={(event) => save({ currentClass: event.target.value })}
           >
             {CLASS_OPTIONS.map((option) => (
-              <option key={option}>{option}</option>
+              <option key={option} value={option}>
+                {option}
+              </option>
             ))}
           </NativeSelect>
         </Field>
@@ -150,9 +116,82 @@ export function OverviewView({ studio }: { studio: Studio }) {
             onChange={(event) => save({ spendingTier: event.target.value })}
           >
             {SPENDING_OPTIONS.map((option) => (
-              <option key={option}>{option}</option>
+              <option key={option} value={option}>
+                {option}
+              </option>
             ))}
           </NativeSelect>
+        </Field>
+        <div className="sm:col-span-2">
+          <Field label={t('overview.gearSummary')}>
+            <Input
+              maxLength={200}
+              placeholder="e.g. Set Huyền thoại +12, vũ khí Thần thoại"
+              defaultValue={character.gear_summary}
+              onBlur={(event) => save({ gearSummary: event.target.value })}
+            />
+          </Field>
+        </div>
+        <div className="mt-2 sm:col-span-2">
+          <h3 className="font-heading text-lg">{t('overview.resources')}</h3>
+        </div>
+        <Field label={t('overview.dawnium')}>
+          <Input
+            type="number"
+            min={0}
+            defaultValue={character.morning_star}
+            onBlur={(event) => save({ morningStar: event.target.value })}
+          />
+        </Field>
+        <Field label={t('overview.stellatie')}>
+          <Input
+            type="number"
+            min={0}
+            defaultValue={character.normal_prayer_tickets}
+            onBlur={(event) =>
+              save({ normalPrayerTickets: Math.max(0, parseInt(event.target.value, 10) || 0) })
+            }
+          />
+        </Field>
+        <Field label={t('overview.covenite')}>
+          <Input
+            type="number"
+            min={0}
+            defaultValue={character.class_prayer_tickets}
+            onBlur={(event) =>
+              save({ classPrayerTickets: Math.max(0, parseInt(event.target.value, 10) || 0) })
+            }
+          />
+        </Field>
+        <Field label={t('overview.skillSelectTickets')}>
+          <Input
+            type="number"
+            min={0}
+            defaultValue={character.skill_select_tickets}
+            onBlur={(event) =>
+              save({ skillSelectTickets: Math.max(0, parseInt(event.target.value, 10) || 0) })
+            }
+          />
+        </Field>
+        <Field label={t('overview.fateFruits')}>
+          <Input
+            type="number"
+            min={0}
+            defaultValue={character.fate_fruits}
+            onBlur={(event) =>
+              save({ fateFruits: Math.max(0, parseInt(event.target.value, 10) || 0) })
+            }
+          />
+        </Field>
+        <Field label={t('overview.timeCrystals')}>
+          <Input
+            type="number"
+            min={0}
+            defaultValue={character.time_crystals}
+            onBlur={(event) =>
+              save({ timeCrystals: Math.max(0, parseInt(event.target.value, 10) || 0) })
+            }
+          />
         </Field>
       </CardContent>
     </Card>

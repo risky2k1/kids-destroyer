@@ -7,6 +7,7 @@ describe('doc schema and starterDoc', () => {
     const parsed = characterDocSchema.parse(doc);
     expect(parsed.character.level).toBe(44);
     expect(parsed.character.combat_power).toBe('68.5K');
+    expect(parsed.character.gear_summary).toBe('Set Huyền thoại +12, vũ khí Thần thoại');
     expect(parsed.equipment.length).toBe(5);
     expect(parsed.skill_slots.length).toBe(8);
     expect(parsed.companions.length).toBe(5);
@@ -24,6 +25,7 @@ describe('doc schema and starterDoc', () => {
     const parsed = characterDocSchema.parse(minimal);
     expect(parsed.character.level).toBe(10);
     expect(parsed.character.current_class).toBe('Mage');
+    expect(parsed.character.gear_summary).toBe('');
     expect(parsed.equipment).toEqual([]);
     expect(parsed.skill_slots).toEqual([]);
     expect(parsed.skills).toEqual([]);
@@ -87,5 +89,15 @@ describe('doc schema and starterDoc', () => {
         equipment: excessiveEquipment,
       }),
     ).toThrow();
+  });
+
+  it('allows 0 stars for skills and fantomons', () => {
+    const doc = characterDocSchema.parse({
+      character: {},
+      skills: [{ skill_id: 's1', stars: 0 }],
+      fantomons: [{ fantomon_id: 'f1', stars: 0 }],
+    });
+    expect(doc.skills[0].stars).toBe(0);
+    expect(doc.fantomons[0].stars).toBe(0);
   });
 });

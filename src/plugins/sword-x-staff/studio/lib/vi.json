@@ -6,9 +6,7 @@
   "nav": {
     "overview": "1. Thông tin",
     "skills": "2. Kỹ năng",
-    "equipment": "3. Trang bị",
-    "resources": "4. Tài nguyên",
-    "companions": "5. Đồng hành",
+    "companions": "3. Đồng hành",
     "prompt": "Prompt",
     "characters": "Nhân vật",
     "assets": "Ảnh",
@@ -40,41 +38,28 @@
   },
   "overview": {
     "title": "Thông tin nhân vật",
+    "server": "Server",
+    "serverOpenedOn": "Ngày mở server",
+    "serverDay": "Day",
     "playerName": "Tên nhân vật",
-    "serverDay": "Ngày server",
-    "level": "Level",
     "combatPower": "Total Power",
+    "level": "Level",
     "currentClass": "Class",
-    "rankTier": "Rank",
-    "totalJobLevel": "Total Job Level",
-    "warriorJobLevel": "Warrior Level",
-    "duelistJobLevel": "Duelist Level",
-    "mageJobLevel": "Mage Level",
-    "currentMap": "Map",
-    "mirageTower": "Fantasia Ascent",
-    "dailyDungeonStatus": "Daily Dungeon",
-    "spendingTier": "Spending"
+    "spendingTier": "Spending",
+    "gearSummary": "Trang bị",
+    "resources": "Tài nguyên",
+    "dawnium": "Dawnium",
+    "stellatie": "Stellatie",
+    "covenite": "Covenite",
+    "skillSelectTickets": "Skill Shard Voucher",
+    "fateFruits": "Destiny Fruit",
+    "timeCrystals": "Temporal Crystal"
   },
   "skills": {
     "title": "Kho kỹ năng",
-    "equipped": "Đang lắp",
     "active": "Technique",
     "passive": "Charm",
-    "ownedOnly": "Chỉ skill đang có",
-    "search": "Tìm tên Việt, Anh, Trung hoặc hệ",
-    "add": "Thêm kỹ năng",
-    "unequip": "Tháo"
-  },
-  "equipment": {
-    "title": "Trang bị và cộng hưởng",
-    "slots": "Skill slots",
-    "applyAll": "Đặt cả 8 ô",
-    "level": "Cấp",
-    "quality": "Phẩm",
-    "notes": "Ghi chú"
-  },
-  "resources": {
-    "title": "Tài nguyên"
+    "add": "Thêm kỹ năng"
   },
   "companions": {
     "title": "Đồng hành, pet và gia viên",

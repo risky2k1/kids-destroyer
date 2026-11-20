@@ -5,14 +5,7 @@ export const SXS_PATHS = {
 
 export const PATHS = SXS_PATHS;
 
-export const STUDIO_TABS = [
-  'overview',
-  'skills',
-  'equipment',
-  'resources',
-  'companions',
-  'prompt',
-] as const;
+export const STUDIO_TABS = ['overview', 'skills', 'companions', 'prompt'] as const;
 
 export type StudioTab = (typeof STUDIO_TABS)[number];
 

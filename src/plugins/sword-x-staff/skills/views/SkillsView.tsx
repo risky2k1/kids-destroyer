@@ -4,7 +4,6 @@ import { useState } from 'react';
 
 import type { Studio } from '@/plugins/sword-x-staff/studio';
 import { AddCustomSkill } from '../components/AddCustomSkill';
-import { EquippedBoard } from '../components/EquippedBoard';
 import { SkillCard } from '../components/SkillCard';
 import type { SkillCardModel } from '../lib/mergeSkills';
 import { mergeSkills } from '../lib/mergeSkills';
@@ -37,7 +36,6 @@ export function SkillsView({ studio }: { studio: Studio }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <EquippedBoard studio={studio} skills={skills} />
       <div className="flex flex-wrap items-center gap-2">
         {ranks.map((rank) => (
           <Button

@@ -33,18 +33,31 @@ export function QualityRadios({
 
 export function StarRow({ value, onChange }: { value: number; onChange: (stars: number) => void }) {
   return (
-    <div className="flex gap-1 text-xl leading-none text-yellow-400">
-      {STARS.map((star) => (
-        <button
-          key={star}
-          type="button"
-          className="text-yellow-400"
-          onClick={() => onChange(star)}
-          aria-label={`${star} stars`}
-        >
-          {star <= value ? '★' : '☆'}
-        </button>
-      ))}
+    <div className="flex items-center gap-1 leading-none text-yellow-400">
+      <button
+        type="button"
+        className={cn(
+          'border-2 border-border px-1.5 py-0.5 text-xs font-heading',
+          value === 0 ? 'bg-main text-foreground' : 'bg-background text-muted-foreground',
+        )}
+        onClick={() => onChange(0)}
+        aria-label="0 stars"
+      >
+        0★
+      </button>
+      <div className="flex gap-1 text-xl">
+        {STARS.map((star) => (
+          <button
+            key={star}
+            type="button"
+            className="text-yellow-400"
+            onClick={() => onChange(value === 1 && star === 1 ? 0 : star)}
+            aria-label={`${star} stars`}
+          >
+            {star <= value ? '★' : '☆'}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

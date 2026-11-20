@@ -30,20 +30,8 @@ export function SkillCard({ skill, studio }: { skill: SkillCardModel; studio: St
 
   return (
     <article
-      draggable
-      onDragStart={(event) => {
-        event.dataTransfer.setData(
-          'application/json',
-          JSON.stringify({
-            id: skill.id,
-            type: skill.type,
-            custom: skill.custom,
-          }),
-        );
-        event.dataTransfer.effectAllowed = 'move';
-      }}
       className={cn(
-        'flex cursor-grab flex-col gap-2 border-2 border-border bg-secondary-background p-3',
+        'flex flex-col gap-2 border-2 border-border bg-secondary-background p-3',
         !skill.owned && 'opacity-40',
       )}
     >

@@ -1,35 +1,6 @@
 import type { Studio } from '../types';
 import type { SkillPatch } from './patch';
 
-export function patchEquipment(
-  studio: Studio,
-  slotKey: string,
-  patch: { level?: number; quality?: string; notes?: string },
-): Studio {
-  return {
-    ...studio,
-    equipment: studio.equipment.map((item) =>
-      item.slot_key === slotKey ? { ...item, ...patch } : item,
-    ),
-  };
-}
-
-export function patchSkillSlot(studio: Studio, slotIndex: number, level: number): Studio {
-  return {
-    ...studio,
-    skillSlots: studio.skillSlots.map((slot) =>
-      slot.slot_index === slotIndex ? { ...slot, level } : slot,
-    ),
-  };
-}
-
-export function patchAllSkillSlots(studio: Studio, level: number): Studio {
-  return {
-    ...studio,
-    skillSlots: studio.skillSlots.map((slot) => ({ ...slot, level })),
-  };
-}
-
 export function patchAddCompanion(studio: Studio, companionId: string): Studio {
   return {
     ...studio,

@@ -42,7 +42,8 @@
     "bed_lv": 15,
     "goddess_statues": "Opened every current area before the free bed speedup",
     "shop_routine": "Vendor Booth: 2-3 refreshes for discounted Stone and Wood",
-    "custom_question": "I just became a Duelist (Lv.44). With this account, suggest the best 4 Techniques and 4 Charms skills for maps, the tower, and bosses, how to spend Dawnium until Lv.82, and what to watch for on Cinder Ridge."
+    "custom_question": "I just became a Duelist (Lv.44). With this account, suggest the best 4 Techniques and 4 Charms skills for maps, the tower, and bosses, how to spend Dawnium until Lv.82, and what to watch for on Cinder Ridge.",
+    "gear_summary": "Set Huyền thoại +12, vũ khí Thần thoại"
   },
   "equipment": [
     {
