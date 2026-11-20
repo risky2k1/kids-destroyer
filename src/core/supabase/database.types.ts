@@ -145,14 +145,14 @@ isOneToOne: false
                   ]
                 },"profiles": {
                   Row: {
-                    "created_at": string,"display_name": string,"family_id": string | null,"id": string,"role": Database["public"]['Enums']["app_role"]
+                    "created_at": string,"display_name": string,"family_id": string | null,"id": string,"role_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"display_name": string,"family_id"?: string | null,"id": string,"role"?: Database["public"]['Enums']["app_role"]
+                    "created_at"?: string,"display_name": string,"family_id"?: string | null,"id": string,"role_id"?: string
                   }
                   Update: {
-                    "created_at"?: string,"display_name"?: string,"family_id"?: string | null,"id"?: string,"role"?: Database["public"]['Enums']["app_role"]
+                    "created_at"?: string,"display_name"?: string,"family_id"?: string | null,"id"?: string,"role_id"?: string
                   }
                   Relationships: [
                     {
@@ -160,6 +160,12 @@ isOneToOne: false
       columns: ["family_id"]
 isOneToOne: false
       referencedRelation: "families"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "profiles_role_id_fkey"
+      columns: ["role_id"]
+isOneToOne: false
+      referencedRelation: "roles"
       referencedColumns: ["id"]
     }
                   ]
@@ -285,6 +291,40 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"role_permissions": {
+                  Row: {
+                    "permission": string,"role_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "permission": string,"role_id": string
+                  }
+                  Update: {
+                    "permission"?: string,"role_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "role_permissions_role_id_fkey"
+      columns: ["role_id"]
+isOneToOne: false
+      referencedRelation: "roles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"roles": {
+                  Row: {
+                    "created_at": string,"id": string,"is_system": boolean,"name": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id": string,"is_system"?: boolean,"name": string
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"is_system"?: boolean,"name"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"settings": {
                   Row: {
                     "key": string,"value": NonNullable<Json>
@@ -345,7 +385,10 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "is_admin":
+            "has_permission":
+{ Args: { "p": string }; Returns: boolean
+                           },
+"is_super_admin":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
 "kid_in_my_family":
@@ -356,7 +399,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "app_role": "admin"|"parent","assignment_status": "assigned"|"submitted"|"reviewed","question_lang": "vi"|"en"
+            "assignment_status": "assigned"|"submitted"|"reviewed","question_lang": "vi"|"en"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -476,7 +519,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "app_role": ["admin", "parent"],"assignment_status": ["assigned", "submitted", "reviewed"],"question_lang": ["vi", "en"]
+            "assignment_status": ["assigned", "submitted", "reviewed"],"question_lang": ["vi", "en"]
           }
         }
 } as const
