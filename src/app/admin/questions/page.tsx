@@ -1,4 +1,4 @@
-import { QuestionsView } from '@/packages/question-bank';
+import { QuestionsView } from '@/plugins/kids-learning/question-bank';
 
 function first(value: string | string[] | undefined) {
   return (Array.isArray(value) ? value[0] : value) ?? '';

@@ -1,4 +1,4 @@
-import { QuestionEditView } from '@/packages/question-bank';
+import { QuestionEditView } from '@/plugins/kids-learning/question-bank';
 
 export default function NewQuestionPage() {
   return <QuestionEditView />;

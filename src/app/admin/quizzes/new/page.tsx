@@ -1,4 +1,4 @@
-import { QuizEditView } from '@/packages/quiz';
+import { QuizEditView } from '@/plugins/kids-learning/quiz';
 
 export default function NewQuizPage() {
   return <QuizEditView />;

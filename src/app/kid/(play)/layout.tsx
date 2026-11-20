@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { PATHS } from '@/core/routes';
-import { getCurrentKid } from '@/packages/family';
+import { getCurrentKid } from '@/plugins/kids-learning/family';
 
 export default async function KidLayout({ children }: { children: React.ReactNode }) {
   const kid = await getCurrentKid();

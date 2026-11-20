@@ -39,7 +39,7 @@ const eslintConfig = defineConfig([
     rules: restrict(
       ban(['@/app/*'], 'packages không import app'),
       ban(['@/packages/*/*'], 'Import module qua public index: @/packages/<name>'),
-      ban(['@/plugins/*', '!@/plugins/registry'], 'packages chỉ được import @/plugins/registry'),
+      ban(['@/plugins/*'], 'packages là hạ tầng dùng chung, không phụ thuộc plugin'),
     ),
   },
   {
@@ -47,6 +47,10 @@ const eslintConfig = defineConfig([
     rules: restrict(
       ban(['@/app/*'], 'plugins không import app'),
       ban(['@/packages/*/*'], 'Import module qua public index: @/packages/<name>'),
+      ban(
+        ['@/plugins/*/*/*', '!@/plugins/*/*/server'],
+        'Import module trong plugin qua index: @/plugins/<plugin>/<module>',
+      ),
     ),
   },
   prettier,

@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { canEnter } from '@/core/acl/access';
 import { getCurrentUser } from '@/core/auth/session';
 import { PATHS } from '@/core/routes';
-import { AssignmentsView } from '@/packages/assignment';
+import { AssignmentsView } from '@/plugins/kids-learning/assignment';
 import { Button } from '@/themes/neobrutal/ui/button';
 
 export default async function ParentHome() {

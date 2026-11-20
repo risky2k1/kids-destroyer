@@ -1,4 +1,4 @@
-import { DashboardView } from '@/packages/dashboard';
+import { DashboardView } from '@/plugins/kids-learning/dashboard';
 
 export default function AdminHome() {
   return <DashboardView />;

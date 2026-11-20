@@ -1,7 +1,7 @@
 import { requireRole } from '@/core/auth/session';
 import { PATHS } from '@/core/routes';
 import { BackLink } from '@/core/ui/BackLink';
-import { ExitForm } from '@/packages/family';
+import { ExitForm } from '@/plugins/kids-learning/family';
 
 // Outside the (play) layout on purpose: must work even when the kid session is invalid.
 export default async function KidExitPage() {

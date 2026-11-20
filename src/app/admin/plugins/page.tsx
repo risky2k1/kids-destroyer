@@ -1,4 +1,4 @@
-import { PluginsView } from '@/packages/question-bank';
+import { PluginsView } from '@/plugins/kids-learning/question-bank';
 
 export default function PluginsPage() {
   return <PluginsView />;

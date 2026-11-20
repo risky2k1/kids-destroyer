@@ -1,4 +1,4 @@
-import { AssignmentResultView } from '@/packages/assignment';
+import { AssignmentResultView } from '@/plugins/kids-learning/assignment';
 
 export default async function ParentAssignmentPage({
   params,
