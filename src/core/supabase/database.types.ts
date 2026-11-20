@@ -129,6 +129,20 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"modules": {
+                  Row: {
+                    "enabled": boolean,"id": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "enabled"?: boolean,"id": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "enabled"?: boolean,"id"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"plugins": {
                   Row: {
                     "enabled": boolean,"id": string,"settings": NonNullable<Json>
