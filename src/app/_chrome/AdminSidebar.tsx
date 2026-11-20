@@ -3,23 +3,9 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import {
-  ArrowUpRight,
-  BookOpen,
-  ChevronDown,
-  ChevronRight,
-  CircleHelp,
-  ClipboardList,
-  GraduationCap,
-  House,
-  Puzzle,
-  Send,
-  Settings,
-  Shapes,
-  Tags,
-  Users,
-} from 'lucide-react';
+import { ChevronDown, ChevronRight, House } from 'lucide-react';
 import { signOut } from '@/app/(auth)/login/actions';
+import { isParent } from '@/core/modules';
 import { PATHS } from '@/core/routes';
 import { Avatar, AvatarFallback } from '@/themes/neobrutal/ui/avatar';
 import {
@@ -44,7 +30,7 @@ import {
   SidebarMenuSubItem,
   SidebarTrigger,
 } from '@/themes/neobrutal/ui/sidebar';
-import { activeNav, type NavKey } from './adminNav';
+import { activeNav, ADMIN_NAV } from './adminNav';
 
 const hardShadow = 'shadow-[2px_2px_0_0_var(--color-border)]';
 
@@ -53,21 +39,26 @@ const itemClass =
 
 const activeItemClass = `${itemClass} border-2 border-border bg-main font-heading shadow-[2px_2px_0_0_var(--color-border)] hover:bg-main data-active:bg-main data-active:text-foreground data-active:outline-transparent`;
 
-const CATALOG: { key: NavKey; href: string; label: string; icon: typeof BookOpen }[] = [
-  { key: 'subjects', href: PATHS.admin.subjects, label: 'Môn học', icon: BookOpen },
-  { key: 'grades', href: PATHS.admin.grades, label: 'Lớp', icon: GraduationCap },
-  { key: 'topics', href: PATHS.admin.topics, label: 'Chủ đề', icon: Tags },
-];
+/** Key of the parent item that holds the active link, if any. */
+function parentOf(key: string | null): string | null {
+  for (const section of ADMIN_NAV)
+    for (const item of section.items)
+      if (isParent(item) && item.children.some((child) => child.key === key)) return item.key;
+  return null;
+}
 
 export function AdminSidebar({ userName, siteName }: { userName: string; siteName: string }) {
   const pathname = usePathname();
   const active = activeNav(pathname);
-  const catalogActive = active === 'subjects' || active === 'grades' || active === 'topics';
-  const [catalogOpen, setCatalogOpen] = useState(catalogActive);
+  const activeParent = parentOf(active);
+  const [openParents, setOpenParents] = useState<Record<string, boolean>>(() =>
+    activeParent ? { [activeParent]: true } : {},
+  );
   const [seenPath, setSeenPath] = useState(pathname);
   if (pathname !== seenPath) {
     setSeenPath(pathname);
-    if (catalogActive) setCatalogOpen(true);
+    if (activeParent && !openParents[activeParent])
+      setOpenParents((prev) => ({ ...prev, [activeParent]: true }));
   }
 
   return (
@@ -96,142 +87,78 @@ export function AdminSidebar({ userName, siteName }: { userName: string; siteNam
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
-        <SidebarGroup className="border-b-0! py-1">
-          <SidebarGroupLabel className="h-6 px-2 font-base! text-xs text-foreground/50">
-            Nội dung
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  tooltip="Danh mục"
-                  className={itemClass}
-                  onClick={() => setCatalogOpen((open) => !open)}
-                >
-                  <Shapes className="text-chart-5" />
-                  <span>Danh mục</span>
-                  <ChevronRight
-                    className={`ml-auto size-3.5 text-foreground/40 ${catalogOpen ? 'rotate-90' : ''}`}
-                  />
-                </SidebarMenuButton>
-                {catalogOpen && (
-                  <SidebarMenuSub>
-                    {CATALOG.map((item) => {
-                      const Icon = item.icon;
-                      const on = active === item.key;
-                      return (
-                        <SidebarMenuSubItem key={item.key}>
-                          <SidebarMenuSubButton
-                            isActive={on}
-                            className={on ? activeItemClass : itemClass}
-                            render={<Link href={item.href} />}
-                          >
-                            <Icon className="text-chart-5" />
-                            <span>{item.label}</span>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      );
-                    })}
-                  </SidebarMenuSub>
-                )}
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  isActive={active === 'questions'}
-                  tooltip="Câu hỏi"
-                  className={active === 'questions' ? activeItemClass : itemClass}
-                  render={<Link href={PATHS.admin.questions} />}
-                >
-                  <CircleHelp className="text-chart-2" />
-                  <span>Câu hỏi</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  isActive={active === 'quizzes'}
-                  tooltip="Đề"
-                  className={active === 'quizzes' ? activeItemClass : itemClass}
-                  render={<Link href={PATHS.admin.quizzes} />}
-                >
-                  <ClipboardList className="text-chart-3" />
-                  <span>Đề</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-        <SidebarGroup className="border-b-0! py-1">
-          <SidebarGroupLabel className="h-6 px-2 font-base! text-xs text-foreground/50">
-            Người dùng
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  isActive={active === 'families'}
-                  tooltip="Gia đình"
-                  className={active === 'families' ? activeItemClass : itemClass}
-                  render={<Link href={PATHS.admin.families} />}
-                >
-                  <Users className="text-chart-4" />
-                  <span>Gia đình</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  isActive={active === 'assignments'}
-                  tooltip="Giao bài"
-                  className={active === 'assignments' ? activeItemClass : itemClass}
-                  render={<Link href={PATHS.admin.assignments} />}
-                >
-                  <Send className="text-chart-3" />
-                  <span>Giao bài</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  tooltip="Khu phụ huynh"
-                  className={itemClass}
-                  render={<Link href={PATHS.parent.root} />}
-                >
-                  <ArrowUpRight className="text-chart-3" />
-                  <span>Khu phụ huynh</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-        <SidebarGroup className="border-b-0! py-1">
-          <SidebarGroupLabel className="h-6 px-2 font-base! text-xs text-foreground/50">
-            Hệ thống
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  isActive={active === 'plugins'}
-                  tooltip="Dạng câu"
-                  className={active === 'plugins' ? activeItemClass : itemClass}
-                  render={<Link href={PATHS.admin.plugins} />}
-                >
-                  <Puzzle className="text-chart-1" />
-                  <span>Dạng câu</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  isActive={active === 'settings'}
-                  tooltip="Cài đặt"
-                  className={active === 'settings' ? activeItemClass : itemClass}
-                  render={<Link href={PATHS.admin.settings} />}
-                >
-                  <Settings className="text-chart-4" />
-                  <span>Cài đặt</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {ADMIN_NAV.map((section) => (
+          <SidebarGroup key={section.id} className="border-b-0! py-1">
+            <SidebarGroupLabel className="h-6 px-2 font-base! text-xs text-foreground/50">
+              {section.label}
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {section.items.map((item) => {
+                  const Icon = item.icon;
+                  if (isParent(item)) {
+                    const isOpen = Boolean(openParents[item.key]);
+                    return (
+                      <SidebarMenuItem key={item.key}>
+                        <SidebarMenuButton
+                          tooltip={item.label}
+                          className={itemClass}
+                          onClick={() =>
+                            setOpenParents((prev) => ({
+                              ...prev,
+                              [item.key]: !prev[item.key],
+                            }))
+                          }
+                        >
+                          <Icon className={item.iconClass} />
+                          <span>{item.label}</span>
+                          <ChevronRight
+                            className={`ml-auto size-3.5 text-foreground/40 ${isOpen ? 'rotate-90' : ''}`}
+                          />
+                        </SidebarMenuButton>
+                        {isOpen && (
+                          <SidebarMenuSub>
+                            {item.children.map((child) => {
+                              const ChildIcon = child.icon;
+                              const on = active === child.key;
+                              return (
+                                <SidebarMenuSubItem key={child.key}>
+                                  <SidebarMenuSubButton
+                                    isActive={on}
+                                    className={on ? activeItemClass : itemClass}
+                                    render={<Link href={child.href} />}
+                                  >
+                                    <ChildIcon className={child.iconClass} />
+                                    <span>{child.label}</span>
+                                  </SidebarMenuSubButton>
+                                </SidebarMenuSubItem>
+                              );
+                            })}
+                          </SidebarMenuSub>
+                        )}
+                      </SidebarMenuItem>
+                    );
+                  }
+
+                  const on = active === item.key;
+                  return (
+                    <SidebarMenuItem key={item.key}>
+                      <SidebarMenuButton
+                        isActive={on}
+                        tooltip={item.label}
+                        className={on ? activeItemClass : itemClass}
+                        render={<Link href={item.href} />}
+                      >
+                        <Icon className={item.iconClass} />
+                        <span>{item.label}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
       </SidebarContent>
       <SidebarFooter className="border-t! border-t-border/10!">
         <DropdownMenu>

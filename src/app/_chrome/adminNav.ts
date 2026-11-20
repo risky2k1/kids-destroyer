@@ -1,34 +1,13 @@
+import { activeKey, buildNav } from '@/core/modules';
 import { PATHS } from '@/core/routes';
+import { PACKAGES } from '@/packages/registry';
+import { PLUGINS } from '@/plugins/registry';
 
-export type NavKey =
-  | 'home'
-  | 'subjects'
-  | 'grades'
-  | 'topics'
-  | 'families'
-  | 'questions'
-  | 'quizzes'
-  | 'assignments'
-  | 'plugins'
-  | 'settings';
+export const ADMIN_NAV = buildNav([...PLUGINS, ...PACKAGES]);
 
-const SECTIONS: { key: Exclude<NavKey, 'home'>; href: string }[] = [
-  { key: 'subjects', href: PATHS.admin.subjects },
-  { key: 'grades', href: PATHS.admin.grades },
-  { key: 'topics', href: PATHS.admin.topics },
-  { key: 'families', href: PATHS.admin.families },
-  { key: 'questions', href: PATHS.admin.questions },
-  { key: 'quizzes', href: PATHS.admin.quizzes },
-  { key: 'assignments', href: PATHS.admin.assignments },
-  { key: 'plugins', href: PATHS.admin.plugins },
-  { key: 'settings', href: PATHS.admin.settings },
-];
-
-/** Exact match for `/admin`; prefix match for the other admin screens. */
-export function activeNav(pathname: string): NavKey | null {
+/** 'home' for /admin; otherwise the matching nav key. Paths outside /admin never match. */
+export function activeNav(pathname: string): string | null {
   if (pathname === PATHS.admin.root) return 'home';
-  for (const section of SECTIONS) {
-    if (pathname === section.href || pathname.startsWith(`${section.href}/`)) return section.key;
-  }
-  return null;
+  if (!pathname.startsWith(`${PATHS.admin.root}/`)) return null;
+  return activeKey(pathname, ADMIN_NAV);
 }
