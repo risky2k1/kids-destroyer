@@ -188,7 +188,7 @@ export async function ensureStarter(): Promise<string> {
     .single();
   fail(created.error);
   if (!created.data) throw new Error('Không tạo được nhân vật');
-  refresh(created.data.id);
+  // No revalidatePath: called while rendering the list page, which reads fresh data right after.
   return created.data.id;
 }
 
