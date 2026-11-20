@@ -91,6 +91,13 @@ Luôn dùng `@/` (→ `src/`). Import tương đối chỉ dùng bên trong cùn
 ## 6. Plugin
 
 - Plugin tính năng = thư mục trong `src/plugins/` có `manifest.ts`, đăng ký trong `src/plugins/registry.ts`. Sidebar admin được sinh từ `[...PLUGINS, ...PACKAGES]` (`src/app/_chrome/adminNav.ts`), không hard-code menu.
+- **Quy ước cho plugin mới** (mẫu: `sword-x-staff`):
+  - bảng DB có tiền tố riêng (`sxs_…`), RLS kèm `has_permission('<khoá>')`;
+  - path do plugin sở hữu (`<plugin>/<lõi>/lib/paths.ts`), không đưa vào `core/routes.ts`;
+  - `manifest.ts` import path theo đường dẫn tương đối để sidebar không kéo cả plugin vào bundle;
+  - mỗi `layout.tsx` của plugin gọi `requireModule('<id>')` (từ `@/core/modules/server`) trước `requirePermission`;
+  - dữ liệu nhỏ, gắn với một bản ghi thì lưu một document `jsonb` có zod schema, không tách thành nhiều bảng.
+- Bật/tắt plugin ở `/admin/modules` (bảng `modules`, không có dòng nghĩa là đang bật). Plugin tắt thì mất khỏi menu và route trả 404; dữ liệu và quyền vẫn giữ nguyên. Package luôn bật.
 - Dạng câu hỏi (trong `kids-learning/question-types/`) tuân theo `QuestionTypePlugin` của `@/plugins/kids-learning/question-types`: gồm `contentSchema`, `answerSchema`, `responseSchema`, `Editor`, `Player`, `Review`, `grade()`.
 - `grade()` là hàm thuần, chỉ chạy ở server, bắt buộc có test.
 - Đăng ký dạng câu hỏi trong `question-types/registry.ts`. Admin bật/tắt qua bảng `plugins`, plugin bị tắt vẫn render được dữ liệu cũ.
