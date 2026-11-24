@@ -18,7 +18,9 @@ const HEARTS = Array.from({ length: 20 }, (_, i) => ({
 export function Letter() {
   const [index, setIndex] = useState(0);
   const [noPos, setNoPos] = useState<{ x: number; y: number } | null>(null);
+  const [answerable, setAnswerable] = useState(false);
   const lastAdvance = useRef(0);
+  const yesRef = useRef<HTMLButtonElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const noRef = useRef<HTMLButtonElement>(null);
   const screen = SCREENS[index];
@@ -30,6 +32,13 @@ export function Letter() {
     window.addEventListener('resize', reset);
     return () => window.removeEventListener('resize', reset);
   }, []);
+
+  // Answer buttons stay inert until they have faded in, so a stray tap cannot skip the question.
+  useEffect(() => {
+    if (screen.kind !== 'question') return;
+    const t = setTimeout(() => setAnswerable(true), (screen.lines.length * step + 0.9) * 1000);
+    return () => clearTimeout(t);
+  }, [screen, step]);
 
   function advance() {
     if (screen.kind !== 'envelope' && screen.kind !== 'verse') return;
@@ -43,14 +52,21 @@ export function Letter() {
     e.preventDefault();
     e.stopPropagation();
     const no = noRef.current?.getBoundingClientRect();
-    // Avoid the whole poem + yes button, not just the button, so the question stays readable.
+    const yes = yesRef.current?.getBoundingClientRect();
     const block = contentRef.current?.getBoundingClientRect();
-    if (!no || !block) return;
+    if (!no || !yes || !block) return;
+    const pad = (r: DOMRect) => ({
+      x: r.x - 12,
+      y: r.y - 12,
+      width: r.width + 24,
+      height: r.height + 24,
+    });
     setNoPos(
       dodge(
         { width: window.innerWidth, height: window.innerHeight },
         { width: no.width, height: no.height },
-        { x: block.x - 12, y: block.y - 12, width: block.width + 24, height: block.height + 24 },
+        // Never on Yes; off the poem too when the screen has room.
+        [pad(yes), pad(block)],
       ),
     );
   }
@@ -121,13 +137,17 @@ export function Letter() {
         {screen.kind === 'question' && (
           <div
             className="ll-in mt-[4vh] flex flex-wrap items-center justify-center gap-4"
-            style={{ animationDelay: `${screen.lines.length * step}s` }}
+            style={{
+              animationDelay: `${screen.lines.length * step}s`,
+              pointerEvents: answerable ? undefined : 'none',
+            }}
           >
             <button
+              ref={yesRef}
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                setIndex(SCREENS.length - 1);
+                if (answerable) setIndex(SCREENS.length - 1);
               }}
               className={`${BTN} bg-(--ll-accent) text-white`}
             >
