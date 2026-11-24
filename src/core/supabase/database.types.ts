@@ -143,6 +143,60 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"plc_place_tags": {
+                  Row: {
+                    "place_id": string,"tag_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "place_id": string,"tag_id": string
+                  }
+                  Update: {
+                    "place_id"?: string,"tag_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "plc_place_tags_place_id_fkey"
+      columns: ["place_id"]
+isOneToOne: false
+      referencedRelation: "plc_places"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "plc_place_tags_tag_id_fkey"
+      columns: ["tag_id"]
+isOneToOne: false
+      referencedRelation: "plc_tags"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"plc_places": {
+                  Row: {
+                    "created_at": string,"dishes": string | null,"id": string,"maps_url": string | null,"name": string,"note": string | null,"photos": string[],"price_level": number | null,"rating": number | null,"status": string,"updated_at": string,"visited_on": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"dishes"?: string | null,"id"?: string,"maps_url"?: string | null,"name": string,"note"?: string | null,"photos"?: string[],"price_level"?: number | null,"rating"?: number | null,"status"?: string,"updated_at"?: string,"visited_on"?: string | null
+                  }
+                  Update: {
+                    "created_at"?: string,"dishes"?: string | null,"id"?: string,"maps_url"?: string | null,"name"?: string,"note"?: string | null,"photos"?: string[],"price_level"?: number | null,"rating"?: number | null,"status"?: string,"updated_at"?: string,"visited_on"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"plc_tags": {
+                  Row: {
+                    "created_at": string,"emoji": string | null,"id": string,"kind": string,"name": string,"sort": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"emoji"?: string | null,"id"?: string,"kind": string,"name": string,"sort"?: number
+                  }
+                  Update: {
+                    "created_at"?: string,"emoji"?: string | null,"id"?: string,"kind"?: string,"name"?: string,"sort"?: number
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"plugins": {
                   Row: {
                     "enabled": boolean,"id": string,"settings": NonNullable<Json>
