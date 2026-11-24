@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { startTransition, type FormEvent, type ReactNode } from 'react';
 import { useActionToast } from '@/core/ui/useActionToast';
 import {
   PLACE_STATUSES,
@@ -63,8 +63,16 @@ export function PlaceForm({ place, tags }: { place: Place | null; tags: Tag[] })
   const [, formAction, pending] = useActionToast(savePlace, 'Đã lưu');
   const ofKind = (kind: Tag['kind']) => tags.filter((t) => t.kind === kind);
 
+  // Dispatch manually instead of <form action>: React resets an action form after every submit,
+  // which would wipe a long form when the server only rejects one field.
+  function onSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    startTransition(() => formAction(fd));
+  }
+
   return (
-    <form action={formAction} className="flex max-w-2xl flex-col gap-4">
+    <form onSubmit={onSubmit} className="flex max-w-2xl flex-col gap-4">
       {place && <input type="hidden" name="id" value={place.id} />}
 
       <Field label="Tên quán" htmlFor="name">

@@ -11,9 +11,10 @@ beforeAll(async () => {
   s = await seedTwoFamilies();
   const { error } = await s.admin.client.from('roles').insert({ id: ROLE, name: ROLE });
   if (error) throw error;
-  await s.admin.client
+  const { error: rpErr } = await s.admin.client
     .from('role_permissions')
     .insert({ role_id: ROLE, permission: 'places.manage' });
+  if (rpErr) throw rpErr;
   const admin = adminClient();
   const email = `mgr-${run}@test.local`;
   const { data, error: uErr } = await admin.auth.admin.createUser({
@@ -101,5 +102,25 @@ describe('RLS: places', () => {
   it('anon can read modules', async () => {
     const { error } = await anonClient().from('modules').select('id');
     expect(error).toBeNull();
+  });
+
+  it('anon cannot upload to the places bucket', async () => {
+    const { error } = await anonClient()
+      .storage.from('places')
+      .upload(`anon-${run}.png`, new Blob(['x'], { type: 'image/png' }), {
+        contentType: 'image/png',
+      });
+    expect(error).not.toBeNull();
+  });
+
+  it('manager can upload and remove a photo', async () => {
+    const path = `test-${run}/a.png`;
+    const { error } = await manager.storage
+      .from('places')
+      .upload(path, new Blob(['x'], { type: 'image/png' }), { contentType: 'image/png' });
+    expect(error).toBeNull();
+    const { data, error: rmErr } = await manager.storage.from('places').remove([path]);
+    expect(rmErr).toBeNull();
+    expect(data).toHaveLength(1);
   });
 });

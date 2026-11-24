@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canAddPhoto, checkPhotoFile, photoPath } from './photos';
+import { canAddPhoto, checkPhotoFile, fitWithin, photoPath } from './photos';
 
 describe('checkPhotoFile', () => {
   it('accepts a 2 MB jpeg', () => {
@@ -33,5 +33,16 @@ describe('photoPath', () => {
 
   it('generates a random id when none is given', () => {
     expect(photoPath('p1', 'image/webp')).toMatch(/^p1\/[0-9a-f-]{36}\.webp$/);
+  });
+});
+
+describe('fitWithin', () => {
+  it('scales the long side down to the limit, keeping the aspect ratio', () => {
+    expect(fitWithin(4032, 3024, 1600)).toEqual({ width: 1600, height: 1200 });
+    expect(fitWithin(3024, 4032, 1600)).toEqual({ width: 1200, height: 1600 });
+  });
+
+  it('leaves small images alone', () => {
+    expect(fitWithin(800, 600, 1600)).toEqual({ width: 800, height: 600 });
   });
 });

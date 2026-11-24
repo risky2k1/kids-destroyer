@@ -18,3 +18,12 @@ export const canAddPhoto = (current: number): boolean => current < PHOTO_MAX_COU
 export function photoPath(placeId: string, type: string, id: string = crypto.randomUUID()): string {
   return `${placeId}/${id}.${PHOTO_TYPES[type]}`;
 }
+
+/** Longest side (px) a photo is downscaled to in the browser before upload. */
+export const PHOTO_MAX_SIDE = 1600;
+
+/** Size that fits inside max×max, keeping the aspect ratio; never upscales. */
+export function fitWithin(width: number, height: number, max: number) {
+  const scale = Math.min(1, max / Math.max(width, height));
+  return { width: Math.round(width * scale), height: Math.round(height * scale) };
+}
