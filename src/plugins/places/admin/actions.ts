@@ -87,8 +87,9 @@ export async function savePlace(_: ActionState, fd: FormData): Promise<ActionSta
   return { ok: true };
 }
 
-export async function deletePlace(id: string): Promise<ActionState> {
+export async function deletePlace(_: ActionState, fd: FormData): Promise<ActionState> {
   await requirePermission(PERMISSION);
+  const id = String(fd.get('id') ?? '');
   if (!uuid.safeParse(id).success) return badId;
   const sb = await createClient();
   const { data, error } = await sb.from('plc_places').select('photos').eq('id', id).single();
@@ -210,8 +211,9 @@ export async function saveTag(_: ActionState, fd: FormData): Promise<ActionState
   return { ok: true };
 }
 
-export async function deleteTag(id: string): Promise<ActionState> {
+export async function deleteTag(_: ActionState, fd: FormData): Promise<ActionState> {
   await requirePermission(PERMISSION);
+  const id = String(fd.get('id') ?? '');
   if (!uuid.safeParse(id).success) return badId;
   const sb = await createClient();
   const { error } = await sb.from('plc_tags').delete().eq('id', id);
