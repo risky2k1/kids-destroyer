@@ -1,6 +1,5 @@
 import { Send } from 'lucide-react';
 import { PageHeader } from '@/core/ui/PageHeader';
-import { ViewBar } from '@/core/ui/ViewBar';
 import { AssignForm } from './components/AssignForm';
 import { AssignmentsTable } from './components/AssignmentsTable';
 import { listAssignableKids, listAssignments, listQuizOptions } from './queries';
@@ -19,7 +18,6 @@ export async function AssignmentsView({ basePath }: { basePath: 'admin' | 'paren
           <PageHeader icon={Send} title="Giao bài" />
           <AssignForm quizzes={quizzes} kids={kids} />
           <div className="flex flex-col gap-2">
-            <ViewBar label="bài đã giao" count={assignments.length} />
             <AssignmentsTable rows={assignments} basePath={basePath} />
           </div>
         </>

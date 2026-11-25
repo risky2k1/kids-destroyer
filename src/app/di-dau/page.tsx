@@ -1,5 +1,7 @@
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { requireModule } from '@/core/modules/server';
+import { PlacesPickerSkeleton } from '@/core/ui/PageSkeletons';
 import { PickerView } from '@/plugins/places/picker';
 
 const title = 'Đi đâu giờ? 🎲';
@@ -14,5 +16,9 @@ export const metadata: Metadata = {
 
 export default async function Page() {
   await requireModule('places');
-  return <PickerView />;
+  return (
+    <Suspense fallback={<PlacesPickerSkeleton />}>
+      <PickerView />
+    </Suspense>
+  );
 }

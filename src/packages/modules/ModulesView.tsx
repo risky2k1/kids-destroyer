@@ -49,29 +49,6 @@ export async function ModulesView({
             })}
           </div>
         </section>
-
-        <section className="space-y-3">
-          <h2 className="text-sm font-heading text-foreground/80">Thành phần hệ thống</h2>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {packages.map((pkg) => (
-              <Card key={pkg.id} size="sm">
-                <CardHeader className="flex-row items-start justify-between gap-3">
-                  <div className="min-w-0 flex-1 space-y-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <CardTitle className="text-base">{pkg.name}</CardTitle>
-                      <span className="font-mono text-xs text-foreground/60">v{pkg.version}</span>
-                      <Badge variant="neutral">Luôn bật</Badge>
-                    </div>
-                    <CardDescription>{pkg.description}</CardDescription>
-                    <div className="text-xs text-foreground/60">
-                      {pkg.permissionCount} quyền · {pkg.navCount} mục menu
-                    </div>
-                  </div>
-                </CardHeader>
-              </Card>
-            ))}
-          </div>
-        </section>
       </div>
     </>
   );

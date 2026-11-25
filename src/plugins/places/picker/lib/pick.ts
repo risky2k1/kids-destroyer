@@ -1,9 +1,16 @@
-import type { Place, PriceLevel } from '@/plugins/places/shared';
+import {
+  isOpenAt,
+  resolveFilterMinute,
+  type Place,
+  type PriceLevel,
+  type TimeSlotFilter,
+} from '@/plugins/places/shared';
 
 export type PickMode = 'all' | 'visited' | 'wishlist';
 
 export type Filters = {
   mode: PickMode;
+  timeSlot: TimeSlotFilter;
   categoryIds: string[];
   vibeIds: string[];
   areaIds: string[];
@@ -13,11 +20,17 @@ export type Filters = {
 
 export const EMPTY_FILTERS: Filters = {
   mode: 'all',
+  timeSlot: 'any',
   categoryIds: [],
   vibeIds: [],
   areaIds: [],
   prices: [],
   minRating: null,
+};
+
+export const DEFAULT_FILTERS: Filters = {
+  ...EMPTY_FILTERS,
+  timeSlot: 'now',
 };
 
 /** An empty selection ignores the group; otherwise the place needs at least one selected value. */
@@ -31,10 +44,12 @@ function passesRating(p: Place, f: Filters): boolean {
   return f.mode !== 'visited';
 }
 
-export function filterPlaces(places: Place[], f: Filters): Place[] {
+export function filterPlaces(places: Place[], f: Filters, nowMinute: number = 12 * 60): Place[] {
+  const targetMinute = resolveFilterMinute(f.timeSlot, nowMinute);
   return places.filter(
     (p) =>
       (f.mode === 'all' || p.status === f.mode) &&
+      (targetMinute === null || isOpenAt(p.openHours, targetMinute)) &&
       anyOf(f.categoryIds, p.categoryIds) &&
       anyOf(f.vibeIds, p.vibeIds) &&
       anyOf(f.areaIds, p.areaId ? [p.areaId] : []) &&
@@ -62,6 +77,7 @@ export function sortForList(places: Place[]): Place[] {
 export function isFiltered(f: Filters): boolean {
   return (
     f.mode !== 'all' ||
+    f.timeSlot !== 'any' ||
     f.minRating !== null ||
     f.categoryIds.length + f.vibeIds.length + f.areaIds.length + f.prices.length > 0
   );

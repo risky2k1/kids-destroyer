@@ -16,7 +16,10 @@ import {
   placeFormValues,
   placeInput,
   tagInput,
-  todayInVietnam,
+  vietnamInputToIso,
+  visitInput,
+  type Tag,
+  type TagKind,
 } from '@/plugins/places/shared';
 
 const PERMISSION = 'places.manage';
@@ -44,29 +47,44 @@ export async function savePlace(_: ActionState, fd: FormData): Promise<ActionSta
   if (existingId && !uuid.safeParse(existingId).success) return badId;
 
   const sb = await createClient();
-  const row = {
+  const baseRow = {
     name: input.name,
     status: input.status,
-    rating: input.rating,
     price_level: input.priceLevel,
     dishes: input.dishes,
     note: input.note,
     maps_url: input.mapsUrl,
-    visited_on: input.visitedOn,
+    open_hours: input.openHours,
   };
 
   let id: string;
   if (existingId) {
+    // rating and visited_on are maintained by the plc_visits trigger when editing.
     const { error } = await sb
       .from('plc_places')
-      .update({ ...row, updated_at: new Date().toISOString() })
+      .update({ ...baseRow, updated_at: new Date().toISOString() })
       .eq('id', existingId);
     if (error) return fail(error);
     id = existingId;
   } else {
-    const { data, error } = await sb.from('plc_places').insert(row).select('id').single();
+    const { data, error } = await sb.from('plc_places').insert(baseRow).select('id').single();
     if (error) return fail(error);
     id = data.id;
+
+    const hasFirstVisit =
+      input.status === 'visited' &&
+      (input.rating !== null || input.visitedOn !== null || input.visitNote !== null);
+    if (hasFirstVisit) {
+      const visitedAt =
+        (input.visitedOn ? vietnamInputToIso(input.visitedOn) : null) ?? new Date().toISOString();
+      const { error: visitError } = await sb.from('plc_visits').insert({
+        place_id: id,
+        visited_at: visitedAt,
+        rating: input.rating,
+        note: input.visitNote,
+      });
+      if (visitError) return fail(visitError);
+    }
   }
 
   // shortcut: not atomic; fine for a single admin editing at a time.
@@ -104,18 +122,65 @@ export async function deletePlace(_: ActionState, fd: FormData): Promise<ActionS
   redirect(PLACES_PATHS.admin);
 }
 
-export async function markVisitedToday(id: string): Promise<ActionState> {
+export async function addVisit(_: ActionState, fd: FormData): Promise<ActionState> {
   await requirePermission(PERMISSION);
+  const parsed = visitInput.safeParse({
+    placeId: fd.get('placeId'),
+    visitedAt: fd.get('visitedAt'),
+    rating: fd.get('rating'),
+    note: fd.get('note'),
+  });
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
+  const { placeId, visitedAt, rating, note } = parsed.data;
+
+  const sb = await createClient();
+  const { error: statusError } = await sb
+    .from('plc_places')
+    .update({ status: 'visited', updated_at: new Date().toISOString() })
+    .eq('id', placeId)
+    .eq('status', 'wishlist');
+  if (statusError) return fail(statusError);
+
+  const { error } = await sb.from('plc_visits').insert({
+    place_id: placeId,
+    visited_at: visitedAt,
+    rating,
+    note,
+  });
+  if (error) return fail(error);
+  refresh();
+  return { ok: true };
+}
+
+export async function updateVisit(_: ActionState, fd: FormData): Promise<ActionState> {
+  await requirePermission(PERMISSION);
+  const id = String(fd.get('id') ?? '');
   if (!uuid.safeParse(id).success) return badId;
+  const parsed = visitInput.safeParse({
+    placeId: fd.get('placeId'),
+    visitedAt: fd.get('visitedAt'),
+    rating: fd.get('rating'),
+    note: fd.get('note'),
+  });
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
+  const { visitedAt, rating, note } = parsed.data;
+
   const sb = await createClient();
   const { error } = await sb
-    .from('plc_places')
-    .update({
-      status: 'visited',
-      visited_on: todayInVietnam(),
-      updated_at: new Date().toISOString(),
-    })
+    .from('plc_visits')
+    .update({ visited_at: visitedAt, rating, note })
     .eq('id', id);
+  if (error) return fail(error);
+  refresh();
+  return { ok: true };
+}
+
+export async function deleteVisit(_: ActionState, fd: FormData): Promise<ActionState> {
+  await requirePermission(PERMISSION);
+  const id = String(fd.get('id') ?? '');
+  if (!uuid.safeParse(id).success) return badId;
+  const sb = await createClient();
+  const { error } = await sb.from('plc_visits').delete().eq('id', id);
   if (error) return fail(error);
   refresh();
   return { ok: true };
@@ -184,15 +249,20 @@ export async function saveTag(_: ActionState, fd: FormData): Promise<ActionState
     kind: fd.get('kind'),
     name: fd.get('name'),
     emoji: fd.get('emoji') ?? '',
+    icon: fd.get('icon') ?? '',
   });
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
-  const { kind, name, emoji } = parsed.data;
+  const { kind, name, emoji, icon } = parsed.data;
+  const nextEmoji = icon ? null : emoji;
   const rawId = fd.get('id');
   const sb = await createClient();
 
   if (typeof rawId === 'string' && rawId !== '') {
     if (!uuid.safeParse(rawId).success) return badId;
-    const { error } = await sb.from('plc_tags').update({ name, emoji }).eq('id', rawId);
+    const { error } = await sb
+      .from('plc_tags')
+      .update({ name, emoji: nextEmoji, icon })
+      .eq('id', rawId);
     if (error) return fail(error);
   } else {
     const { data: last } = await sb
@@ -204,11 +274,44 @@ export async function saveTag(_: ActionState, fd: FormData): Promise<ActionState
       .maybeSingle();
     const { error } = await sb
       .from('plc_tags')
-      .insert({ kind, name, emoji, sort: (last?.sort ?? -1) + 1 });
+      .insert({ kind, name, emoji: nextEmoji, icon, sort: (last?.sort ?? -1) + 1 });
     if (error) return fail(error);
   }
   refresh();
   return { ok: true };
+}
+
+export async function createTagInline(input: {
+  kind: TagKind;
+  name: string;
+  icon?: string | null;
+}): Promise<{ ok: true; tag: Tag } | { ok: false; error: string }> {
+  await requirePermission(PERMISSION);
+  const parsed = tagInput.safeParse({
+    kind: input.kind,
+    name: input.name,
+    emoji: '',
+    icon: input.icon ?? '',
+  });
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
+  const { kind, name, icon } = parsed.data;
+
+  const sb = await createClient();
+  const { data: last } = await sb
+    .from('plc_tags')
+    .select('sort')
+    .eq('kind', kind)
+    .order('sort', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  const { data, error } = await sb
+    .from('plc_tags')
+    .insert({ kind, name, emoji: null, icon, sort: (last?.sort ?? -1) + 1 })
+    .select('id, kind, name, emoji, icon, sort')
+    .single();
+  if (error) return { ok: false, error: dbErrorMessage(error) };
+  refresh();
+  return { ok: true, tag: { ...data, kind: data.kind as TagKind } };
 }
 
 export async function deleteTag(_: ActionState, fd: FormData): Promise<ActionState> {

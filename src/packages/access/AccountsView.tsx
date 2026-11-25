@@ -1,7 +1,6 @@
 import { UserCog } from 'lucide-react';
 import { getCurrentUser } from '@/core/auth/session';
 import { PageHeader } from '@/core/ui/PageHeader';
-import { ViewBar } from '@/core/ui/ViewBar';
 import { Button } from '@/themes/neobrutal/ui/button';
 import { AccountsTable } from './components/AccountsTable';
 import { CreateAccountDialog } from './components/CreateAccountDialog';
@@ -25,7 +24,6 @@ export async function AccountsView() {
           </CreateAccountDialog>
         }
       />
-      <ViewBar label="tài khoản" count={accounts.length} />
       <AccountsTable accounts={accounts} roles={roles} currentUserId={currentUser?.id ?? ''} />
     </>
   );

@@ -1,7 +1,6 @@
 import { Puzzle } from 'lucide-react';
 import { enabledMap } from '@/plugins/kids-learning/question-types/server';
 import { PageHeader } from '@/core/ui/PageHeader';
-import { ViewBar } from '@/core/ui/ViewBar';
 import { getPlugin, PLUGIN_IDS } from '@/plugins/kids-learning/question-types';
 import { PluginsTable } from './components/PluginsTable';
 import { countQuestionsByType } from './queries';
@@ -24,7 +23,6 @@ export async function PluginsView() {
   return (
     <>
       <PageHeader icon={Puzzle} title="Dạng câu" />
-      <ViewBar label="dạng" count={rows.length} />
       <PluginsTable rows={rows} />
     </>
   );

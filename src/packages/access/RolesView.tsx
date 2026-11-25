@@ -1,6 +1,5 @@
 import { KeyRound } from 'lucide-react';
 import { PageHeader } from '@/core/ui/PageHeader';
-import { ViewBar } from '@/core/ui/ViewBar';
 import { Button } from '@/themes/neobrutal/ui/button';
 import { CreateRoleDialog } from './components/CreateRoleDialog';
 import { RolesTable } from './components/RolesTable';
@@ -24,7 +23,6 @@ export async function RolesView() {
           </CreateRoleDialog>
         }
       />
-      <ViewBar label="vai trò" count={roles.length} />
       <RolesTable roles={roles} />
     </>
   );

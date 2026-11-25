@@ -31,13 +31,15 @@ beforeAll(async () => {
 });
 
 describe('RLS: places', () => {
-  it('anon reads places and tags', async () => {
+  it('anon reads places, tags, and visits', async () => {
     const anon = anonClient();
     const { data: tags, error } = await anon.from('plc_tags').select('id');
     expect(error).toBeNull();
     expect(tags!.length).toBeGreaterThanOrEqual(13);
     const { error: pErr } = await anon.from('plc_places').select('id');
     expect(pErr).toBeNull();
+    const { error: vErr } = await anon.from('plc_visits').select('id');
+    expect(vErr).toBeNull();
   });
 
   it('anon cannot write', async () => {
@@ -48,18 +50,34 @@ describe('RLS: places', () => {
     expect(tErr).not.toBeNull();
   });
 
-  it('user without places.manage cannot write', async () => {
+  it('user without places.manage cannot write places or visits', async () => {
     const { error } = await s.parentA.client.from('plc_places').insert({ name: 'X' });
     expect(error).not.toBeNull();
-  });
-
-  it('manager creates a place with tags; deleting a tag keeps the place and drops the link', async () => {
-    const { data: place, error } = await manager
+    const { data: place } = await manager
       .from('plc_places')
-      .insert({ name: `Lẩu ${run}`, rating: 5, price_level: 2 })
+      .insert({ name: `Guard ${run}` })
       .select('id')
       .single();
+    const { error: vErr } = await s.parentA.client
+      .from('plc_visits')
+      .insert({ place_id: place!.id, rating: 5 });
+    expect(vErr).not.toBeNull();
+  });
+
+  it('manager creates a place with tags and icon; deleting a tag keeps the place and drops the link', async () => {
+    const { data: place, error } = await manager
+      .from('plc_places')
+      .insert({
+        name: `Lẩu ${run}`,
+        rating: 5,
+        price_level: 2,
+        open_hours: [{ open: '18:00', close: '02:00' }],
+      })
+      .select('id, open_hours')
+      .single();
     expect(error).toBeNull();
+    expect(place!.open_hours).toEqual([{ open: '18:00', close: '02:00' }]);
+
     const { data: lau } = await manager
       .from('plc_tags')
       .select('id')
@@ -68,10 +86,12 @@ describe('RLS: places', () => {
       .single();
     const { data: area, error: aErr } = await manager
       .from('plc_tags')
-      .insert({ kind: 'area', name: `Khu ${run}` })
-      .select('id')
+      .insert({ kind: 'area', name: `Khu ${run}`, icon: 'map-pin' })
+      .select('id, icon')
       .single();
     expect(aErr).toBeNull();
+    expect(area!.icon).toBe('map-pin');
+
     const { error: lErr } = await manager.from('plc_place_tags').insert([
       { place_id: place!.id, tag_id: lau!.id },
       { place_id: place!.id, tag_id: area!.id },
@@ -87,6 +107,74 @@ describe('RLS: places', () => {
       .select('tag_id')
       .eq('place_id', place!.id);
     expect(links).toEqual([{ tag_id: lau!.id }]);
+  });
+
+  it('syncs place average rating and visited_on from plc_visits trigger', async () => {
+    const { data: place, error: pErr } = await manager
+      .from('plc_places')
+      .insert({ name: `VisitAvg ${run}`, status: 'visited' })
+      .select('id')
+      .single();
+    expect(pErr).toBeNull();
+
+    const { data: v1, error: v1Err } = await manager
+      .from('plc_visits')
+      .insert({
+        place_id: place!.id,
+        visited_at: '2026-11-20T12:00:00Z',
+        rating: 5,
+        note: 'Lần 1 rất ngon',
+      })
+      .select('id')
+      .single();
+    expect(v1Err).toBeNull();
+
+    const { data: v2, error: v2Err } = await manager
+      .from('plc_visits')
+      .insert({
+        place_id: place!.id,
+        visited_at: '2026-11-24T18:00:00Z', // 2026-11-25 01:00 in Vietnam
+        rating: 1,
+        note: 'Lần 2 phục vụ chậm',
+      })
+      .select('id')
+      .single();
+    expect(v2Err).toBeNull();
+
+    const { data: afterTwo } = await anonClient()
+      .from('plc_places')
+      .select('rating, visited_on')
+      .eq('id', place!.id)
+      .single();
+    expect(Number(afterTwo!.rating)).toBe(3);
+    expect(afterTwo!.visited_on).toBe('2026-11-25');
+
+    // Add a 4-star visit: (5 + 1 + 4) / 3 = 3.33
+    const { error: v3Err } = await manager.from('plc_visits').insert({
+      place_id: place!.id,
+      visited_at: '2026-11-21T05:00:00Z',
+      rating: 4,
+    });
+    expect(v3Err).toBeNull();
+
+    const { data: afterThree } = await anonClient()
+      .from('plc_places')
+      .select('rating')
+      .eq('id', place!.id)
+      .single();
+    expect(Number(afterThree!.rating)).toBe(3.33);
+
+    // Delete the 1-star visit: (5 + 4) / 2 = 4.5
+    const { error: delErr } = await manager.from('plc_visits').delete().eq('id', v2!.id);
+    expect(delErr).toBeNull();
+    const { data: afterDelete } = await anonClient()
+      .from('plc_places')
+      .select('rating, visited_on')
+      .eq('id', place!.id)
+      .single();
+    expect(Number(afterDelete!.rating)).toBe(4.5);
+    expect(afterDelete!.visited_on).toBe('2026-11-21');
+    expect(v1!.id).toBeTruthy();
   });
 
   it('duplicate tag name in same kind is rejected (case-insensitive)', async () => {

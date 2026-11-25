@@ -43,19 +43,37 @@ function EnabledToggle({ id, enabled }: { id: string; enabled: boolean }) {
 export function PluginsTable({ rows }: { rows: Row[] }) {
   return (
     <RecordTable
+      view={{ label: 'dạng' }}
       columns={[
         {
           key: 'name',
           label: 'Dạng',
           icon: Puzzle,
+          sortValue: (row) => row.name,
+          filterValue: (row) => row.name,
           render: (row) => <span className="font-heading">{row.name}</span>,
         },
-        { key: 'description', label: 'Mô tả', icon: Text, render: (row) => row.description },
-        { key: 'count', label: 'Số câu', icon: Hash, render: (row) => row.count },
+        {
+          key: 'description',
+          label: 'Mô tả',
+          icon: Text,
+          filterValue: (row) => row.description,
+          render: (row) => row.description,
+        },
+        {
+          key: 'count',
+          label: 'Số câu',
+          icon: Hash,
+          sortValue: (row) => row.count,
+          render: (row) => row.count,
+        },
         {
           key: 'enabled',
           label: 'Bật',
           icon: ToggleLeft,
+          sortValue: (row) => (row.enabled ? 1 : 0),
+          filterValue: (row) => (row.enabled ? 'Đang bật' : 'Đang tắt'),
+          filterFacet: true,
           render: (row) => <EnabledToggle id={row.id} enabled={row.enabled} />,
         },
       ]}

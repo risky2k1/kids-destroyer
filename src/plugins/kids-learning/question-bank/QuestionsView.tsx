@@ -3,7 +3,6 @@ import { CircleHelp } from 'lucide-react';
 import { listCatalog } from '@/plugins/kids-learning/catalog';
 import { PATHS } from '@/core/routes';
 import { PageHeader } from '@/core/ui/PageHeader';
-import { ViewBar } from '@/core/ui/ViewBar';
 import { getPlugin, PLUGIN_IDS } from '@/plugins/kids-learning/question-types';
 import { buttonVariants } from '@/themes/neobrutal/ui/button';
 import { QuestionFilters } from './components/QuestionFilters';
@@ -47,18 +46,22 @@ export async function QuestionsView({
           </Link>
         }
       />
-      <ViewBar label="câu hỏi" count={questions.length}>
-        <QuestionFilters
-          subjects={catalog.subjects}
-          grades={catalog.grades}
-          types={types}
-          subject={subject}
-          grade={grade}
-          type={type}
-        />
-        <span className="text-foreground/60">· {questions.length}</span>
-      </ViewBar>
-      <QuestionsTable rows={questions} />
+      <QuestionsTable
+        rows={questions}
+        header={
+          <>
+            <QuestionFilters
+              subjects={catalog.subjects}
+              grades={catalog.grades}
+              types={types}
+              subject={subject}
+              grade={grade}
+              type={type}
+            />
+            <span className="text-foreground/60">· {questions.length}</span>
+          </>
+        }
+      />
     </>
   );
 }

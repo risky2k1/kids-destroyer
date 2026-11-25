@@ -1,6 +1,5 @@
 import { Users } from 'lucide-react';
 import { PageHeader } from '@/core/ui/PageHeader';
-import { ViewBar } from '@/core/ui/ViewBar';
 import { Button } from '@/themes/neobrutal/ui/button';
 import { CreateFamilyDialog } from './components/CreateFamilyDialog';
 import { FamiliesTable } from './components/FamiliesTable';
@@ -23,7 +22,6 @@ export async function FamiliesView() {
           </CreateFamilyDialog>
         }
       />
-      <ViewBar label="gia đình" count={families.length} />
       <FamiliesTable families={families} />
     </>
   );

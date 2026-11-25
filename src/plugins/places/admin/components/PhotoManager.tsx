@@ -52,7 +52,7 @@ export function PhotoManager({ place }: { place: Place }) {
               <img
                 src={photo.url}
                 alt=""
-                className="size-24 rounded-base border-2 border-border object-cover"
+                className="size-24 rounded-base border-2 border-border bg-foreground/10 object-cover"
               />
               <Button
                 type="button"

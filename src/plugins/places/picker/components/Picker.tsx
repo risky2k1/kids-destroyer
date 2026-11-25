@@ -1,21 +1,55 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import type { Place, Tag } from '@/plugins/places/shared';
+import {
+  formatClockInVietnam,
+  nowMinutesInVietnam,
+  type Place,
+  type Tag,
+} from '@/plugins/places/shared';
 import { Button } from '@/themes/neobrutal/ui/button';
-import { EMPTY_FILTERS, filterPlaces, isFiltered, type Filters } from '../lib/pick';
+import {
+  DEFAULT_FILTERS,
+  EMPTY_FILTERS,
+  filterPlaces,
+  isFiltered,
+  type Filters,
+} from '../lib/pick';
 import { FilterBar } from './FilterBar';
 import { PlaceDetail } from './PlaceDetail';
 import { PlaceList } from './PlaceList';
 import { ShuffleCard } from './ShuffleCard';
 import { useShuffle } from './useShuffle';
 
-export function Picker({ places, tags }: { places: Place[]; tags: Tag[] }) {
-  const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
+export function Picker({
+  places,
+  tags,
+  initialNowMinute,
+  initialClock,
+}: {
+  places: Place[];
+  tags: Tag[];
+  initialNowMinute: number;
+  initialClock: string;
+}) {
+  const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
+  const [nowMinute, setNowMinute] = useState(initialNowMinute);
+  const [clockLabel, setClockLabel] = useState(initialClock);
   const [detail, setDetail] = useState<Place | null>(null);
   const tagsById = useMemo(() => new Map(tags.map((t) => [t.id, t])), [tags]);
-  const matching = useMemo(() => filterPlaces(places, filters), [places, filters]);
+  const matching = useMemo(
+    () => filterPlaces(places, filters, nowMinute),
+    [places, filters, nowMinute],
+  );
   const { current, rolling, shuffle } = useShuffle(matching);
+
+  function handleFilterChange(next: Filters) {
+    if (next.timeSlot === 'now') {
+      setNowMinute(nowMinutesInVietnam());
+      setClockLabel(formatClockInVietnam());
+    }
+    setFilters(next);
+  }
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-5 bg-background px-4 py-6">
@@ -27,7 +61,12 @@ export function Picker({ places, tags }: { places: Place[]; tags: Tag[] }) {
         </p>
       ) : (
         <>
-          <FilterBar filters={filters} onChange={setFilters} tags={tags} />
+          <FilterBar
+            filters={filters}
+            onChange={handleFilterChange}
+            tags={tags}
+            clockLabel={clockLabel}
+          />
 
           {matching.length === 0 ? (
             <div className="flex flex-col items-start gap-3 rounded-base border-2 border-border bg-secondary-background p-4">

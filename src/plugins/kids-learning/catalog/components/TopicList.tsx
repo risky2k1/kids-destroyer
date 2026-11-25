@@ -6,7 +6,6 @@ import type { ActionState } from '@/core/actions';
 import { ConfirmDelete } from '@/core/ui/ConfirmDelete';
 import { RecordTable } from '@/core/ui/RecordTable';
 import { useActionToast } from '@/core/ui/useActionToast';
-import { ViewBar } from '@/core/ui/ViewBar';
 import { Button } from '@/themes/neobrutal/ui/button';
 import { Input } from '@/themes/neobrutal/ui/input';
 import { NativeSelect } from '@/themes/neobrutal/ui/native-select';
@@ -34,71 +33,81 @@ export function TopicList({
   const shown = topics.filter((t) => t.subject_id === subjectId && t.grade_id === gradeId);
 
   return (
-    <>
-      <ViewBar label="chủ đề" count={shown.length}>
-        <NativeSelect
-          value={subjectId}
-          onChange={(e) => setSubjectId(e.target.value)}
-          aria-label="Môn"
-          className={selectClass}
-        >
-          {subjects.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.name}
-            </option>
-          ))}
-        </NativeSelect>
-        <NativeSelect
-          value={gradeId}
-          onChange={(e) => setGradeId(e.target.value)}
-          aria-label="Lớp"
-          className={selectClass}
-        >
-          {grades.map((g) => (
-            <option key={g.id} value={g.id}>
-              {g.name}
-            </option>
-          ))}
-        </NativeSelect>
-      </ViewBar>
-      <RecordTable
-        columns={[
-          { key: 'name', label: 'Tên', icon: Tags, render: (topic) => topic.name },
-          {
-            key: 'actions',
-            label: '',
-            icon: Tags,
-            className: 'w-px',
-            render: (topic) => <ConfirmDelete id={topic.id} label={topic.name} action={remove} />,
-          },
-        ]}
-        rows={shown}
-        getId={(topic) => topic.id}
-        empty="Chưa có chủ đề."
-        addRow={
-          <form action={addAction} className="flex items-center gap-2">
-            <input type="hidden" name="subjectId" value={subjectId} />
-            <input type="hidden" name="gradeId" value={gradeId} />
-            <Input
-              id="new-topics"
-              name="name"
-              placeholder="Chủ đề mới"
-              aria-label="Tên chủ đề"
-              className={fieldClass}
-              required
-            />
-            <Button
-              type="submit"
-              variant="noShadow"
-              size="xs"
-              className="h-7 border"
-              disabled={pending || !subjectId || !gradeId}
+    <RecordTable
+      view={{
+        label: 'chủ đề',
+        header: (
+          <>
+            <NativeSelect
+              value={subjectId}
+              onChange={(e) => setSubjectId(e.target.value)}
+              aria-label="Môn"
+              className={selectClass}
             >
-              Thêm
-            </Button>
-          </form>
-        }
-      />
-    </>
+              {subjects.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name}
+                </option>
+              ))}
+            </NativeSelect>
+            <NativeSelect
+              value={gradeId}
+              onChange={(e) => setGradeId(e.target.value)}
+              aria-label="Lớp"
+              className={selectClass}
+            >
+              {grades.map((g) => (
+                <option key={g.id} value={g.id}>
+                  {g.name}
+                </option>
+              ))}
+            </NativeSelect>
+          </>
+        ),
+      }}
+      columns={[
+        {
+          key: 'name',
+          label: 'Tên',
+          icon: Tags,
+          sortValue: (topic) => topic.name,
+          filterValue: (topic) => topic.name,
+          render: (topic) => topic.name,
+        },
+        {
+          key: 'actions',
+          label: '',
+          icon: Tags,
+          className: 'w-px',
+          render: (topic) => <ConfirmDelete id={topic.id} label={topic.name} action={remove} />,
+        },
+      ]}
+      rows={shown}
+      getId={(topic) => topic.id}
+      empty="Chưa có chủ đề."
+      addRow={
+        <form action={addAction} className="flex items-center gap-2">
+          <input type="hidden" name="subjectId" value={subjectId} />
+          <input type="hidden" name="gradeId" value={gradeId} />
+          <Input
+            id="new-topics"
+            name="name"
+            placeholder="Chủ đề mới"
+            aria-label="Tên chủ đề"
+            className={fieldClass}
+            required
+          />
+          <Button
+            type="submit"
+            variant="noShadow"
+            size="xs"
+            className="h-7 border"
+            disabled={pending || !subjectId || !gradeId}
+          >
+            Thêm
+          </Button>
+        </form>
+      }
+    />
   );
 }

@@ -1,17 +1,24 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useActionToast } from '@/core/ui/useActionToast';
 import { Button } from '@/themes/neobrutal/ui/button';
-import { Checkbox } from '@/themes/neobrutal/ui/checkbox';
-import { Input } from '@/themes/neobrutal/ui/input';
+import { DateTimePicker } from '@/themes/neobrutal/ui/date-time-picker';
 import { Label } from '@/themes/neobrutal/ui/label';
-import { NativeSelect } from '@/themes/neobrutal/ui/native-select';
+import { MultiSelect } from '@/themes/neobrutal/ui/multi-select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/themes/neobrutal/ui/select';
 import { assign } from '../actions';
 import type { AssignableKid, QuizOption } from '../queries';
 
 export function AssignForm({ quizzes, kids }: { quizzes: QuizOption[]; kids: AssignableKid[] }) {
   const formRef = useRef<HTMLFormElement>(null);
+  const [quizId, setQuizId] = useState('');
   const [selectedKidIds, setSelectedKidIds] = useState<string[]>([]);
   const [state, formAction, pending] = useActionToast(assign, 'Đã giao bài');
   const seen = useRef(state);
@@ -24,25 +31,27 @@ export function AssignForm({ quizzes, kids }: { quizzes: QuizOption[]; kids: Ass
     }
   }, [state]);
 
-  function toggleKid(id: string) {
-    setSelectedKidIds((current) =>
-      current.includes(id) ? current.filter((k) => k !== id) : [...current, id],
-    );
-  }
+  const kidOptions = useMemo(
+    () =>
+      kids.map((k) => ({
+        value: k.id,
+        label: k.name,
+        description: k.familyName ?? undefined,
+        prefix: <span>{k.avatar}</span>,
+      })),
+    [kids],
+  );
 
-  function selectAllKids() {
-    if (selectedKidIds.length === kids.length) {
-      setSelectedKidIds([]);
-    } else {
-      setSelectedKidIds(kids.map((k) => k.id));
-    }
-  }
+  const selectedQuiz = quizzes.find((q) => q.id === quizId);
 
   return (
     <form
       ref={formRef}
       action={formAction}
-      onReset={() => setSelectedKidIds([])}
+      onReset={() => {
+        setQuizId('');
+        setSelectedKidIds([]);
+      }}
       className="flex flex-col gap-4 rounded-base border-2 border-border bg-main/5 p-4 shadow-[2px_2px_0_0_var(--color-border)]"
     >
       <div className="grid gap-4 sm:grid-cols-2">
@@ -50,67 +59,52 @@ export function AssignForm({ quizzes, kids }: { quizzes: QuizOption[]; kids: Ass
           <Label htmlFor="quizId" className="font-heading text-sm">
             Đề bài
           </Label>
-          <NativeSelect id="quizId" name="quizId" defaultValue="" required className="h-9">
-            <option value="">-- Chọn đề --</option>
-            {quizzes.map((quiz) => (
-              <option key={quiz.id} value={quiz.id}>
-                {quiz.title} ({quiz.questionCount} câu)
-              </option>
-            ))}
-          </NativeSelect>
+          <input type="hidden" name="quizId" value={quizId} required />
+          <Select value={quizId} onValueChange={(v) => setQuizId(v ?? '')}>
+            <SelectTrigger id="quizId" className="h-9 bg-secondary-background text-foreground">
+              <SelectValue>
+                {selectedQuiz
+                  ? `${selectedQuiz.title} (${selectedQuiz.questionCount} câu)`
+                  : '-- Chọn đề --'}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {quizzes.map((quiz) => (
+                <SelectItem key={quiz.id} value={quiz.id}>
+                  {quiz.title} ({quiz.questionCount} câu)
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="dueAt" className="font-heading text-sm">
             Hạn nộp (tùy chọn)
           </Label>
-          <Input id="dueAt" name="dueAt" type="datetime-local" className="h-9" />
+          <DateTimePicker
+            id="dueAt"
+            name="dueAt"
+            placeholder="Không giới hạn…"
+            triggerClassName="h-9"
+          />
         </div>
       </div>
 
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between">
-          <Label className="font-heading text-sm">Bé làm bài</Label>
-          {kids.length > 1 && (
-            <button
-              type="button"
-              onClick={selectAllKids}
-              className="text-xs text-foreground/60 underline hover:text-foreground"
-            >
-              {selectedKidIds.length === kids.length ? 'Bỏ chọn tất cả' : 'Chọn tất cả'}
-            </button>
-          )}
-        </div>
-
+      <div className="flex flex-col gap-1.5">
+        <Label className="font-heading text-sm">Bé làm bài</Label>
         {kids.length === 0 ? (
           <p className="text-xs text-foreground/60">Chưa có bé nào để giao bài.</p>
         ) : (
-          <div className="flex flex-wrap gap-2">
-            {kids.map((kid) => {
-              const checked = selectedKidIds.includes(kid.id);
-              return (
-                <label
-                  key={kid.id}
-                  className={`inline-flex cursor-pointer items-center gap-2 rounded-base border-2 px-3 py-1.5 text-sm transition-colors ${
-                    checked
-                      ? 'border-border bg-main font-heading shadow-[2px_2px_0_0_var(--color-border)]'
-                      : 'border-border/40 bg-background hover:bg-foreground/5'
-                  }`}
-                >
-                  <Checkbox
-                    checked={checked}
-                    onCheckedChange={() => toggleKid(kid.id)}
-                    aria-label={`Chọn bé ${kid.name}`}
-                  />
-                  <span>{kid.avatar}</span>
-                  <span>{kid.name}</span>
-                  {kid.familyName && (
-                    <span className="text-xs text-foreground/60 font-base">({kid.familyName})</span>
-                  )}
-                </label>
-              );
-            })}
-          </div>
+          <MultiSelect
+            options={kidOptions}
+            value={selectedKidIds}
+            onChange={setSelectedKidIds}
+            placeholder="Chọn bé để giao bài…"
+            searchPlaceholder="Tìm theo tên bé hoặc gia đình…"
+            emptyText="Không tìm thấy bé nào."
+            itemLabel="bé"
+          />
         )}
       </div>
 
@@ -121,7 +115,7 @@ export function AssignForm({ quizzes, kids }: { quizzes: QuizOption[]; kids: Ass
       <div className="flex justify-end pt-1">
         <Button
           type="submit"
-          disabled={pending || selectedKidIds.length === 0}
+          disabled={pending || !quizId || selectedKidIds.length === 0}
           className="shadow-[2px_2px_0_0_var(--color-border)]"
         >
           {pending ? 'Đang giao bài...' : 'Giao bài'}

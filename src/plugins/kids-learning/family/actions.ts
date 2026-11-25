@@ -50,14 +50,12 @@ export async function createParent(_: ActionState, fd: FormData): Promise<Action
     return { ok: false, error: taken ? 'Email đã được dùng' : 'Không tạo được tài khoản' };
   }
 
-  const { error: pErr } = await admin
-    .from('profiles')
-    .insert({
-      id: data.user.id,
-      role_id: 'parent',
-      family_id: familyId,
-      display_name: displayName,
-    });
+  const { error: pErr } = await admin.from('profiles').insert({
+    id: data.user.id,
+    role_id: 'parent',
+    family_id: familyId,
+    display_name: displayName,
+  });
   if (pErr) {
     // Never leave an auth user without a profile.
     await admin.auth.admin.deleteUser(data.user.id);

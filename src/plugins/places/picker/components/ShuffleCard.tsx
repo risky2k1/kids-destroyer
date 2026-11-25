@@ -1,7 +1,8 @@
 'use client';
 
-import { cardEmoji, type Place, type Tag } from '@/plugins/places/shared';
+import { TagIcon, primaryCategoryTag, type Place, type Tag } from '@/plugins/places/shared';
 import { Button } from '@/themes/neobrutal/ui/button';
+import { Card, CardFooter } from '@/themes/neobrutal/ui/card';
 import { PlaceMeta, VibeTags } from './PlaceMeta';
 
 type Props = {
@@ -22,26 +23,28 @@ export function ShuffleCard({ place, tagsById, rolling, onOpen, onReshuffle }: P
   const photo = place.photos[0];
 
   return (
-    <article
+    <Card
+      size="sm"
       aria-live="polite"
-      className="overflow-hidden rounded-base border-2 border-border bg-secondary-background shadow-shadow"
+      className="gap-0 overflow-hidden bg-secondary-background py-0"
     >
       <button
         type="button"
         onClick={onOpen}
         disabled={rolling}
-        className="flex w-full flex-col gap-1.5 p-4 text-left"
+        className="flex w-full flex-col gap-2 p-4 text-left"
       >
         {photo && !rolling && (
           // eslint-disable-next-line @next/next/no-img-element -- remote storage URL
           <img
             src={photo.url}
             alt=""
-            className="-mx-4 -mt-4 mb-2 aspect-video w-[calc(100%+2rem)] max-w-none border-b-2 border-border object-cover"
+            className="-mx-4 -mt-4 mb-1 aspect-video w-[calc(100%+2rem)] max-w-none border-b-2 border-border bg-foreground/10 object-cover"
           />
         )}
-        <span className="text-2xl font-heading">
-          {cardEmoji(place, tagsById)} {place.name}
+        <span className="inline-flex items-center gap-2 text-2xl font-heading">
+          <TagIcon tag={primaryCategoryTag(place, tagsById)} fallbackPin className="size-6" />
+          {place.name}
         </span>
         {!rolling && (
           <>
@@ -54,7 +57,7 @@ export function ShuffleCard({ place, tagsById, rolling, onOpen, onReshuffle }: P
         )}
       </button>
       {!rolling && (
-        <div className="flex gap-2 border-t-2 border-border p-3">
+        <CardFooter className="gap-2 border-t-2 border-border p-3!">
           {place.mapsUrl && (
             <Button
               render={<a href={place.mapsUrl} target="_blank" rel="noopener noreferrer" />}
@@ -67,8 +70,8 @@ export function ShuffleCard({ place, tagsById, rolling, onOpen, onReshuffle }: P
           <Button type="button" variant="neutral" onClick={onReshuffle} className="h-11 flex-1">
             Đổi quán
           </Button>
-        </div>
+        </CardFooter>
       )}
-    </article>
+    </Card>
   );
 }

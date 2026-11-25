@@ -17,31 +17,44 @@ export function AccountsTable({
   roles: RoleSummary[];
   currentUserId: string;
 }) {
+  const roleName = (id: string) => roles.find((r) => r.id === id)?.name ?? id;
+
   return (
     <RecordTable
+      view={{ label: 'tài khoản' }}
       columns={[
         {
           key: 'name',
           label: 'Tên',
           icon: UserRound,
+          sortValue: (row) => row.displayName,
+          filterValue: (row) => row.displayName,
           render: (row) => <span className="font-heading">{row.displayName}</span>,
         },
         {
           key: 'email',
           label: 'Email',
           icon: Mail,
+          sortValue: (row) => row.email,
+          filterValue: (row) => row.email,
           render: (row) => <span>{row.email || '—'}</span>,
         },
         {
           key: 'family',
           label: 'Gia đình',
           icon: House,
+          sortValue: (row) => row.familyName,
+          filterValue: (row) => row.familyName,
+          filterFacet: true,
           render: (row) => <span>{row.familyName || '—'}</span>,
         },
         {
           key: 'role',
           label: 'Vai trò',
           icon: KeyRound,
+          sortValue: (row) => roleName(row.roleId),
+          filterValue: (row) => roleName(row.roleId),
+          filterFacet: true,
           render: (row) => (
             <AccountRoleForm userId={row.id} currentRoleId={row.roleId} roles={roles} />
           ),

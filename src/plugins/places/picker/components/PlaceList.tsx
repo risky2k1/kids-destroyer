@@ -1,6 +1,6 @@
 'use client';
 
-import { cardEmoji, type Place, type Tag } from '@/plugins/places/shared';
+import { TagIcon, primaryCategoryTag, type Place, type Tag } from '@/plugins/places/shared';
 import { sortForList } from '../lib/pick';
 import { PlaceMeta } from './PlaceMeta';
 
@@ -21,8 +21,9 @@ export function PlaceList({ places, tagsById, onOpen }: Props) {
               onClick={() => onOpen(p)}
               className="flex min-h-11 w-full flex-col items-start gap-0.5 px-3 py-2 text-left hover:bg-foreground/5"
             >
-              <span>
-                {cardEmoji(p, tagsById)} {p.name}
+              <span className="inline-flex items-center gap-1.5">
+                <TagIcon tag={primaryCategoryTag(p, tagsById)} fallbackPin className="size-4" />
+                {p.name}
               </span>
               <PlaceMeta place={p} tagsById={tagsById} />
             </button>

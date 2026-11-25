@@ -171,31 +171,51 @@ isOneToOne: false
                   ]
                 },"plc_places": {
                   Row: {
-                    "created_at": string,"dishes": string | null,"id": string,"maps_url": string | null,"name": string,"note": string | null,"photos": string[],"price_level": number | null,"rating": number | null,"status": string,"updated_at": string,"visited_on": string | null
+                    "created_at": string,"dishes": string | null,"id": string,"maps_url": string | null,"name": string,"note": string | null,"open_hours": NonNullable<Json>,"photos": (string)[],"price_level": number | null,"rating": number | null,"status": string,"updated_at": string,"visited_on": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"dishes"?: string | null,"id"?: string,"maps_url"?: string | null,"name": string,"note"?: string | null,"photos"?: string[],"price_level"?: number | null,"rating"?: number | null,"status"?: string,"updated_at"?: string,"visited_on"?: string | null
+                    "created_at"?: string,"dishes"?: string | null,"id"?: string,"maps_url"?: string | null,"name": string,"note"?: string | null,"open_hours"?: NonNullable<Json>,"photos"?: (string)[],"price_level"?: number | null,"rating"?: number | null,"status"?: string,"updated_at"?: string,"visited_on"?: string | null
                   }
                   Update: {
-                    "created_at"?: string,"dishes"?: string | null,"id"?: string,"maps_url"?: string | null,"name"?: string,"note"?: string | null,"photos"?: string[],"price_level"?: number | null,"rating"?: number | null,"status"?: string,"updated_at"?: string,"visited_on"?: string | null
+                    "created_at"?: string,"dishes"?: string | null,"id"?: string,"maps_url"?: string | null,"name"?: string,"note"?: string | null,"open_hours"?: NonNullable<Json>,"photos"?: (string)[],"price_level"?: number | null,"rating"?: number | null,"status"?: string,"updated_at"?: string,"visited_on"?: string | null
                   }
                   Relationships: [
                     
                   ]
                 },"plc_tags": {
                   Row: {
-                    "created_at": string,"emoji": string | null,"id": string,"kind": string,"name": string,"sort": number
+                    "created_at": string,"emoji": string | null,"icon": string | null,"id": string,"kind": string,"name": string,"sort": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"emoji"?: string | null,"id"?: string,"kind": string,"name": string,"sort"?: number
+                    "created_at"?: string,"emoji"?: string | null,"icon"?: string | null,"id"?: string,"kind": string,"name": string,"sort"?: number
                   }
                   Update: {
-                    "created_at"?: string,"emoji"?: string | null,"id"?: string,"kind"?: string,"name"?: string,"sort"?: number
+                    "created_at"?: string,"emoji"?: string | null,"icon"?: string | null,"id"?: string,"kind"?: string,"name"?: string,"sort"?: number
                   }
                   Relationships: [
                     
+                  ]
+                },"plc_visits": {
+                  Row: {
+                    "created_at": string,"id": string,"note": string | null,"place_id": string,"rating": number | null,"visited_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"note"?: string | null,"place_id": string,"rating"?: number | null,"visited_at"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"note"?: string | null,"place_id"?: string,"rating"?: number | null,"visited_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "plc_visits_place_id_fkey"
+      columns: ["place_id"]
+isOneToOne: false
+      referencedRelation: "plc_places"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"plugins": {
                   Row: {

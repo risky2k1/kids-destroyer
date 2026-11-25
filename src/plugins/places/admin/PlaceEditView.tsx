@@ -1,12 +1,19 @@
 import { MapPin } from 'lucide-react';
 import { ConfirmDelete } from '@/core/ui/ConfirmDelete';
 import { PageHeader } from '@/core/ui/PageHeader';
-import { PLACES_PATHS, type Place, type Tag } from '@/plugins/places/shared';
+import {
+  PLACES_PATHS,
+  toVietnamDatetimeLocal,
+  type Place,
+  type Tag,
+} from '@/plugins/places/shared';
 import { deletePlace } from './actions';
 import { PhotoManager } from './components/PhotoManager';
 import { PlaceForm } from './components/PlaceForm';
+import { VisitManager } from './components/VisitManager';
 
 export function PlaceEditView({ place, tags }: { place: Place | null; tags: Tag[] }) {
+  const defaultVisitedAt = toVietnamDatetimeLocal();
   return (
     <>
       <PageHeader
@@ -23,11 +30,21 @@ export function PlaceEditView({ place, tags }: { place: Place | null; tags: Tag[
         }
       />
       <div className="flex flex-col gap-8 p-3">
-        <PlaceForm key={place?.id ?? 'new'} place={place} tags={tags} />
+        <PlaceForm
+          key={place?.id ?? 'new'}
+          place={place}
+          tags={tags}
+          defaultVisitedAt={defaultVisitedAt}
+        />
         {place ? (
-          <PhotoManager place={place} />
+          <>
+            <VisitManager place={place} defaultVisitedAt={defaultVisitedAt} />
+            <PhotoManager place={place} />
+          </>
         ) : (
-          <p className="text-sm text-foreground/60">Lưu quán xong thì thêm được ảnh.</p>
+          <p className="text-sm text-foreground/60">
+            Lưu quán xong thì thêm được ảnh và lịch sử lần đi.
+          </p>
         )}
       </div>
     </>

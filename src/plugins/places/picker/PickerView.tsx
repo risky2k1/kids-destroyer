@@ -1,7 +1,16 @@
+import { formatClockInVietnam, nowMinutesInVietnam } from '@/plugins/places/shared';
 import { loadPlaces } from '@/plugins/places/shared/server';
 import { Picker } from './components/Picker';
 
 export async function PickerView() {
   const { places, tags } = await loadPlaces();
-  return <Picker places={places} tags={tags} />;
+  const now = new Date();
+  return (
+    <Picker
+      places={places}
+      tags={tags}
+      initialNowMinute={nowMinutesInVietnam(now)}
+      initialClock={formatClockInVietnam(now)}
+    />
+  );
 }

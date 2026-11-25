@@ -10,7 +10,7 @@ type Client = Awaited<ReturnType<typeof createClient>>;
 async function fetchTags(sb: Client): Promise<Tag[]> {
   const { data, error } = await sb
     .from('plc_tags')
-    .select('id, kind, name, emoji, sort')
+    .select('id, kind, name, emoji, icon, sort')
     .order('kind')
     .order('sort')
     .order('name');
@@ -25,7 +25,7 @@ export async function listTags(): Promise<Tag[]> {
   return fetchTags(await createClient());
 }
 
-/** Every place with its tags; readable by anyone (RLS). */
+/** Every place with its tags and visits; readable by anyone (RLS). */
 export async function loadPlaces(): Promise<{ places: Place[]; tags: Tag[] }> {
   const sb = await createClient();
   const [tags, { data, error }] = await Promise.all([
@@ -34,7 +34,7 @@ export async function loadPlaces(): Promise<{ places: Place[]; tags: Tag[] }> {
   ]);
   if (error) throw new Error(error.message);
   const tagsById = new Map(tags.map((t) => [t.id, t]));
-  const places = (data as PlaceRow[]).map((row) => toPlace(row, tagsById, urlFor(sb)));
+  const places = (data as unknown as PlaceRow[]).map((row) => toPlace(row, tagsById, urlFor(sb)));
   return { places, tags };
 }
 
@@ -48,5 +48,5 @@ export async function getPlace(id: string): Promise<{ place: Place | null; tags:
   ]);
   if (error) throw new Error(error.message);
   const tagsById = new Map(tags.map((t) => [t.id, t]));
-  return { place: data ? toPlace(data as PlaceRow, tagsById, urlFor(sb)) : null, tags };
+  return { place: data ? toPlace(data as unknown as PlaceRow, tagsById, urlFor(sb)) : null, tags };
 }

@@ -6,7 +6,6 @@ import { initialActionState, type ActionState } from '@/core/actions';
 import { ConfirmDelete } from '@/core/ui/ConfirmDelete';
 import { RecordTable } from '@/core/ui/RecordTable';
 import { useActionToast } from '@/core/ui/useActionToast';
-import { ViewBar } from '@/core/ui/ViewBar';
 import { Button } from '@/themes/neobrutal/ui/button';
 import { Input } from '@/themes/neobrutal/ui/input';
 import { toast } from '@/themes/neobrutal/ui/toast';
@@ -95,84 +94,80 @@ export function NamedList(props: {
   };
 
   return (
-    <>
-      <ViewBar
-        label={props.title.toLowerCase()}
-        count={props.items.length}
-        actions={
-          changed.length > 0 && (
-            <span className="inline-flex items-center gap-1">
-              <Button
-                type="button"
-                variant="neutral"
-                size="xs"
-                className={`${smallButton} shadow-none hover:translate-x-0 hover:translate-y-0`}
-                onClick={() => setDrafts({})}
-                disabled={saving}
-              >
-                Huỷ
-              </Button>
-              <Button
-                type="button"
-                variant="noShadow"
-                size="xs"
-                className={smallButton}
-                onClick={saveAll}
-                disabled={saving}
-              >
-                Lưu thay đổi ({changed.length})
-              </Button>
-            </span>
-          )
-        }
-      />
-      <RecordTable
-        columns={[
-          {
-            key: 'name',
-            label: 'Tên',
-            icon: Type,
-            render: (item) => (
-              <Input
-                value={value(item).name}
-                onChange={(e) => edit(item, { name: e.target.value })}
-                onKeyDown={onEnter}
-                aria-label="Tên"
-                className={fieldClass}
-              />
-            ),
-          },
-          {
-            key: 'sort',
-            label: 'Thứ tự',
-            icon: Hash,
-            className: 'w-24',
-            render: (item) => (
-              <Input
-                type="number"
-                min={0}
-                value={value(item).sort}
-                onChange={(e) => edit(item, { sort: e.target.value })}
-                onKeyDown={onEnter}
-                aria-label="Thứ tự"
-                className={`${fieldClass} w-16`}
-              />
-            ),
-          },
-          {
-            key: 'actions',
-            label: '',
-            icon: Hash,
-            className: 'w-px',
-            render: (item) => (
-              <ConfirmDelete id={item.id} label={item.name} action={props.remove} />
-            ),
-          },
-        ]}
-        rows={props.items}
-        getId={(item) => item.id}
-        addRow={<AddRow section={props.section} save={props.save} />}
-      />
-    </>
+    <RecordTable
+      view={{
+        label: props.title.toLowerCase(),
+        actions: changed.length > 0 && (
+          <span className="inline-flex items-center gap-1">
+            <Button
+              type="button"
+              variant="neutral"
+              size="xs"
+              className={`${smallButton} shadow-none hover:translate-x-0 hover:translate-y-0`}
+              onClick={() => setDrafts({})}
+              disabled={saving}
+            >
+              Huỷ
+            </Button>
+            <Button
+              type="button"
+              variant="noShadow"
+              size="xs"
+              className={smallButton}
+              onClick={saveAll}
+              disabled={saving}
+            >
+              Lưu thay đổi ({changed.length})
+            </Button>
+          </span>
+        ),
+      }}
+      columns={[
+        {
+          key: 'name',
+          label: 'Tên',
+          icon: Type,
+          sortValue: (item) => item.name,
+          filterValue: (item) => item.name,
+          render: (item) => (
+            <Input
+              value={value(item).name}
+              onChange={(e) => edit(item, { name: e.target.value })}
+              onKeyDown={onEnter}
+              aria-label="Tên"
+              className={fieldClass}
+            />
+          ),
+        },
+        {
+          key: 'sort',
+          label: 'Thứ tự',
+          icon: Hash,
+          className: 'w-24',
+          sortValue: (item) => item.sort,
+          render: (item) => (
+            <Input
+              type="number"
+              min={0}
+              value={value(item).sort}
+              onChange={(e) => edit(item, { sort: e.target.value })}
+              onKeyDown={onEnter}
+              aria-label="Thứ tự"
+              className={`${fieldClass} w-16`}
+            />
+          ),
+        },
+        {
+          key: 'actions',
+          label: '',
+          icon: Hash,
+          className: 'w-px',
+          render: (item) => <ConfirmDelete id={item.id} label={item.name} action={props.remove} />,
+        },
+      ]}
+      rows={props.items}
+      getId={(item) => item.id}
+      addRow={<AddRow section={props.section} save={props.save} />}
+    />
   );
 }

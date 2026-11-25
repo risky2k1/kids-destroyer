@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { placeFormValues, placeInput, tagInput } from './schema';
+import { placeFormValues, placeInput, tagInput, visitInput } from './schema';
 
 const U1 = '11111111-1111-4111-8111-111111111111';
 const U2 = '22222222-2222-4222-8222-222222222222';
@@ -28,6 +28,8 @@ describe('placeInput', () => {
       note: null,
       mapsUrl: null,
       visitedOn: null,
+      visitNote: null,
+      openHours: [],
       categoryIds: [],
       vibeIds: [],
       areaId: null,
@@ -42,6 +44,8 @@ describe('placeInput', () => {
       priceLevel: '',
       mapsUrl: '',
       visitedOn: '',
+      visitNote: '',
+      openHours: '',
       areaId: '',
       dishes: '  ',
       note: '',
@@ -52,21 +56,32 @@ describe('placeInput', () => {
       priceLevel: null,
       mapsUrl: null,
       visitedOn: null,
+      visitNote: null,
+      openHours: [],
       areaId: null,
       dishes: null,
       note: null,
     });
   });
 
-  it('parses numbers and dates', () => {
+  it('parses numbers, dates, datetime-local, and opening hours', () => {
     const r = parse({
       name: 'A',
       status: 'visited',
       rating: '4',
       priceLevel: '3',
-      visitedOn: '2026-11-24',
+      visitedOn: '2026-11-24T19:30',
+      visitNote: 'Ngon',
+      openHours: JSON.stringify([{ open: '18:00', close: '02:00' }]),
     });
-    expect(r.data).toMatchObject({ rating: 4, priceLevel: 3, visitedOn: '2026-11-24' });
+    expect(r.success).toBe(true);
+    expect(r.data).toMatchObject({
+      rating: 4,
+      priceLevel: 3,
+      visitedOn: '2026-11-24T19:30',
+      visitNote: 'Ngon',
+      openHours: [{ open: '18:00', close: '02:00' }],
+    });
   });
 
   it.each([
@@ -75,6 +90,8 @@ describe('placeInput', () => {
     ['priceLevel', '4'],
     ['visitedOn', '24/11/2026'],
     ['status', 'gone'],
+    ['openHours', 'not-json'],
+    ['openHours', JSON.stringify([{ open: '25:00', close: '10:00' }])],
   ])('rejects %s = %s', (key, value) => {
     expect(parse({ name: 'A', status: 'visited', [key]: value }).success).toBe(false);
   });
@@ -106,17 +123,60 @@ describe('placeInput', () => {
   });
 });
 
-describe('tagInput', () => {
-  it('trims the name and nulls an empty emoji', () => {
-    expect(tagInput.parse({ kind: 'vibe', name: ' Ấm cúng ', emoji: '' })).toEqual({
-      kind: 'vibe',
-      name: 'Ấm cúng',
-      emoji: null,
+describe('visitInput', () => {
+  it('parses a visit with Vietnam datetime-local and optional rating/note', () => {
+    const r = visitInput.safeParse({
+      placeId: U1,
+      visitedAt: '2026-11-25T20:00',
+      rating: '1',
+      note: 'Hôm nay hơi mặn',
+    });
+    expect(r.success).toBe(true);
+    expect(r.data).toEqual({
+      placeId: U1,
+      visitedAt: '2026-11-25T13:00:00.000Z',
+      rating: 1,
+      note: 'Hôm nay hơi mặn',
     });
   });
 
-  it('rejects unknown kinds and empty names', () => {
-    expect(tagInput.safeParse({ kind: 'x', name: 'A', emoji: '' }).success).toBe(false);
-    expect(tagInput.safeParse({ kind: 'area', name: ' ', emoji: '' }).success).toBe(false);
+  it('allows blank rating and note', () => {
+    const r = visitInput.safeParse({
+      placeId: U1,
+      visitedAt: '2026-11-25T20:00',
+      rating: '',
+      note: ' ',
+    });
+    expect(r.success).toBe(true);
+    expect(r.data).toMatchObject({ rating: null, note: null });
+  });
+});
+
+describe('tagInput', () => {
+  it('trims the name and validates icon keys', () => {
+    expect(tagInput.parse({ kind: 'vibe', name: ' Ấm cúng ', emoji: '', icon: '' })).toEqual({
+      kind: 'vibe',
+      name: 'Ấm cúng',
+      emoji: null,
+      icon: null,
+    });
+    expect(tagInput.parse({ kind: 'category', name: 'Cà phê', emoji: '', icon: 'coffee' })).toEqual(
+      {
+        kind: 'category',
+        name: 'Cà phê',
+        emoji: null,
+        icon: 'coffee',
+      },
+    );
+  });
+
+  it('rejects unknown kinds, empty names, and unknown icons', () => {
+    expect(tagInput.safeParse({ kind: 'x', name: 'A', emoji: '', icon: '' }).success).toBe(false);
+    expect(tagInput.safeParse({ kind: 'area', name: ' ', emoji: '', icon: '' }).success).toBe(
+      false,
+    );
+    expect(
+      tagInput.safeParse({ kind: 'category', name: 'X', emoji: '', icon: 'unknown-icon' }).success,
+    ).toBe(false);
   });
 });

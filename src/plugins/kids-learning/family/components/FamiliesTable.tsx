@@ -9,29 +9,36 @@ import { CreateFamilyDialog } from './CreateFamilyDialog';
 export function FamiliesTable({ families }: { families: FamilyRow[] }) {
   return (
     <RecordTable
+      view={{ label: 'gia đình' }}
       columns={[
         {
           key: 'name',
           label: 'Tên',
           icon: House,
+          sortValue: (row) => row.name,
+          filterValue: (row) => row.name,
           render: (row) => <span className="font-heading">{row.name}</span>,
         },
         {
           key: 'parents',
           label: 'Phụ huynh',
           icon: UserRound,
+          filterValue: (row) => row.parents,
           render: (row) => <Chips items={row.parents} />,
         },
         {
           key: 'kids',
           label: 'Các bé',
           icon: Baby,
+          filterValue: (row) => row.kids,
           render: (row) => <Chips items={row.kids} />,
         },
         {
           key: 'grades',
           label: 'Lớp',
           icon: GraduationCap,
+          filterValue: (row) => row.grades,
+          filterFacet: true,
           render: (row) => <Chips items={row.grades} />,
         },
       ]}

@@ -1,7 +1,13 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { PRICE_LABELS, PRICE_LEVELS, type Tag } from '@/plugins/places/shared';
+import {
+  PRICE_LABELS,
+  PRICE_LEVELS,
+  TIME_SLOT_OPTIONS,
+  TagIcon,
+  type Tag,
+} from '@/plugins/places/shared';
 import type { Filters, PickMode } from '../lib/pick';
 
 const MODES: { id: PickMode; label: string }[] = [
@@ -33,7 +39,7 @@ function Chip({
       type="button"
       aria-pressed={active}
       onClick={onClick}
-      className="inline-flex min-h-11 shrink-0 items-center gap-1 rounded-base border-2 border-border bg-secondary-background px-3 text-sm aria-pressed:bg-main aria-pressed:text-main-foreground"
+      className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-base border-2 border-border bg-secondary-background px-3 text-sm aria-pressed:bg-main aria-pressed:text-main-foreground"
     >
       {children}
     </button>
@@ -49,9 +55,14 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-type Props = { filters: Filters; onChange: (f: Filters) => void; tags: Tag[] };
+type Props = {
+  filters: Filters;
+  onChange: (f: Filters) => void;
+  tags: Tag[];
+  clockLabel: string;
+};
 
-export function FilterBar({ filters, onChange, tags }: Props) {
+export function FilterBar({ filters, onChange, tags, clockLabel }: Props) {
   const set = (patch: Partial<Filters>) => onChange({ ...filters, ...patch });
   const tagRow = (kind: Tag['kind'], label: string, key: 'categoryIds' | 'vibeIds' | 'areaIds') => {
     const ofKind = tags.filter((t) => t.kind === kind);
@@ -64,7 +75,7 @@ export function FilterBar({ filters, onChange, tags }: Props) {
             active={filters[key].includes(t.id)}
             onClick={() => set({ [key]: toggle(filters[key], t.id) })}
           >
-            {t.emoji && <span aria-hidden>{t.emoji}</span>}
+            <TagIcon tag={t} className="size-4" />
             {t.name}
           </Chip>
         ))}
@@ -88,6 +99,17 @@ export function FilterBar({ filters, onChange, tags }: Props) {
           </button>
         ))}
       </div>
+      <Row label="Giờ mở cửa">
+        {TIME_SLOT_OPTIONS.map((slot) => (
+          <Chip
+            key={slot.id}
+            active={filters.timeSlot === slot.id}
+            onClick={() => set({ timeSlot: slot.id })}
+          >
+            {slot.id === 'now' ? `${slot.label} (${clockLabel})` : slot.label}
+          </Chip>
+        ))}
+      </Row>
       {tagRow('category', 'Loại', 'categoryIds')}
       {tagRow('vibe', 'Vibe', 'vibeIds')}
       {tagRow('area', 'Khu', 'areaIds')}

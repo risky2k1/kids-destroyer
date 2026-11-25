@@ -1,7 +1,9 @@
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { canEnter } from '@/core/acl/access';
 import { getCurrentUser } from '@/core/auth/session';
 import { PATHS } from '@/core/routes';
+import { AssignmentsPageSkeleton } from '@/core/ui/PageSkeletons';
 import { AssignmentsView } from '@/plugins/kids-learning/assignment';
 import { Button } from '@/themes/neobrutal/ui/button';
 
@@ -20,7 +22,9 @@ export default async function ParentHome() {
           🎒 Cho bé làm bài
         </Button>
       )}
-      <AssignmentsView basePath="parent" />
+      <Suspense fallback={<AssignmentsPageSkeleton />}>
+        <AssignmentsView basePath="parent" />
+      </Suspense>
     </div>
   );
 }

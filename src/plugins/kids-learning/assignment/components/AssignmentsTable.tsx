@@ -21,11 +21,15 @@ export function AssignmentsTable({
 }) {
   return (
     <RecordTable
+      view={{ label: 'bài đã giao' }}
       columns={[
         {
           key: 'kid',
           label: 'Bé',
           icon: User,
+          sortValue: (row) => row.kidName,
+          filterValue: (row) => row.kidName,
+          filterFacet: true,
           render: (row) => (
             <span className="inline-flex items-center gap-1.5 font-heading">
               <span className="text-base">{row.kidAvatar}</span>
@@ -37,12 +41,16 @@ export function AssignmentsTable({
           key: 'quiz',
           label: 'Đề',
           icon: ClipboardList,
+          sortValue: (row) => row.quizTitle,
+          filterValue: (row) => row.quizTitle,
+          filterFacet: true,
           render: (row) => <span className="font-heading">{row.quizTitle}</span>,
         },
         {
           key: 'due',
           label: 'Hạn',
           icon: Calendar,
+          sortValue: (row) => row.dueAt,
           render: (row) => {
             if (!row.dueAt) return <span className="text-foreground/50">—</span>;
             const dueTime = new Date(row.dueAt).getTime();
@@ -69,6 +77,9 @@ export function AssignmentsTable({
           key: 'status',
           label: 'Trạng thái',
           icon: Clock,
+          sortValue: (row) => STATUS_LABELS[row.status] ?? row.status,
+          filterValue: (row) => STATUS_LABELS[row.status] ?? row.status,
+          filterFacet: true,
           render: (row) => (
             <Badge className="px-1.5 py-0 text-xs font-base">
               {STATUS_LABELS[row.status] ?? row.status}
@@ -79,6 +90,7 @@ export function AssignmentsTable({
           key: 'score',
           label: 'Điểm',
           icon: Award,
+          sortValue: (row) => row.score,
           render: (row) => (row.score !== null ? `${row.score}/10` : '—'),
         },
       ]}

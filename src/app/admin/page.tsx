@@ -1,6 +1,8 @@
+import { Suspense } from 'react';
 import { House } from 'lucide-react';
 import { disabledModules } from '@/core/modules/server';
 import { PageHeader } from '@/core/ui/PageHeader';
+import { DashboardSkeleton } from '@/core/ui/PageSkeletons';
 import { DashboardView } from '@/plugins/kids-learning/dashboard';
 
 export default async function AdminHome() {
@@ -13,5 +15,9 @@ export default async function AdminHome() {
       </>
     );
   }
-  return <DashboardView />;
+  return (
+    <Suspense fallback={<DashboardSkeleton />}>
+      <DashboardView />
+    </Suspense>
+  );
 }

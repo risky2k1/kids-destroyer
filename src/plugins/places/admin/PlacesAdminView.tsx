@@ -1,11 +1,14 @@
 import Link from 'next/link';
 import { MapPin } from 'lucide-react';
 import { PageHeader } from '@/core/ui/PageHeader';
-import { PLACES_PATHS, type Place, type Tag } from '@/plugins/places/shared';
-import { Button } from '@/themes/neobrutal/ui/button';
+import { PLACES_PATHS, nowMinutesInVietnam, type Place, type Tag } from '@/plugins/places/shared';
+import { buttonVariants } from '@/themes/neobrutal/ui/button';
 import { PlacesTable } from './components/PlacesTable';
 
+const hardShadow = 'shadow-[2px_2px_0_0_var(--color-border)]';
+
 export function PlacesAdminView({ places, tags }: { places: Place[]; tags: Tag[] }) {
+  const initialNowMinute = nowMinutesInVietnam();
   return (
     <>
       <PageHeader
@@ -13,40 +16,38 @@ export function PlacesAdminView({ places, tags }: { places: Place[]; tags: Tag[]
         title="Đi đâu"
         actions={
           <div className="flex gap-1.5">
-            <Button
-              render={<a href={PLACES_PATHS.public} target="_blank" rel="noopener" />}
-              nativeButton={false}
-              size="xs"
-              variant="neutral"
+            <a
+              href={PLACES_PATHS.public}
+              target="_blank"
+              rel="noopener"
+              className={buttonVariants({
+                size: 'sm',
+                variant: 'neutral',
+                className: `h-7 border-2 ${hardShadow}`,
+              })}
             >
               Trang công khai ↗
-            </Button>
-            <Button
-              render={<Link href={PLACES_PATHS.tags} />}
-              nativeButton={false}
-              size="xs"
-              variant="neutral"
+            </a>
+            <Link
+              href={PLACES_PATHS.tags}
+              className={buttonVariants({
+                size: 'sm',
+                variant: 'neutral',
+                className: `h-7 border-2 ${hardShadow}`,
+              })}
             >
               Quản lý tag
-            </Button>
-            <Button render={<Link href={PLACES_PATHS.new} />} nativeButton={false} size="xs">
+            </Link>
+            <Link
+              href={PLACES_PATHS.new}
+              className={buttonVariants({ size: 'sm', className: `h-7 border-2 ${hardShadow}` })}
+            >
               + Thêm quán
-            </Button>
+            </Link>
           </div>
         }
       />
-      <div className="p-3">
-        {places.length === 0 ? (
-          <div className="flex flex-col items-start gap-3 rounded-base border-2 border-border bg-secondary-background p-6">
-            <p>Chưa có quán nào.</p>
-            <Button render={<Link href={PLACES_PATHS.new} />} nativeButton={false}>
-              + Thêm quán
-            </Button>
-          </div>
-        ) : (
-          <PlacesTable places={places} tags={tags} />
-        )}
-      </div>
+      <PlacesTable places={places} tags={tags} initialNowMinute={initialNowMinute} />
     </>
   );
 }
