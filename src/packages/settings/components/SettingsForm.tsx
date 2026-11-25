@@ -1,11 +1,63 @@
 'use client';
 
+import { useState } from 'react';
+import { X } from 'lucide-react';
 import { useActionToast } from '@/core/ui/useActionToast';
+import {
+  Attachment,
+  AttachmentAction,
+  AttachmentActions,
+  AttachmentContent,
+  AttachmentDescription,
+  AttachmentMedia,
+  AttachmentTitle,
+} from '@/themes/neobrutal/ui/attachment';
 import { Button } from '@/themes/neobrutal/ui/button';
 import { Input } from '@/themes/neobrutal/ui/input';
 import { Label } from '@/themes/neobrutal/ui/label';
 import { saveSettings } from '../actions';
 import type { AppSettings } from '../lib/schemas';
+
+function BrandingAttachment({
+  kind,
+  label,
+  url,
+}: {
+  kind: 'logo' | 'favicon';
+  label: string;
+  url: string;
+}) {
+  const [removed, setRemoved] = useState(false);
+
+  return (
+    <>
+      <input type="hidden" name={`remove-${kind}`} value={removed ? 'on' : ''} />
+      <Attachment variant="inline" status={removed ? 'error' : 'idle'}>
+        <AttachmentMedia variant="image">
+          {/* eslint-disable-next-line @next/next/no-img-element -- remote storage URL */}
+          <img src={url} alt={label} />
+        </AttachmentMedia>
+        <AttachmentContent>
+          <AttachmentTitle>{label} hiện tại</AttachmentTitle>
+          <AttachmentDescription>
+            {removed ? 'Sẽ xoá khi bấm Lưu' : 'Đang sử dụng'}
+          </AttachmentDescription>
+        </AttachmentContent>
+        <AttachmentActions>
+          {removed ? (
+            <AttachmentAction size="xs" onClick={() => setRemoved(false)}>
+              Hoàn tác
+            </AttachmentAction>
+          ) : (
+            <AttachmentAction aria-label={`Xoá ${label}`} onClick={() => setRemoved(true)}>
+              <X />
+            </AttachmentAction>
+          )}
+        </AttachmentActions>
+      </Attachment>
+    </>
+  );
+}
 
 export function SettingsForm({ settings }: { settings: AppSettings }) {
   const [, formAction, pending] = useActionToast(saveSettings, 'Đã lưu cài đặt');
@@ -30,18 +82,12 @@ export function SettingsForm({ settings }: { settings: AppSettings }) {
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="logo">Logo</Label>
         {settings.logoUrl && (
-          <div className="flex items-center gap-3">
-            {/* eslint-disable-next-line @next/next/no-img-element -- remote storage URL */}
-            <img
-              src={settings.logoUrl}
-              alt="Logo"
-              className="size-12 rounded-sm border-2 border-border object-cover"
-            />
-            <label className="flex items-center gap-1.5 text-sm">
-              <input type="checkbox" name="remove-logo" className="size-4" />
-              <span>Xoá</span>
-            </label>
-          </div>
+          <BrandingAttachment
+            key={settings.logoUrl}
+            kind="logo"
+            label="Logo"
+            url={settings.logoUrl}
+          />
         )}
         <Input
           id="logo"
@@ -56,18 +102,12 @@ export function SettingsForm({ settings }: { settings: AppSettings }) {
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="favicon">Biểu tượng tab (favicon)</Label>
         {settings.faviconUrl && (
-          <div className="flex items-center gap-3">
-            {/* eslint-disable-next-line @next/next/no-img-element -- remote storage URL */}
-            <img
-              src={settings.faviconUrl}
-              alt="Favicon"
-              className="size-8 rounded-sm border-2 border-border object-cover"
-            />
-            <label className="flex items-center gap-1.5 text-sm">
-              <input type="checkbox" name="remove-favicon" className="size-4" />
-              <span>Xoá</span>
-            </label>
-          </div>
+          <BrandingAttachment
+            key={settings.faviconUrl}
+            kind="favicon"
+            label="Favicon"
+            url={settings.faviconUrl}
+          />
         )}
         <Input
           id="favicon"
