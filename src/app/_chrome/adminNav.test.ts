@@ -15,6 +15,7 @@ describe('activeNav', () => {
     expect(activeNav(PATHS.admin.assignment('x'))).toBe('assignments');
     expect(activeNav(PATHS.admin.plugins)).toBe('plugins');
     expect(activeNav(PATHS.admin.modules)).toBe('modules');
+    expect(activeNav(PATHS.admin.media)).toBe('media');
     expect(activeNav(PATHS.admin.settings)).toBe('settings');
     expect(activeNav(PATHS.admin.catalog)).toBeNull();
     expect(activeNav('/parent')).toBeNull();
@@ -28,6 +29,7 @@ describe('activeNav', () => {
     const withoutKidsKeys = withoutKids.flatMap((s) => s.items.map((i) => i.key));
 
     expect(fullKeys).toContain('catalog');
+    expect(fullKeys).toContain('media');
     expect(withoutKidsKeys).not.toContain('catalog');
     expect(withoutKidsKeys).toContain('modules');
   });
