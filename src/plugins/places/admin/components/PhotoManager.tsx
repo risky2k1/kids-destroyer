@@ -1,8 +1,25 @@
 'use client';
 
 import { useTransition, type FormEvent } from 'react';
+import { Trash2 } from 'lucide-react';
 import { useActionToast } from '@/core/ui/useActionToast';
-import { PHOTO_MAX_COUNT, canAddPhoto, checkPhotoFile, type Place } from '@/plugins/places/shared';
+import {
+  PHOTO_MAX_COUNT,
+  canAddPhoto,
+  checkPhotoFile,
+  photoFileName,
+  type Place,
+} from '@/plugins/places/shared';
+import {
+  Attachment,
+  AttachmentAction,
+  AttachmentActions,
+  AttachmentContent,
+  AttachmentDescription,
+  AttachmentGroup,
+  AttachmentMedia,
+  AttachmentTitle,
+} from '@/themes/neobrutal/ui/attachment';
 import { toast } from '@/themes/neobrutal/ui/toast';
 import { Button } from '@/themes/neobrutal/ui/button';
 import { Input } from '@/themes/neobrutal/ui/input';
@@ -45,27 +62,30 @@ export function PhotoManager({ place }: { place: Place }) {
         Ảnh ({place.photos.length}/{PHOTO_MAX_COUNT})
       </Label>
       {place.photos.length > 0 && (
-        <ul className="flex flex-wrap gap-3">
-          {place.photos.map((photo) => (
-            <li key={photo.path} className="flex flex-col items-center gap-1">
-              {/* eslint-disable-next-line @next/next/no-img-element -- remote storage URL */}
-              <img
-                src={photo.url}
-                alt=""
-                className="size-24 rounded-base border-2 border-border bg-foreground/10 object-cover"
-              />
-              <Button
-                type="button"
-                size="xs"
-                variant="neutral"
-                disabled={removing}
-                onClick={() => run(() => removePhoto(place.id, photo.path), 'Đã xóa ảnh')}
-              >
-                Xóa
-              </Button>
-            </li>
+        <AttachmentGroup layout="grid">
+          {place.photos.map((photo, index) => (
+            <Attachment key={photo.path} variant="card">
+              <AttachmentMedia variant="image">
+                {/* eslint-disable-next-line @next/next/no-img-element -- remote storage URL */}
+                <img src={photo.url} alt="" />
+              </AttachmentMedia>
+              <AttachmentContent>
+                <AttachmentTitle>{photoFileName(photo.path)}</AttachmentTitle>
+                <AttachmentDescription>Ảnh #{index + 1}</AttachmentDescription>
+              </AttachmentContent>
+              <AttachmentActions className="justify-end">
+                <AttachmentAction
+                  size="xs"
+                  disabled={removing}
+                  onClick={() => run(() => removePhoto(place.id, photo.path), 'Đã xóa ảnh')}
+                >
+                  <Trash2 />
+                  Xóa
+                </AttachmentAction>
+              </AttachmentActions>
+            </Attachment>
           ))}
-        </ul>
+        </AttachmentGroup>
       )}
       {canAddPhoto(place.photos.length) && (
         <form onSubmit={onSubmit} className="flex flex-wrap items-center gap-2">

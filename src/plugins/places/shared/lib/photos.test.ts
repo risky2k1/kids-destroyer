@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canAddPhoto, checkPhotoFile, fitWithin, photoPath } from './photos';
+import { canAddPhoto, checkPhotoFile, fitWithin, photoFileName, photoPath } from './photos';
 
 describe('checkPhotoFile', () => {
   it('accepts a 2 MB jpeg', () => {
@@ -44,5 +44,14 @@ describe('fitWithin', () => {
 
   it('leaves small images alone', () => {
     expect(fitWithin(800, 600, 1600)).toEqual({ width: 800, height: 600 });
+  });
+});
+
+describe('photoFileName', () => {
+  it('extracts the trailing filename from a storage path', () => {
+    expect(photoFileName('place-1/abc-123.webp')).toBe('abc-123.webp');
+    expect(photoFileName('plain.jpg')).toBe('plain.jpg');
+    expect(photoFileName('')).toBe('Ảnh');
+    expect(photoFileName('place-1/')).toBe('Ảnh');
   });
 });
