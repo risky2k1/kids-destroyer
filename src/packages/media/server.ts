@@ -1,5 +1,6 @@
 import 'server-only';
 
+export { MediaAdminView } from './MediaAdminView';
 export {
   createPrivateDownloadUrl,
   getMediaFilesByIds,
