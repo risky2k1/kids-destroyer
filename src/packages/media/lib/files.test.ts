@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
+  MEDIA_DOCUMENT_ACCEPT_ATTR,
   MEDIA_MAX_BYTES,
   buildMediaStorageKey,
   checkMediaFile,
   formatFileSize,
   isImageMime,
   mediaKindFromMime,
+  mimesForKind,
 } from './files';
 
 describe('checkMediaFile', () => {
@@ -59,5 +61,17 @@ describe('media mime & key helpers', () => {
     expect(formatFileSize(512)).toBe('512 B');
     expect(formatFileSize(2048)).toBe('2 KB');
     expect(formatFileSize(1.5 * 1024 * 1024)).toBe('1.5 MB');
+  });
+});
+
+describe('mimesForKind', () => {
+  it('returns SQL mime allowlists per MediaKind', () => {
+    expect(mimesForKind('image')).toContain('image/webp');
+    expect(mimesForKind('image')).not.toContain('application/pdf');
+    expect(mimesForKind('document')).toContain('application/pdf');
+    expect(mimesForKind('document')).not.toContain('image/png');
+    expect(mimesForKind(undefined)).toBeNull();
+    expect(MEDIA_DOCUMENT_ACCEPT_ATTR).toContain('application/pdf');
+    expect(MEDIA_DOCUMENT_ACCEPT_ATTR).not.toContain('image/png');
   });
 });

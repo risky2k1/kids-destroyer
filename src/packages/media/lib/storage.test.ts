@@ -7,6 +7,7 @@ import {
   bucketForVisibility,
   createSupabaseStorageDriver,
   getStorageDriver,
+  isValidStorageDriverId,
   type SupabaseStorageClient,
 } from './storage';
 
@@ -118,5 +119,12 @@ describe('media storage driver', () => {
       bucket: 'media-private',
       args: [['2026/11/doc.pdf']],
     });
+  });
+});
+
+describe('isValidStorageDriverId', () => {
+  it('accepts supported drivers and rejects unknown drivers', () => {
+    expect(isValidStorageDriverId('supabase')).toBe(true);
+    expect(isValidStorageDriverId('unknown')).toBe(false);
   });
 });

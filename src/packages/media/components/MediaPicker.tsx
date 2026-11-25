@@ -17,13 +17,18 @@ import { searchMediaPickerAction } from '../actions';
 import { useMediaUpload } from '../hooks/useMediaUpload';
 import {
   MEDIA_ACCEPT_ATTR,
+  MEDIA_DOCUMENT_ACCEPT_ATTR,
   MEDIA_IMAGE_ACCEPT_ATTR,
   formatFileSize,
   isImageMime,
 } from '../lib/files';
 import { folderBreadcrumb } from '../lib/tree';
 import type { MediaFileItem, MediaFolder, MediaKind, MediaVisibility } from '../lib/types';
-import { matchesPickerFilter } from '../lib/uploadClient';
+import {
+  matchesPickerFilter,
+  shouldShowUploadedInPicker,
+  toggleSelectedMap,
+} from '../lib/uploadClient';
 import { MediaUploadQueue } from './MediaUploadQueue';
 
 type Props = {
@@ -48,26 +53,35 @@ export function MediaPicker({
   const [tab, setTab] = useState<MediaVisibility>(visibility === 'private' ? 'private' : 'public');
   const [folderId, setFolderId] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [folders, setFolders] = useState<MediaFolder[]>([]);
   const [files, setFiles] = useState<MediaFileItem[]>([]);
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [selectedMap, setSelectedMap] = useState<Map<string, MediaFileItem>>(() => new Map());
   const [loading, startLoading] = useTransition();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const requestSeqRef = useRef(0);
 
   const activeVisibility = visibility === 'all' ? tab : visibility;
 
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 200);
+    return () => clearTimeout(timer);
+  }, [search]);
+
   const load = useCallback(() => {
+    const seq = ++requestSeqRef.current;
     startLoading(async () => {
       const res = await searchMediaPickerAction({
         folderId,
         visibility: activeVisibility,
         kind: accept === 'all' ? undefined : accept,
-        search: search || undefined,
+        search: debouncedSearch || undefined,
       });
+      if (seq !== requestSeqRef.current) return;
       setFolders(res.folders);
       setFiles(res.files);
     });
-  }, [accept, activeVisibility, folderId, search]);
+  }, [accept, activeVisibility, folderId, debouncedSearch]);
 
   useEffect(() => {
     if (open) load();
@@ -75,41 +89,55 @@ export function MediaPicker({
 
   const { queue, enqueueFiles, retryItem, dismissItem } = useMediaUpload({
     onUploaded: (file) => {
-      setFiles((prev) => [file, ...prev]);
+      if (
+        shouldShowUploadedInPicker(file, {
+          accept,
+          visibility,
+          activeVisibility,
+          folderId,
+          search: debouncedSearch,
+        })
+      ) {
+        setFiles((prev) => [file, ...prev]);
+      }
       if (matchesPickerFilter(file, { accept, visibility })) {
-        setSelectedIds((prev) => (multiple ? [...prev, file.id] : [file.id]));
+        setSelectedMap((prev) => toggleSelectedMap(prev, file, multiple));
       }
     },
   });
 
   const childFolders = useMemo(
-    () => (search.trim() ? [] : folders.filter((f) => f.parentId === folderId)),
-    [folders, folderId, search],
+    () => (debouncedSearch.trim() ? [] : folders.filter((f) => f.parentId === folderId)),
+    [folders, folderId, debouncedSearch],
   );
   const crumbs = useMemo(() => folderBreadcrumb(folders, folderId), [folders, folderId]);
-  const selectedSet = useMemo(() => new Set(selectedIds), [selectedIds]);
-  const selectedFiles = useMemo(
-    () => files.filter((f) => selectedSet.has(f.id)),
-    [files, selectedSet],
-  );
+  const selectedFiles = useMemo(() => [...selectedMap.values()], [selectedMap]);
 
-  function toggleFile(id: string) {
-    if (multiple) {
-      setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
-    } else {
-      setSelectedIds((prev) => (prev.includes(id) ? [] : [id]));
+  function handleOpenChange(next: boolean) {
+    if (!next) {
+      setSelectedMap(new Map());
+      setSearch('');
+      setDebouncedSearch('');
     }
+    onOpenChange(next);
   }
 
   function handleConfirm() {
     if (selectedFiles.length === 0) return;
     onSelect(selectedFiles);
-    setSelectedIds([]);
+    setSelectedMap(new Map());
     onOpenChange(false);
   }
 
+  const acceptAttr =
+    accept === 'image'
+      ? MEDIA_IMAGE_ACCEPT_ATTR
+      : accept === 'document'
+        ? MEDIA_DOCUMENT_ACCEPT_ATTR
+        : MEDIA_ACCEPT_ATTR;
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="flex max-h-[85dvh] flex-col gap-3 sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>Chọn tệp từ thư viện</DialogTitle>
@@ -127,6 +155,7 @@ export function MediaPicker({
                   onClick={() => {
                     setTab(v);
                     setFolderId(null);
+                    if (!multiple) setSelectedMap(new Map());
                   }}
                 >
                   {v === 'public' ? 'Công khai' : 'Riêng tư'}
@@ -151,7 +180,7 @@ export function MediaPicker({
                 ref={fileInputRef}
                 type="file"
                 multiple
-                accept={accept === 'image' ? MEDIA_IMAGE_ACCEPT_ATTR : MEDIA_ACCEPT_ATTR}
+                accept={acceptAttr}
                 className="hidden"
                 onChange={(e) => {
                   if (e.target.files) {
@@ -175,7 +204,7 @@ export function MediaPicker({
 
         <MediaUploadQueue items={queue} onRetry={retryItem} onDismiss={dismissItem} />
 
-        {!search.trim() && (
+        {!debouncedSearch.trim() && (
           <nav className="flex flex-wrap items-center gap-1 text-xs">
             <button
               type="button"
@@ -219,13 +248,15 @@ export function MediaPicker({
               ))}
 
               {files.map((file) => {
-                const selected = selectedSet.has(file.id);
+                const selected = selectedMap.has(file.id);
                 const isImg = isImageMime(file.mimeType);
                 return (
                   <button
                     key={file.id}
                     type="button"
-                    onClick={() => toggleFile(file.id)}
+                    onClick={() =>
+                      setSelectedMap((prev) => toggleSelectedMap(prev, file, multiple))
+                    }
                     className={cn(
                       'relative flex flex-col gap-1.5 rounded-base border-2 p-2 text-left transition-colors',
                       selected
@@ -261,7 +292,7 @@ export function MediaPicker({
         </div>
 
         <DialogFooter>
-          <Button type="button" variant="neutral" onClick={() => onOpenChange(false)}>
+          <Button type="button" variant="neutral" onClick={() => handleOpenChange(false)}>
             Huỷ
           </Button>
           <Button type="button" disabled={selectedFiles.length === 0} onClick={handleConfirm}>

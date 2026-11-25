@@ -8,6 +8,8 @@ import {
   putFileWithProgress,
   queueReducer,
   readImageDimensions,
+  tryAcquireUploadLock,
+  type QueueAction,
   type UploadQueueItem,
 } from '../lib/uploadClient';
 
@@ -16,13 +18,15 @@ export function useMediaUpload({
 }: {
   onUploaded?: (file: MediaFileItem) => void;
 } = {}) {
-  const [queue, dispatch] = useReducer(queueReducer, []);
+  const [queue, rawDispatch] = useReducer(queueReducer, []);
   const queueRef = useRef<UploadQueueItem[]>([]);
+  const inFlightRef = useRef<Set<string>>(new Set());
   const onUploadedRef = useRef(onUploaded);
 
-  useEffect(() => {
-    queueRef.current = queue;
-  }, [queue]);
+  const dispatch = useCallback((action: QueueAction) => {
+    queueRef.current = queueReducer(queueRef.current, action);
+    rawDispatch(action);
+  }, []);
 
   useEffect(() => {
     onUploadedRef.current = onUploaded;
@@ -36,72 +40,80 @@ export function useMediaUpload({
     };
   }, []);
 
-  const runUpload = useCallback(async (item: UploadQueueItem) => {
-    const fileError = checkMediaFile(item.file);
-    if (fileError) {
-      dispatch({ type: 'error', localId: item.localId, error: fileError });
-      return;
-    }
+  const runUpload = useCallback(
+    async (item: UploadQueueItem) => {
+      if (!tryAcquireUploadLock(inFlightRef.current, item.localId)) return;
 
-    dispatch({ type: 'progress', localId: item.localId, progress: 5 });
+      const fileError = checkMediaFile(item.file);
+      if (fileError) {
+        inFlightRef.current.delete(item.localId);
+        dispatch({ type: 'error', localId: item.localId, error: fileError });
+        return;
+      }
 
-    try {
-      const [dims, req] = await Promise.all([
-        readImageDimensions(item.file),
-        requestMediaUploadAction({
-          folderId: item.folderId,
-          visibility: item.visibility,
+      dispatch({ type: 'progress', localId: item.localId, progress: 5 });
+
+      try {
+        const [dims, req] = await Promise.all([
+          readImageDimensions(item.file),
+          requestMediaUploadAction({
+            folderId: item.folderId,
+            visibility: item.visibility,
+            name: item.name,
+            mimeType: item.mimeType,
+            sizeBytes: item.sizeBytes,
+          }),
+        ]);
+
+        if (!req.ok || !req.upload) {
+          dispatch({
+            type: 'error',
+            localId: item.localId,
+            error: req.error ?? 'Không khởi tạo được tải lên',
+          });
+          return;
+        }
+
+        await putFileWithProgress(req.upload.uploadUrl, item.file, (pct) => {
+          dispatch({ type: 'progress', localId: item.localId, progress: pct });
+        });
+
+        const saved = await confirmMediaUploadAction({
+          folderId: req.upload.folderId,
+          visibility: req.upload.visibility,
+          driver: req.upload.driver,
+          storageKey: req.upload.storageKey,
           name: item.name,
           mimeType: item.mimeType,
           sizeBytes: item.sizeBytes,
-        }),
-      ]);
+          width: dims?.width ?? null,
+          height: dims?.height ?? null,
+        });
 
-      if (!req.ok || !req.upload) {
+        if (!saved.ok || !saved.file) {
+          dispatch({
+            type: 'error',
+            localId: item.localId,
+            error: saved.error ?? 'Không lưu được thông tin tệp',
+          });
+          return;
+        }
+
+        if (item.previewUrl) URL.revokeObjectURL(item.previewUrl);
+        dispatch({ type: 'remove', localId: item.localId });
+        onUploadedRef.current?.(saved.file);
+      } catch (err) {
         dispatch({
           type: 'error',
           localId: item.localId,
-          error: req.error ?? 'Không khởi tạo được tải lên',
+          error: err instanceof Error ? err.message : 'Tải tệp thất bại',
         });
-        return;
+      } finally {
+        inFlightRef.current.delete(item.localId);
       }
-
-      await putFileWithProgress(req.upload.uploadUrl, item.file, (pct) => {
-        dispatch({ type: 'progress', localId: item.localId, progress: pct });
-      });
-
-      const saved = await confirmMediaUploadAction({
-        folderId: req.upload.folderId,
-        visibility: req.upload.visibility,
-        driver: req.upload.driver,
-        storageKey: req.upload.storageKey,
-        name: item.name,
-        mimeType: item.mimeType,
-        sizeBytes: item.sizeBytes,
-        width: dims?.width ?? null,
-        height: dims?.height ?? null,
-      });
-
-      if (!saved.ok || !saved.file) {
-        dispatch({
-          type: 'error',
-          localId: item.localId,
-          error: saved.error ?? 'Không lưu được thông tin tệp',
-        });
-        return;
-      }
-
-      if (item.previewUrl) URL.revokeObjectURL(item.previewUrl);
-      dispatch({ type: 'remove', localId: item.localId });
-      onUploadedRef.current?.(saved.file);
-    } catch (err) {
-      dispatch({
-        type: 'error',
-        localId: item.localId,
-        error: err instanceof Error ? err.message : 'Tải tệp thất bại',
-      });
-    }
-  }, []);
+    },
+    [dispatch],
+  );
 
   const enqueueFiles = useCallback(
     (
@@ -134,23 +146,27 @@ export function useMediaUpload({
         void runUpload(item);
       }
     },
-    [runUpload],
+    [dispatch, runUpload],
   );
 
   const retryItem = useCallback(
     (localId: string) => {
+      if (inFlightRef.current.has(localId)) return;
       const item = queueRef.current.find((q) => q.localId === localId);
-      if (!item) return;
+      if (!item || item.status === 'uploading') return;
       void runUpload(item);
     },
     [runUpload],
   );
 
-  const dismissItem = useCallback((localId: string) => {
-    const item = queueRef.current.find((q) => q.localId === localId);
-    if (item?.previewUrl) URL.revokeObjectURL(item.previewUrl);
-    dispatch({ type: 'remove', localId });
-  }, []);
+  const dismissItem = useCallback(
+    (localId: string) => {
+      const item = queueRef.current.find((q) => q.localId === localId);
+      if (item?.previewUrl) URL.revokeObjectURL(item.previewUrl);
+      dispatch({ type: 'remove', localId });
+    },
+    [dispatch],
+  );
 
   return { queue, enqueueFiles, retryItem, dismissItem };
 }

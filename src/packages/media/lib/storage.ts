@@ -81,6 +81,12 @@ export function createSupabaseStorageDriver(sb: SupabaseStorageClient): MediaSto
   };
 }
 
+const SUPPORTED_DRIVERS = new Set(['supabase']);
+
+export function isValidStorageDriverId(driverId: string): boolean {
+  return SUPPORTED_DRIVERS.has(driverId);
+}
+
 export function getStorageDriver(driverId: string, sb: SupabaseStorageClient): MediaStorageDriver {
   if (driverId === 'supabase') return createSupabaseStorageDriver(sb);
   throw new Error('Nhà cung cấp lưu trữ không được hỗ trợ');

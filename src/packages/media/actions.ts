@@ -16,7 +16,7 @@ import {
   requestUploadSchema,
   updateMediaFileSchema,
 } from './lib/schemas';
-import { activeStorageDriverId, getStorageDriver } from './lib/storage';
+import { activeStorageDriverId, getStorageDriver, isValidStorageDriverId } from './lib/storage';
 import type { MediaFileItem, MediaFolder, MediaKind, MediaVisibility } from './lib/types';
 import {
   createPrivateDownloadUrl,
@@ -195,6 +195,9 @@ export async function confirmMediaUploadAction(input: {
   const user = await requirePermission('media.manage');
   const parsed = confirmUploadSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
+  if (!isValidStorageDriverId(parsed.data.driver)) {
+    return { ok: false, error: 'Nhà cung cấp lưu trữ không được hỗ trợ' };
+  }
 
   const sb = await createClient();
   let visibility = parsed.data.visibility;

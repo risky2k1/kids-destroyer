@@ -1,7 +1,7 @@
 import 'server-only';
 import type { Database } from '@/core/supabase/database.types';
 import { createClient } from '@/core/supabase/server';
-import { isImageMime } from './lib/files';
+import { mimesForKind } from './lib/files';
 import { getStorageDriver, type SupabaseStorageClient } from './lib/storage';
 import type { MediaFileItem, MediaFolder, MediaKind, MediaVisibility } from './lib/types';
 
@@ -99,6 +99,10 @@ export async function listMediaFiles(filters?: {
   if (filters?.visibility) {
     query = query.eq('visibility', filters.visibility);
   }
+  const kindMimes = mimesForKind(filters?.kind);
+  if (kindMimes) {
+    query = query.in('mime_type', [...kindMimes]);
+  }
   if (filters?.search?.trim()) {
     query = query.ilike('name', `%${filters.search.trim()}%`);
   }
@@ -106,10 +110,7 @@ export async function listMediaFiles(filters?: {
   const { data, error } = await query;
   if (error || !data) return [];
 
-  const mapped = data.map((row) => mapMediaFile(row, sb));
-  if (filters?.kind === 'image') return mapped.filter((f) => isImageMime(f.mimeType));
-  if (filters?.kind === 'document') return mapped.filter((f) => !isImageMime(f.mimeType));
-  return mapped;
+  return data.map((row) => mapMediaFile(row, sb));
 }
 
 export async function getMediaFilesByIds(ids: readonly string[]): Promise<MediaFileItem[]> {
@@ -127,10 +128,10 @@ export async function resolveMediaUrl(
   file: Pick<MediaFileItem, 'driver' | 'visibility' | 'storageKey'>,
   expiresInSeconds = 600,
 ): Promise<string | null> {
-  const sb = await createClient();
-  const driver = getStorageDriver(file.driver, sb);
-  if (file.visibility === 'public') return driver.getPublicUrl(file.storageKey);
   try {
+    const sb = await createClient();
+    const driver = getStorageDriver(file.driver, sb);
+    if (file.visibility === 'public') return driver.getPublicUrl(file.storageKey);
     return await driver.createSignedReadUrl(file.storageKey, expiresInSeconds);
   } catch {
     return null;
@@ -141,14 +142,18 @@ export async function createPrivateDownloadUrl(
   id: string,
   expiresInSeconds = 600,
 ): Promise<string | null> {
-  const sb = await createClient();
-  const { data, error } = await sb
-    .from('media_files')
-    .select('driver, visibility, storage_key')
-    .eq('id', id)
-    .single();
-  if (error || !data) return null;
-  const driver = getStorageDriver(data.driver, sb);
-  if (data.visibility === 'public') return driver.getPublicUrl(data.storage_key);
-  return driver.createSignedReadUrl(data.storage_key, expiresInSeconds);
+  try {
+    const sb = await createClient();
+    const { data, error } = await sb
+      .from('media_files')
+      .select('driver, visibility, storage_key')
+      .eq('id', id)
+      .single();
+    if (error || !data) return null;
+    const driver = getStorageDriver(data.driver, sb);
+    if (data.visibility === 'public') return driver.getPublicUrl(data.storage_key);
+    return await driver.createSignedReadUrl(data.storage_key, expiresInSeconds);
+  } catch {
+    return null;
+  }
 }

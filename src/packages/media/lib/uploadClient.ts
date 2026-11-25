@@ -118,3 +118,42 @@ export function matchesPickerFilter(
   if (filter.accept !== 'all' && mediaKindFromMime(file.mimeType) !== filter.accept) return false;
   return true;
 }
+
+export function toggleSelectedMap(
+  current: ReadonlyMap<string, MediaFileItem>,
+  file: MediaFileItem,
+  multiple: boolean,
+): Map<string, MediaFileItem> {
+  const next = new Map(multiple ? current : undefined);
+  if (current.has(file.id)) {
+    next.delete(file.id);
+  } else {
+    next.set(file.id, file);
+  }
+  return next;
+}
+
+export function shouldShowUploadedInPicker(
+  file: MediaFileItem,
+  ctx: {
+    accept: MediaKind | 'all';
+    visibility: MediaVisibility | 'all';
+    activeVisibility: MediaVisibility;
+    folderId: string | null;
+    search: string;
+  },
+): boolean {
+  if (!matchesPickerFilter(file, { accept: ctx.accept, visibility: ctx.visibility })) {
+    return false;
+  }
+  if (file.visibility !== ctx.activeVisibility) return false;
+  const q = ctx.search.trim().toLowerCase();
+  if (q) return file.name.toLowerCase().includes(q);
+  return file.folderId === ctx.folderId;
+}
+
+export function tryAcquireUploadLock(inFlight: Set<string>, localId: string): boolean {
+  if (inFlight.has(localId)) return false;
+  inFlight.add(localId);
+  return true;
+}

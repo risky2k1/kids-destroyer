@@ -58,14 +58,19 @@ export function MediaBrowser({
 }) {
   const router = useRouter();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [prevSearchQuery, setPrevSearchQuery] = useState(searchQuery);
   const [searchInput, setSearchInput] = useState(searchQuery);
+  if (searchQuery !== prevSearchQuery) {
+    setPrevSearchQuery(searchQuery);
+    setSearchInput(searchQuery);
+  }
   const [folderDialog, setFolderDialog] = useState<
     | { kind: 'create'; parentId: string | null; fixedVisibility: MediaVisibility | null }
     | { kind: 'rename'; folder: MediaFolder }
     | null
   >(null);
   const [activeFile, setActiveFile] = useState<MediaFileItem | null>(null);
-  const [uploadVis, setUploadVis] = useState<MediaVisibility>('public');
+  const uploadVisRef = useRef<MediaVisibility>('public');
   const [, startTransition] = useTransition();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -101,7 +106,7 @@ export function MediaBrowser({
     const f = next.folder !== undefined ? next.folder : currentFolderId;
     const v = next.visibility ?? visibilityFilter;
     const k = next.kind ?? kindFilter;
-    const q = next.q !== undefined ? next.q : searchInput;
+    const q = next.q !== undefined ? next.q : searchQuery;
     if (f) params.set('folder', f);
     if (v !== 'all') params.set('visibility', v);
     if (k !== 'all') params.set('kind', k);
@@ -111,8 +116,8 @@ export function MediaBrowser({
   }
 
   function triggerUpload(visibility: MediaVisibility) {
-    setUploadVis(visibility);
-    setTimeout(() => fileInputRef.current?.click(), 0);
+    uploadVisRef.current = visibility;
+    fileInputRef.current?.click();
   }
 
   function handleDeleteFolder(folder: MediaFolder) {
@@ -279,7 +284,7 @@ export function MediaBrowser({
                 if (e.target.files) {
                   enqueueFiles(e.target.files, {
                     folderId: currentFolderId,
-                    visibility: fixedFolderVis ?? uploadVis,
+                    visibility: fixedFolderVis ?? uploadVisRef.current,
                   });
                 }
                 e.target.value = '';
@@ -385,7 +390,24 @@ export function MediaBrowser({
           Chưa có tệp nào trong mục này.
         </div>
       ) : viewMode === 'list' ? (
-        <RecordTable columns={columns} rows={files} getId={(r) => r.id} />
+        <RecordTable
+          columns={columns}
+          rows={files}
+          getId={(r) => r.id}
+          addRow={
+            canManage ? (
+              <button
+                type="button"
+                onClick={() => triggerUpload(fixedFolderVis ?? 'public')}
+                className="text-[13px] text-foreground/60 hover:text-foreground"
+              >
+                + Tải tệp lên
+              </button>
+            ) : (
+              <span className="text-[13px] text-foreground/50">Chỉ xem</span>
+            )
+          }
+        />
       ) : (
         <AttachmentGroup layout="grid">
           {files.map((file) => {

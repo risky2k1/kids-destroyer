@@ -40,7 +40,7 @@ export async function GET(_req: Request, context: { params: Promise<{ id: string
 
   const url = await createPrivateDownloadUrl(id, 600);
   if (!url) {
-    return NextResponse.json({ error: 'Không tạo được liên kết tải tệp' }, { status: 404 });
+    return NextResponse.json({ error: 'Không tạo được liên kết tải tệp' }, { status: 502 });
   }
 
   const res = NextResponse.redirect(url, 302);

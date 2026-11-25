@@ -3,6 +3,9 @@ import {
   matchesPickerFilter,
   putFileWithProgress,
   queueReducer,
+  shouldShowUploadedInPicker,
+  toggleSelectedMap,
+  tryAcquireUploadLock,
   type UploadQueueItem,
 } from './uploadClient';
 import type { MediaFileItem } from './types';
@@ -130,5 +133,84 @@ describe('matchesPickerFilter', () => {
     expect(matchesPickerFilter(imgFile, { accept: 'document', visibility: 'public' })).toBe(false);
     expect(matchesPickerFilter(imgFile, { accept: 'all', visibility: 'private' })).toBe(false);
     expect(matchesPickerFilter(imgFile, { accept: 'all', visibility: 'all' })).toBe(true);
+  });
+});
+
+describe('toggleSelectedMap & shouldShowUploadedInPicker', () => {
+  const pubImg: MediaFileItem = {
+    id: 'f1',
+    folderId: 'folder-a',
+    visibility: 'public',
+    driver: 'supabase',
+    storageKey: '2026/11/a.webp',
+    name: 'a.webp',
+    alt: null,
+    mimeType: 'image/webp',
+    sizeBytes: 100,
+    width: 100,
+    height: 100,
+    createdAt: '',
+    url: 'https://x/a.webp',
+  };
+  const pubDoc: MediaFileItem = {
+    ...pubImg,
+    id: 'f2',
+    folderId: 'folder-b',
+    name: 'doc.pdf',
+    mimeType: 'application/pdf',
+  };
+
+  it('retains selections across folder switches when multiple=true', () => {
+    let map = new Map<string, MediaFileItem>();
+    map = toggleSelectedMap(map, pubImg, true);
+    map = toggleSelectedMap(map, pubDoc, true);
+    expect([...map.keys()]).toEqual(['f1', 'f2']);
+    map = toggleSelectedMap(map, pubImg, true);
+    expect([...map.keys()]).toEqual(['f2']);
+
+    const single = toggleSelectedMap(map, pubImg, false);
+    expect([...single.keys()]).toEqual(['f1']);
+  });
+
+  it('checks picker filter, active folder, and search before prepending uploaded file', () => {
+    expect(
+      shouldShowUploadedInPicker(pubImg, {
+        accept: 'image',
+        visibility: 'public',
+        activeVisibility: 'public',
+        folderId: 'folder-a',
+        search: '',
+      }),
+    ).toBe(true);
+
+    expect(
+      shouldShowUploadedInPicker(pubImg, {
+        accept: 'document',
+        visibility: 'public',
+        activeVisibility: 'public',
+        folderId: 'folder-a',
+        search: '',
+      }),
+    ).toBe(false);
+
+    expect(
+      shouldShowUploadedInPicker(pubImg, {
+        accept: 'all',
+        visibility: 'all',
+        activeVisibility: 'public',
+        folderId: 'folder-b',
+        search: '',
+      }),
+    ).toBe(false);
+  });
+});
+
+describe('tryAcquireUploadLock', () => {
+  it('blocks duplicate concurrent retry calls for the same localId', () => {
+    const locks = new Set<string>();
+    expect(tryAcquireUploadLock(locks, 'q-1')).toBe(true);
+    expect(tryAcquireUploadLock(locks, 'q-1')).toBe(false);
+    locks.delete('q-1');
+    expect(tryAcquireUploadLock(locks, 'q-1')).toBe(true);
   });
 });

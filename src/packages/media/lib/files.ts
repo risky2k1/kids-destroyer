@@ -20,8 +20,18 @@ export const MEDIA_MIME_EXT: Record<string, string> = {
 
 const IMAGE_MIMES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
 
+export const MEDIA_IMAGE_MIMES = Object.keys(MEDIA_MIME_EXT).filter((m) => IMAGE_MIMES.has(m));
+export const MEDIA_DOCUMENT_MIMES = Object.keys(MEDIA_MIME_EXT).filter((m) => !IMAGE_MIMES.has(m));
+
 export const MEDIA_ACCEPT_ATTR = Object.keys(MEDIA_MIME_EXT).join(',');
-export const MEDIA_IMAGE_ACCEPT_ATTR = [...IMAGE_MIMES].join(',');
+export const MEDIA_IMAGE_ACCEPT_ATTR = MEDIA_IMAGE_MIMES.join(',');
+export const MEDIA_DOCUMENT_ACCEPT_ATTR = MEDIA_DOCUMENT_MIMES.join(',');
+
+export function mimesForKind(kind?: MediaKind): readonly string[] | null {
+  if (kind === 'image') return MEDIA_IMAGE_MIMES;
+  if (kind === 'document') return MEDIA_DOCUMENT_MIMES;
+  return null;
+}
 
 export function isImageMime(mime: string): boolean {
   return IMAGE_MIMES.has(mime);
