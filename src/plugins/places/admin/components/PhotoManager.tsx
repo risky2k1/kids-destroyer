@@ -66,8 +66,10 @@ export function PhotoManager({ place }: { place: Place }) {
           {place.photos.map((photo, index) => (
             <Attachment key={photo.path} variant="card">
               <AttachmentMedia variant="image">
-                {/* eslint-disable-next-line @next/next/no-img-element -- remote storage URL */}
-                <img src={photo.url} alt="" />
+                {photo.url ? (
+                  // eslint-disable-next-line @next/next/no-img-element -- remote storage URL
+                  <img src={photo.url} alt="" />
+                ) : null}
               </AttachmentMedia>
               <AttachmentContent>
                 <AttachmentTitle>{photoFileName(photo.path)}</AttachmentTitle>

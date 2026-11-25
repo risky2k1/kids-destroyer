@@ -4,6 +4,7 @@ import * as React from 'react';
 import { mergeProps } from '@base-ui/react/merge-props';
 import { useRender } from '@base-ui/react/use-render';
 import { cva, type VariantProps } from 'class-variance-authority';
+import { ImageOff } from 'lucide-react';
 
 import { cn } from '@/themes/neobrutal/lib/utils';
 import { Button } from './button';
@@ -105,16 +106,56 @@ const attachmentMediaVariants = cva(
 function AttachmentMedia({
   className,
   variant = 'icon',
+  children,
+  onErrorCapture,
+  onLoadCapture,
   ...props
 }: React.ComponentProps<'div'> & VariantProps<typeof attachmentMediaVariants>) {
   const resolvedVariant = variant ?? 'icon';
+  const mediaRef = React.useRef<HTMLDivElement>(null);
+  const [broken, setBroken] = React.useState(false);
+  const hasContent = React.Children.toArray(children).length > 0;
+  const showFallback = resolvedVariant === 'image' && (!hasContent || broken);
+
+  React.useEffect(() => {
+    if (resolvedVariant !== 'image') return;
+    const img = mediaRef.current?.querySelector('img');
+    if (img && img.complete && img.naturalWidth === 0) {
+      const id = requestAnimationFrame(() => setBroken(true));
+      return () => cancelAnimationFrame(id);
+    }
+  }, [resolvedVariant, children]);
+
   return (
     <div
+      ref={mediaRef}
       data-slot="attachment-media"
       data-variant={resolvedVariant}
-      className={cn(attachmentMediaVariants({ variant: resolvedVariant }), className)}
+      data-broken={broken ? 'true' : undefined}
+      onErrorCapture={(e) => {
+        if (resolvedVariant === 'image') setBroken(true);
+        onErrorCapture?.(e);
+      }}
+      onLoadCapture={(e) => {
+        if (resolvedVariant === 'image') setBroken(false);
+        onLoadCapture?.(e);
+      }}
+      className={cn(
+        attachmentMediaVariants({ variant: resolvedVariant }),
+        showFallback && '[&>img]:hidden',
+        className,
+      )}
       {...props}
-    />
+    >
+      {children}
+      {showFallback && (
+        <ImageOff
+          data-slot="attachment-media-fallback"
+          className="size-5 text-foreground/40"
+          aria-hidden="true"
+        />
+      )}
+    </div>
   );
 }
 

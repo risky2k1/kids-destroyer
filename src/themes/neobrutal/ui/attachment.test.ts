@@ -51,4 +51,11 @@ describe('Attachment primitives', () => {
     expect(html).toContain('truncate');
     expect(html).toContain('type="button"');
   });
+
+  it('renders a fallback icon when image media has no children', () => {
+    const html = renderToStaticMarkup(createElement(AttachmentMedia, { variant: 'image' }, null));
+
+    expect(html).toContain('data-slot="attachment-media-fallback"');
+    expect(html).toContain('<svg');
+  });
 });
