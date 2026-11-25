@@ -129,6 +129,46 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"media_files": {
+                  Row: {
+                    "alt": string | null,"created_at": string,"created_by": string | null,"driver": string,"folder_id": string | null,"height": number | null,"id": string,"mime_type": string,"name": string,"size_bytes": number,"storage_key": string,"updated_at": string,"visibility": string,"width": number | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "alt"?: string | null,"created_at"?: string,"created_by"?: string | null,"driver"?: string,"folder_id"?: string | null,"height"?: number | null,"id"?: string,"mime_type": string,"name": string,"size_bytes": number,"storage_key": string,"updated_at"?: string,"visibility": string,"width"?: number | null
+                  }
+                  Update: {
+                    "alt"?: string | null,"created_at"?: string,"created_by"?: string | null,"driver"?: string,"folder_id"?: string | null,"height"?: number | null,"id"?: string,"mime_type"?: string,"name"?: string,"size_bytes"?: number,"storage_key"?: string,"updated_at"?: string,"visibility"?: string,"width"?: number | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "media_files_folder_fkey"
+      columns: ["folder_id","visibility"]
+isOneToOne: false
+      referencedRelation: "media_folders"
+      referencedColumns: ["id","visibility"]
+    }
+                  ]
+                },"media_folders": {
+                  Row: {
+                    "created_at": string,"created_by": string | null,"id": string,"name": string,"parent_id": string | null,"updated_at": string,"visibility": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"created_by"?: string | null,"id"?: string,"name": string,"parent_id"?: string | null,"updated_at"?: string,"visibility"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"created_by"?: string | null,"id"?: string,"name"?: string,"parent_id"?: string | null,"updated_at"?: string,"visibility"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "media_folders_parent_fkey"
+      columns: ["parent_id","visibility"]
+isOneToOne: false
+      referencedRelation: "media_folders"
+      referencedColumns: ["id","visibility"]
+    }
+                  ]
                 },"modules": {
                   Row: {
                     "enabled": boolean,"id": string,"updated_at": string

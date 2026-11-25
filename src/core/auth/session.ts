@@ -59,3 +59,10 @@ export async function requirePermission(permission: string): Promise<CurrentUser
   if (!can(user, permission)) redirect(homeFor(user));
   return user;
 }
+
+export async function requireAnyPermission(permissions: readonly string[]): Promise<CurrentUser> {
+  const user = await getCurrentUser();
+  if (!user) redirect(PATHS.login);
+  if (!permissions.some((p) => can(user, p))) redirect(homeFor(user));
+  return user;
+}

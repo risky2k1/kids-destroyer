@@ -33,4 +33,7 @@ describe('PATHS', () => {
     expect(PATHS.parent.assignment('abc')).toBe('/parent/assignments/abc');
     expect(PATHS.kid.assignment('abc')).toBe('/kid/a/abc');
   });
+  it('exposes media library path', () => {
+    expect(PATHS.admin.media).toBe('/admin/media');
+  });
 });
