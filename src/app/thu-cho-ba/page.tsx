@@ -1,16 +1,6 @@
-import type { Metadata } from 'next';
-import { LetterView } from '@/plugins/love-letter/letter';
-
-const title = 'Có thư cho bà nè 💌';
-const description = 'Chạm để mở nhé.';
-
-export const metadata: Metadata = {
-  title,
-  description,
-  robots: { index: false, follow: false },
-  openGraph: { title, description },
-};
+import { redirect } from 'next/navigation';
+import { LETTER_PATH } from '@/plugins/love-letter/letter';
 
 export default function Page() {
-  return <LetterView />;
+  redirect(LETTER_PATH);
 }

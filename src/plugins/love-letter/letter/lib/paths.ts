@@ -1,1 +1,1 @@
-export const LETTER_PATH = '/thu-cho-ba';
+export const LETTER_PATH = '/for-you';
