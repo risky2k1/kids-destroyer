@@ -13,6 +13,7 @@ import { NativeSelect } from '@/themes/neobrutal/ui/native-select';
 import { Textarea } from '@/themes/neobrutal/ui/textarea';
 import { duplicateQuestion, saveQuestion } from '../actions';
 import { ArchiveQuestionButton } from './ArchiveQuestionButton';
+import { QuestionImageField } from './QuestionImageField';
 
 type Option = { id: string; name: string };
 type Topic = Option & { subjectId: string; gradeId: string };
@@ -27,6 +28,7 @@ type Question = {
   content: Json;
   answer: Json;
   locked: boolean;
+  imagePath: string | null;
 };
 
 const field = 'h-8 py-0';
@@ -45,6 +47,7 @@ export function QuestionForm({
   topics,
   types,
   area = 'admin',
+  uid,
 }: {
   question: Question | null;
   subjects: Option[];
@@ -52,6 +55,7 @@ export function QuestionForm({
   topics: Topic[];
   types: Option[];
   area?: 'admin' | 'parent';
+  uid: string;
 }) {
   const locked = question?.locked ?? false;
   const plugin0 = getPlugin(question?.type ?? types[0]?.id ?? '');
@@ -270,6 +274,7 @@ export function QuestionForm({
               onChange={(event) => setPrompt(event.target.value)}
             />
           </div>
+          <QuestionImageField uid={uid} imagePath={question?.imagePath ?? null} />
           {question && !locked ? <ArchiveQuestionButton id={question.id} area={area} /> : null}
         </fieldset>
         <div className="flex min-w-0 flex-col gap-6">

@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import type { ActionState } from '@/core/actions';
+import { can } from '@/core/acl/access';
 import { requireAnyPermission, requirePermission } from '@/core/auth/session';
 import { enabledMap } from '@/plugins/kids-learning/question-types/server';
 import { AUTHOR_QUESTION, areaPaths, readArea } from '@/plugins/kids-learning/quiz';
@@ -11,6 +12,7 @@ import { PATHS } from '@/core/routes';
 import type { Json } from '@/core/supabase/database.types';
 import { createClient } from '@/core/supabase/server';
 import { getPlugin, PLUGIN_IDS } from '@/plugins/kids-learning/question-types';
+import { isImagePath, isOwnImagePath } from './lib/imagePath';
 import { questionErrorMessage } from './lib/errors';
 import { isQuestionLocked } from './lib/lock';
 import { questionMeta } from './lib/schemas';
@@ -60,7 +62,7 @@ function refresh(fd: FormData, id?: string) {
 }
 
 export async function saveQuestion(_: ActionState, fd: FormData): Promise<ActionState> {
-  await requireAnyPermission(AUTHOR_QUESTION);
+  const user = await requireAnyPermission(AUTHOR_QUESTION);
   const meta = readMeta(fd);
   if (!meta.success) return { ok: false, error: meta.error.issues[0].message };
   const plugin = getPlugin(meta.data.type);
@@ -80,6 +82,15 @@ export async function saveQuestion(_: ActionState, fd: FormData): Promise<Action
   const cross = plugin.validateAnswer?.(content.data, answer.data);
   if (cross) return { ok: false, error: cross };
 
+  const rawImage = String(fd.get('imagePath') ?? '');
+  let imagePath: string | null = null;
+  if (rawImage) {
+    const allowed =
+      isOwnImagePath(rawImage, user.id) || (can(user, 'questions.manage') && isImagePath(rawImage));
+    if (!allowed) return { ok: false, error: 'Ảnh không hợp lệ' };
+    imagePath = rawImage;
+  }
+
   const id = optionalId.safeParse(fd.get('id'));
   const sb = await createClient();
   const row = {
@@ -91,6 +102,7 @@ export async function saveQuestion(_: ActionState, fd: FormData): Promise<Action
     prompt: meta.data.prompt,
     content: content.data as NonNullable<Json>,
     answer: answer.data as NonNullable<Json>,
+    image_path: imagePath,
   };
 
   if (!id.success) {
@@ -143,7 +155,7 @@ export async function duplicateQuestion(_: ActionState, fd: FormData): Promise<A
   const sb = await createClient();
   const existing = await sb
     .from('questions')
-    .select('type, subject_id, grade_id, topic_id, lang, prompt, content, answer')
+    .select('type, subject_id, grade_id, topic_id, lang, prompt, content, answer, image_path')
     .eq('id', id.data)
     .maybeSingle();
   if (existing.error) return { ok: false, error: questionErrorMessage(existing.error) };

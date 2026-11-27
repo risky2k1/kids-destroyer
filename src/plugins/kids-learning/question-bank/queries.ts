@@ -72,7 +72,7 @@ export async function getQuestion(id: string) {
   const sb = await createClient();
   const { data, error } = await sb
     .from('questions')
-    .select('id, type, subject_id, grade_id, topic_id, lang, prompt, content, answer')
+    .select('id, type, subject_id, grade_id, topic_id, lang, prompt, content, answer, image_path')
     .eq('id', id)
     .maybeSingle();
   if (error) throw error;
@@ -85,6 +85,7 @@ export async function getQuestion(id: string) {
     topicId: data.topic_id,
     lang: data.lang,
     prompt: data.prompt,
+    imagePath: data.image_path,
     content: data.content,
     answer: data.answer,
     locked: await isQuestionLocked(sb, id),

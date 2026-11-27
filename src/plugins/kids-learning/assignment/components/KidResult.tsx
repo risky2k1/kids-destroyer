@@ -90,6 +90,10 @@ export function KidResult({
               </div>
 
               <p className="text-lg font-bold">{question.prompt}</p>
+              {question.imageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={question.imageUrl} alt="" className="max-h-60 object-contain" />
+              ) : null}
 
               {reveal && PluginReview && (
                 <div className="rounded-base border border-border/40 bg-secondary-background/50 p-3 text-base">

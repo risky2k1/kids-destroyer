@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { getCurrentUser } from '@/core/auth/session';
 import { listCatalog } from '@/plugins/kids-learning/catalog';
 import { getPlugin } from '@/plugins/kids-learning/question-types';
 import { QuestionForm } from './components/QuestionForm';
@@ -11,10 +12,11 @@ export async function QuestionEditView({
   id?: string;
   area?: 'admin' | 'parent';
 }) {
-  const [catalog, enabled, question] = await Promise.all([
+  const [catalog, enabled, question, user] = await Promise.all([
     listCatalog(),
     listEnabledTypes(),
     id ? getQuestion(id) : Promise.resolve(null),
+    getCurrentUser(),
   ]);
   if (id && !question) notFound();
   const types =
@@ -24,6 +26,7 @@ export async function QuestionEditView({
   return (
     <QuestionForm
       area={area}
+      uid={user?.id ?? ''}
       question={question}
       subjects={catalog.subjects}
       grades={catalog.grades}

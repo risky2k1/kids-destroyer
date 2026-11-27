@@ -1,5 +1,6 @@
 import 'server-only';
 import { createClient } from '@/core/supabase/server';
+import { questionImageUrl } from '@/plugins/kids-learning/question-bank';
 import { getCurrentKid } from '@/plugins/kids-learning/family';
 import { getSettings } from '@/packages/settings';
 import {
@@ -143,6 +144,7 @@ export type KidQuestion = {
   lang: string;
   content: unknown;
   points: number;
+  imageUrl: string | null;
 };
 
 export type KidAssignmentDetail = {
@@ -170,6 +172,7 @@ type QuestionRel = {
   type: string;
   lang: string;
   content: unknown;
+  image_path: string | null;
 };
 
 type AssignmentDetailRow = {
@@ -254,7 +257,8 @@ export async function getKidAssignment(id: string): Promise<KidAssignmentDetail 
             prompt,
             type,
             lang,
-            content
+            content,
+            image_path
           )
         )
       ),
@@ -328,6 +332,7 @@ export async function getKidAssignment(id: string): Promise<KidAssignmentDetail 
         lang: q.lang,
         content: q.content,
         points: Number(qq.points),
+        imageUrl: questionImageUrl(q.image_path),
       },
     ];
   });

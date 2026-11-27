@@ -145,6 +145,10 @@ export function KidPlayer({
             lang={currentQuestion.lang}
           />
         </div>
+        {currentQuestion.imageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={currentQuestion.imageUrl} alt="" className="max-h-60 object-contain" />
+        ) : null}
 
         <div className="min-h-36 py-2 text-lg">
           {PluginPlayer ? (
