@@ -192,6 +192,176 @@ describe('RLS: places', () => {
     expect(error).toBeNull();
   });
 
+  it('anon cannot read a pending place', async () => {
+    const { data: place, error } = await manager
+      .from('plc_places')
+      .insert({ name: `Pending ${run}` })
+      .select('id')
+      .single();
+    expect(error).toBeNull();
+    const { error: uErr } = await adminClient()
+      .from('plc_places')
+      .update({ review_status: 'pending', origin: 'community' })
+      .eq('id', place!.id);
+    expect(uErr).toBeNull();
+
+    const { data: hidden, error: aErr } = await anonClient()
+      .from('plc_places')
+      .select('id')
+      .eq('id', place!.id);
+    expect(aErr).toBeNull();
+    expect(hidden).toEqual([]);
+
+    const { data: seen, error: mErr } = await manager
+      .from('plc_places')
+      .select('id')
+      .eq('id', place!.id);
+    expect(mErr).toBeNull();
+    expect(seen).toHaveLength(1);
+  });
+
+  it('anon cannot publish or claim an admin place', async () => {
+    const anon = anonClient();
+    const { error: claimed } = await anon.from('plc_places').insert({
+      name: `Claim ${run}`,
+      origin: 'admin',
+      review_status: 'pending',
+      status: 'wishlist',
+    });
+    expect(claimed).not.toBeNull();
+
+    const { error: published } = await anon.from('plc_places').insert({
+      name: `Publish ${run}`,
+      origin: 'community',
+      review_status: 'approved',
+      status: 'wishlist',
+    });
+    expect(published).not.toBeNull();
+
+    const { error: priced } = await anon.from('plc_places').insert({
+      name: `Priced ${run}`,
+      origin: 'community',
+      review_status: 'pending',
+      status: 'wishlist',
+      price_level: 1,
+    });
+    expect(priced).not.toBeNull();
+
+    const name = `Suggest ${run}`;
+    const { error: ok } = await anon.from('plc_places').insert({
+      name,
+      origin: 'community',
+      review_status: 'pending',
+      status: 'wishlist',
+    });
+    expect(ok).toBeNull();
+
+    const { data: saved } = await manager
+      .from('plc_places')
+      .select('origin, review_status, status, rating, price_level, dishes, visited_on, photos')
+      .eq('name', name)
+      .single();
+    expect(saved).toEqual({
+      origin: 'community',
+      review_status: 'pending',
+      status: 'wishlist',
+      rating: null,
+      price_level: null,
+      dishes: null,
+      visited_on: null,
+      photos: [],
+    });
+  });
+
+  it('anon cannot link an area tag', async () => {
+    const anon = anonClient();
+    const name = `Tagged ${run}`;
+    const { error: pErr } = await anon.from('plc_places').insert({
+      name,
+      origin: 'community',
+      review_status: 'pending',
+      status: 'wishlist',
+    });
+    expect(pErr).toBeNull();
+    const { data: pending } = await manager
+      .from('plc_places')
+      .select('id')
+      .eq('name', name)
+      .single();
+
+    const { data: category } = await manager
+      .from('plc_tags')
+      .select('id')
+      .eq('kind', 'category')
+      .limit(1)
+      .single();
+    const { data: area, error: aErr } = await manager
+      .from('plc_tags')
+      .insert({ kind: 'area', name: `Area ${run}` })
+      .select('id')
+      .single();
+    expect(aErr).toBeNull();
+
+    const { error: catErr } = await anon
+      .from('plc_place_tags')
+      .insert({ place_id: pending!.id, tag_id: category!.id });
+    expect(catErr).toBeNull();
+
+    const { error: areaErr } = await anon
+      .from('plc_place_tags')
+      .insert({ place_id: pending!.id, tag_id: area!.id });
+    expect(areaErr).not.toBeNull();
+
+    const { data: approved, error: apErr } = await manager
+      .from('plc_places')
+      .insert({ name: `Approved ${run}` })
+      .select('id')
+      .single();
+    expect(apErr).toBeNull();
+    const { error: approvedLink } = await anon
+      .from('plc_place_tags')
+      .insert({ place_id: approved!.id, tag_id: category!.id });
+    expect(approvedLink).not.toBeNull();
+  });
+
+  it('anon cannot update a pending place', async () => {
+    const anon = anonClient();
+    const name = `Locked ${run}`;
+    const { error: insErr } = await anon.from('plc_places').insert({
+      name,
+      origin: 'community',
+      review_status: 'pending',
+      status: 'wishlist',
+    });
+    expect(insErr).toBeNull();
+    const { data: row } = await manager.from('plc_places').select('id').eq('name', name).single();
+
+    const { data: approved, error: approveErr } = await anon
+      .from('plc_places')
+      .update({ review_status: 'approved' })
+      .eq('id', row!.id)
+      .select('id')
+      .single();
+    expect(approveErr).not.toBeNull();
+    expect(approved).toBeNull();
+
+    const { data: renamed, error: nameErr } = await anon
+      .from('plc_places')
+      .update({ name: `Hacked ${run}` })
+      .eq('id', row!.id)
+      .select('id')
+      .single();
+    expect(nameErr).not.toBeNull();
+    expect(renamed).toBeNull();
+
+    const { data: still } = await manager
+      .from('plc_places')
+      .select('name, review_status')
+      .eq('id', row!.id)
+      .single();
+    expect(still).toEqual({ name, review_status: 'pending' });
+  });
+
   it('anon cannot upload to the places bucket', async () => {
     const { error } = await anonClient()
       .storage.from('places')

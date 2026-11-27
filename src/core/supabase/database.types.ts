@@ -211,14 +211,14 @@ isOneToOne: false
                   ]
                 },"plc_places": {
                   Row: {
-                    "created_at": string,"dishes": string | null,"id": string,"maps_url": string | null,"name": string,"note": string | null,"open_hours": NonNullable<Json>,"photos": (string)[],"price_level": number | null,"rating": number | null,"status": string,"updated_at": string,"visited_on": string | null
+                    "created_at": string,"dishes": string | null,"id": string,"maps_url": string | null,"name": string,"note": string | null,"open_hours": NonNullable<Json>,"origin": string,"photos": (string)[],"price_level": number | null,"rating": number | null,"review_status": string,"status": string,"updated_at": string,"visited_on": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"dishes"?: string | null,"id"?: string,"maps_url"?: string | null,"name": string,"note"?: string | null,"open_hours"?: NonNullable<Json>,"photos"?: (string)[],"price_level"?: number | null,"rating"?: number | null,"status"?: string,"updated_at"?: string,"visited_on"?: string | null
+                    "created_at"?: string,"dishes"?: string | null,"id"?: string,"maps_url"?: string | null,"name": string,"note"?: string | null,"open_hours"?: NonNullable<Json>,"origin"?: string,"photos"?: (string)[],"price_level"?: number | null,"rating"?: number | null,"review_status"?: string,"status"?: string,"updated_at"?: string,"visited_on"?: string | null
                   }
                   Update: {
-                    "created_at"?: string,"dishes"?: string | null,"id"?: string,"maps_url"?: string | null,"name"?: string,"note"?: string | null,"open_hours"?: NonNullable<Json>,"photos"?: (string)[],"price_level"?: number | null,"rating"?: number | null,"status"?: string,"updated_at"?: string,"visited_on"?: string | null
+                    "created_at"?: string,"dishes"?: string | null,"id"?: string,"maps_url"?: string | null,"name"?: string,"note"?: string | null,"open_hours"?: NonNullable<Json>,"origin"?: string,"photos"?: (string)[],"price_level"?: number | null,"rating"?: number | null,"review_status"?: string,"status"?: string,"updated_at"?: string,"visited_on"?: string | null
                   }
                   Relationships: [
                     
@@ -558,6 +558,9 @@ isOneToOne: false
                            },
 "my_family_id":
 { Args: Record<PropertyKey, never>; Returns: string
+                           },
+"plc_suggestion_is_open":
+{ Args: { "place_id": string }; Returns: boolean
                            }
           }
           Enums: {

@@ -13,6 +13,8 @@ export type PlaceRow = {
   id: string;
   name: string;
   status: string;
+  origin: string;
+  review_status: string;
   rating: number | null;
   price_level: number | null;
   dishes: string | null;
@@ -27,7 +29,7 @@ export type PlaceRow = {
 
 /** Columns every place query selects; matches PlaceRow. */
 export const PLACE_SELECT =
-  'id, name, status, rating, price_level, dishes, note, maps_url, photos, visited_on, open_hours, plc_place_tags(tag_id), plc_visits(id, place_id, visited_at, rating, note)';
+  'id, name, status, origin, review_status, rating, price_level, dishes, note, maps_url, photos, visited_on, open_hours, plc_place_tags(tag_id), plc_visits(id, place_id, visited_at, rating, note)';
 
 export function parseOpenHours(raw: unknown): OpeningSlot[] {
   if (!Array.isArray(raw)) return [];
@@ -72,6 +74,8 @@ export function toPlace(
     id: row.id,
     name: row.name,
     status: row.status === 'wishlist' ? 'wishlist' : 'visited',
+    origin: row.origin === 'community' ? 'community' : 'admin',
+    reviewStatus: row.review_status === 'pending' ? 'pending' : 'approved',
     rating: row.rating !== null ? Number(row.rating) : null,
     visitCount: visits.length,
     visits,

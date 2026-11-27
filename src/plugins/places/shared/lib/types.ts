@@ -1,5 +1,7 @@
 export type TagKind = 'category' | 'vibe' | 'area';
 export type PlaceStatus = 'visited' | 'wishlist';
+export type PlaceOrigin = 'admin' | 'community';
+export type ReviewStatus = 'pending' | 'approved';
 export type PriceLevel = 1 | 2 | 3;
 
 export const TAG_KINDS: TagKind[] = ['category', 'vibe', 'area'];
@@ -35,6 +37,8 @@ export type Place = {
   id: string;
   name: string;
   status: PlaceStatus;
+  origin: PlaceOrigin;
+  reviewStatus: ReviewStatus;
   /** Average rating across visits (1..5, decimal), or null when unrated. */
   rating: number | null;
   visitCount: number;

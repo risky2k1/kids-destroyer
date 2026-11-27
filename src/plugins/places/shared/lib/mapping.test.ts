@@ -24,6 +24,8 @@ const row = (over: Partial<PlaceRow> = {}): PlaceRow => ({
   photos: ['p1/a.jpg'],
   visited_on: '2026-11-20',
   open_hours: [{ open: '08:00', close: '22:00' }],
+  origin: 'admin',
+  review_status: 'approved',
   plc_place_tags: [
     { tag_id: 'cat1' },
     { tag_id: 'cat0' },
@@ -82,6 +84,8 @@ describe('toPlace', () => {
       photos: [{ path: 'p1/a.jpg', url: 'https://cdn/p1/a.jpg' }],
       visitedOn: '2026-11-20',
       openHours: [{ open: '08:00', close: '22:00' }],
+      origin: 'admin',
+      reviewStatus: 'approved',
       categoryIds: ['cat1', 'cat0'],
       vibeIds: ['vibe1'],
       areaId: 'area1',
@@ -97,6 +101,12 @@ describe('toPlace', () => {
     expect(p.status).toBe('visited');
     expect(p.priceLevel).toBeNull();
     expect(p.openHours).toEqual([]);
+  });
+
+  it('treats unknown origin and review_status as admin and approved', () => {
+    const p = toPlace(row({ origin: 'nope', review_status: 'nope' }), tagsById, publicUrl);
+    expect(p.origin).toBe('admin');
+    expect(p.reviewStatus).toBe('approved');
   });
 });
 

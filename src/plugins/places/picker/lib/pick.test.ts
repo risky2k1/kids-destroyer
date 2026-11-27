@@ -14,6 +14,8 @@ const place = (id: string, over: Partial<Place> = {}): Place => ({
   id,
   name: id,
   status: 'visited',
+  origin: 'admin',
+  reviewStatus: 'approved',
   rating: null,
   visitCount: 0,
   visits: [],
