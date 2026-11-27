@@ -201,6 +201,26 @@ describe('parent test maker', () => {
     expect(free.data).toBe(false);
   });
 
+  it('question_in_use is false for a fresh question not in any quiz', async () => {
+    const question = await s.parentA.client
+      .from('questions')
+      .insert({
+        type: 'number',
+        subject_id: s.subjectId,
+        grade_id: s.gradeId,
+        prompt: 'chưa vào đề',
+      })
+      .select('id')
+      .single();
+    expect(question.error).toBeNull();
+
+    const locked = await s.parentA.client.rpc('question_in_use', {
+      p_question_id: question.data!.id,
+    });
+    expect(locked.error).toBeNull();
+    expect(locked.data).toBe(false);
+  });
+
   it('image upload limited to own folder', async () => {
     const own = await s.parentA.client.storage
       .from('question-images')

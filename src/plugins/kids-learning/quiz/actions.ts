@@ -4,9 +4,9 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import type { ActionState } from '@/core/actions';
-import { requirePermission } from '@/core/auth/session';
-import { PATHS } from '@/core/routes';
+import { requireAnyPermission } from '@/core/auth/session';
 import { createClient } from '@/core/supabase/server';
+import { AUTHOR_QUIZ, areaPaths, readArea } from './lib/area';
 import { quizErrorMessage } from './lib/errors';
 import { isQuizLocked } from './lib/lock';
 import { quizInput, type QuizInput } from './lib/schemas';
@@ -69,9 +69,12 @@ async function questionsMatch(
   return mismatch ? 'Câu không cùng môn và lớp với đề' : null;
 }
 
-function refresh(id?: string) {
-  revalidatePath(PATHS.admin.quizzes);
-  if (id) revalidatePath(PATHS.admin.quiz(id));
+const OWN_ROW = 'Bạn chỉ sửa được đề/câu của mình';
+
+function refresh(fd: FormData, id?: string) {
+  const paths = areaPaths(readArea(fd));
+  revalidatePath(paths.quizzes);
+  if (id) revalidatePath(paths.quiz(id));
 }
 
 async function gateLocked(sb: Awaited<ReturnType<typeof createClient>>, id: string) {
@@ -84,7 +87,7 @@ async function gateLocked(sb: Awaited<ReturnType<typeof createClient>>, id: stri
 }
 
 export async function saveQuiz(_: ActionState, fd: FormData): Promise<ActionState> {
-  await requirePermission('quizzes.manage');
+  await requireAnyPermission(AUTHOR_QUIZ);
   const parsed = readInput(fd);
   if (!parsed.ok) return { ok: false, error: parsed.error };
   const sb = await createClient();
@@ -106,40 +109,43 @@ export async function saveQuiz(_: ActionState, fd: FormData): Promise<ActionStat
       await sb.from('quizzes').delete().eq('id', created.data.id);
       return failed;
     }
-    refresh();
-    redirect(PATHS.admin.quiz(created.data.id));
+    refresh(fd);
+    redirect(areaPaths(readArea(fd)).quiz(created.data.id));
   }
 
   const gate = await gateLocked(sb, id.data);
   if (gate === true) return { ok: false, error: 'Đề đã được giao, không sửa được' };
   if (gate && typeof gate === 'object') return gate;
-  const updated = await sb.from('quizzes').update(row).eq('id', id.data);
+  const updated = await sb.from('quizzes').update(row).eq('id', id.data).select('id');
   if (updated.error) return { ok: false, error: quizErrorMessage(updated.error) };
+  if ((updated.data ?? []).length === 0) return { ok: false, error: OWN_ROW };
   const failed = await replaceItems(sb, id.data, parsed.data.items);
   if (failed) return failed;
-  refresh(id.data);
+  refresh(fd, id.data);
   return { ok: true };
 }
 
 export async function archiveQuiz(_: ActionState, fd: FormData): Promise<ActionState> {
-  await requirePermission('quizzes.manage');
+  await requireAnyPermission(AUTHOR_QUIZ);
   const id = optionalId.safeParse(fd.get('id'));
   if (!id.success) return { ok: false, error: 'Có lỗi, thử lại' };
   const sb = await createClient();
   const gate = await gateLocked(sb, id.data);
   if (gate === true) return { ok: false, error: 'Đề đã được giao, không lưu trữ được' };
   if (gate && typeof gate === 'object') return gate;
-  const { error } = await sb
+  const archived = await sb
     .from('quizzes')
     .update({ archived_at: new Date().toISOString() })
-    .eq('id', id.data);
-  if (error) return { ok: false, error: quizErrorMessage(error) };
-  refresh(id.data);
-  redirect(PATHS.admin.quizzes);
+    .eq('id', id.data)
+    .select('id');
+  if (archived.error) return { ok: false, error: quizErrorMessage(archived.error) };
+  if ((archived.data ?? []).length === 0) return { ok: false, error: OWN_ROW };
+  refresh(fd, id.data);
+  redirect(areaPaths(readArea(fd)).quizzes);
 }
 
 export async function duplicateQuiz(_: ActionState, fd: FormData): Promise<ActionState> {
-  await requirePermission('quizzes.manage');
+  await requireAnyPermission(AUTHOR_QUIZ);
   const id = optionalId.safeParse(fd.get('id'));
   if (!id.success) return { ok: false, error: 'Có lỗi, thử lại' };
   const sb = await createClient();
@@ -168,6 +174,6 @@ export async function duplicateQuiz(_: ActionState, fd: FormData): Promise<Actio
       return failed;
     }
   }
-  refresh();
-  redirect(PATHS.admin.quiz(created.data.id));
+  refresh(fd);
+  redirect(areaPaths(readArea(fd)).quiz(created.data.id));
 }

@@ -28,6 +28,13 @@ export const PATHS = {
     root: '/parent',
     kidMode: '/parent/kid-mode',
     assignment: (id: string) => `/parent/assignments/${id}`,
+    quizzes: '/parent/quizzes',
+    newQuiz: '/parent/quizzes/new',
+    quiz: (id: string) => `/parent/quizzes/${id}`,
+    aiQuiz: '/parent/quizzes/ai',
+    questions: '/parent/questions',
+    newQuestion: '/parent/questions/new',
+    question: (id: string) => `/parent/questions/${id}`,
   },
   kid: {
     root: '/kid',
