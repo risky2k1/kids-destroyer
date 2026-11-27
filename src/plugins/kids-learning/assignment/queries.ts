@@ -101,13 +101,14 @@ export type QuizOption = {
   id: string;
   title: string;
   questionCount: number;
+  origin: 'system' | 'parent';
 };
 
 export async function listQuizOptions(): Promise<QuizOption[]> {
   const sb = await createClient();
   const { data, error } = await sb
     .from('quizzes')
-    .select('id, title, quiz_questions(points)')
+    .select('id, title, origin, quiz_questions(points)')
     .is('archived_at', null)
     .order('created_at', { ascending: false });
 
@@ -120,6 +121,7 @@ export async function listQuizOptions(): Promise<QuizOption[]> {
       id: row.id,
       title: row.title,
       questionCount: (row.quiz_questions ?? []).length,
+      origin: row.origin === 'parent' ? 'parent' : 'system',
     }));
 }
 

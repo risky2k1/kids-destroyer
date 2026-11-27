@@ -1,4 +1,5 @@
 import 'server-only';
+import { questionImageUrl } from '@/plugins/kids-learning/question-bank';
 import { getPlugin } from '@/plugins/kids-learning/question-types';
 import { createClient } from '@/core/supabase/server';
 import { isQuizLocked } from './lib/lock';
@@ -117,3 +118,78 @@ export async function getQuiz(id: string) {
 }
 
 export type QuizDetail = NonNullable<Awaited<ReturnType<typeof getQuiz>>>;
+
+const PREVIEW =
+  'id, title, subjects!quizzes_subject_id_fkey(name), grades!quizzes_grade_id_fkey(name), quiz_questions(position, points, question_id, questions!quiz_questions_question_id_fkey(type, prompt, image_path, content, answer))';
+
+type PreviewQuestion = {
+  type: string;
+  prompt: string;
+  image_path: string | null;
+  content: unknown;
+  answer: unknown;
+};
+
+type PreviewRow = {
+  id: string;
+  title: string;
+  subjects: Named;
+  grades: Named;
+  quiz_questions:
+    | {
+        position: number;
+        points: number;
+        question_id: string;
+        questions: PreviewQuestion | PreviewQuestion[] | null;
+      }[]
+    | null;
+};
+
+export type QuizPreviewData = {
+  id: string;
+  title: string;
+  subjectName: string;
+  gradeName: string;
+  items: {
+    questionId: string;
+    type: string;
+    prompt: string;
+    imageUrl: string | null;
+    content: unknown;
+    answer: unknown;
+    points: number;
+  }[];
+};
+
+export async function getQuizPreview(id: string): Promise<QuizPreviewData | null> {
+  const sb = await createClient();
+  const { data, error } = await sb.from('quizzes').select(PREVIEW).eq('id', id).maybeSingle();
+  if (error) throw error;
+  if (!data) return null;
+  const row = data as PreviewRow;
+  const items = (row.quiz_questions ?? [])
+    .slice()
+    .sort((a, b) => a.position - b.position)
+    .flatMap((item) => {
+      const question = Array.isArray(item.questions) ? item.questions[0] : item.questions;
+      if (!question) return [];
+      return [
+        {
+          questionId: item.question_id,
+          type: question.type,
+          prompt: question.prompt,
+          imageUrl: questionImageUrl(question.image_path),
+          content: question.content,
+          answer: question.answer,
+          points: Number(item.points),
+        },
+      ];
+    });
+  return {
+    id: row.id,
+    title: row.title,
+    subjectName: oneName(row.subjects),
+    gradeName: oneName(row.grades),
+    items,
+  };
+}

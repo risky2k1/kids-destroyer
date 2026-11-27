@@ -1,4 +1,4 @@
-import { QuizzesView } from '@/plugins/kids-learning/quiz';
+import { QuizzesView } from '@/plugins/kids-learning/quiz/server';
 
 function first(value: string | string[] | undefined) {
   return (Array.isArray(value) ? value[0] : value) ?? '';

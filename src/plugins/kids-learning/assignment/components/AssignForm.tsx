@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { Eye } from 'lucide-react';
 import { useActionToast } from '@/core/ui/useActionToast';
 import { Button } from '@/themes/neobrutal/ui/button';
 import { DateTimePicker } from '@/themes/neobrutal/ui/date-time-picker';
@@ -9,10 +10,13 @@ import { MultiSelect } from '@/themes/neobrutal/ui/multi-select';
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from '@/themes/neobrutal/ui/select';
+import { QuizPreview } from '@/plugins/kids-learning/quiz';
 import { assign } from '../actions';
 import type { AssignableKid, QuizOption } from '../queries';
 
@@ -60,22 +64,55 @@ export function AssignForm({ quizzes, kids }: { quizzes: QuizOption[]; kids: Ass
             Đề bài
           </Label>
           <input type="hidden" name="quizId" value={quizId} required />
-          <Select value={quizId} onValueChange={(v) => setQuizId(v ?? '')}>
-            <SelectTrigger id="quizId" className="h-9 bg-secondary-background text-foreground">
-              <SelectValue>
-                {selectedQuiz
-                  ? `${selectedQuiz.title} (${selectedQuiz.questionCount} câu)`
-                  : '-- Chọn đề --'}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {quizzes.map((quiz) => (
-                <SelectItem key={quiz.id} value={quiz.id}>
-                  {quiz.title} ({quiz.questionCount} câu)
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex items-center gap-2">
+            <Select value={quizId} onValueChange={(v) => setQuizId(v ?? '')}>
+              <SelectTrigger id="quizId" className="h-9 bg-secondary-background text-foreground">
+                <SelectValue>
+                  {selectedQuiz
+                    ? `${selectedQuiz.title} (${selectedQuiz.questionCount} câu)`
+                    : '-- Chọn đề --'}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>Đề hệ thống</SelectLabel>
+                  {quizzes
+                    .filter((quiz) => quiz.origin !== 'parent')
+                    .map((quiz) => (
+                      <SelectItem key={quiz.id} value={quiz.id}>
+                        {quiz.title} ({quiz.questionCount} câu)
+                      </SelectItem>
+                    ))}
+                </SelectGroup>
+                <SelectGroup>
+                  <SelectLabel>Đề phụ huynh</SelectLabel>
+                  {quizzes
+                    .filter((quiz) => quiz.origin === 'parent')
+                    .map((quiz) => (
+                      <SelectItem key={quiz.id} value={quiz.id}>
+                        {quiz.title} ({quiz.questionCount} câu)
+                      </SelectItem>
+                    ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+            {quizId ? (
+              <QuizPreview
+                quizId={quizId}
+                trigger={
+                  <Button
+                    type="button"
+                    variant="neutral"
+                    size="icon"
+                    aria-label="Xem trước"
+                    className="size-9 shrink-0"
+                  >
+                    <Eye />
+                  </Button>
+                }
+              />
+            ) : null}
+          </div>
         </div>
 
         <div className="flex flex-col gap-1.5">

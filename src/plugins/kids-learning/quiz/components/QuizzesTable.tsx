@@ -1,9 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { BookOpen, GraduationCap, Hash, Sigma, Text } from 'lucide-react';
+import { Eye, BookOpen, GraduationCap, Hash, Sigma, Text } from 'lucide-react';
 import { RecordTable } from '@/core/ui/RecordTable';
+import { Button } from '@/themes/neobrutal/ui/button';
 import { areaPaths, type Area } from '../lib/area';
+import { QuizPreview } from './QuizPreview';
 
 type Row = {
   id: string;
@@ -59,6 +61,26 @@ export function QuizzesTable({ rows, area = 'admin' }: { rows: Row[]; area?: Are
           icon: Sigma,
           sortValue: (row) => row.totalPoints,
           render: (row) => row.totalPoints,
+        },
+        {
+          key: 'preview',
+          label: '',
+          icon: Eye,
+          render: (row) => (
+            <span
+              onClick={(event) => event.stopPropagation()}
+              onKeyDown={(event) => event.stopPropagation()}
+            >
+              <QuizPreview
+                quizId={row.id}
+                trigger={
+                  <Button type="button" variant="neutral" size="xs" className="h-7">
+                    Xem trước
+                  </Button>
+                }
+              />
+            </span>
+          ),
         },
       ]}
       rows={rows}
