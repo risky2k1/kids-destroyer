@@ -18,10 +18,12 @@ export function PlaceRowActions({
   id,
   name,
   pendingReview,
+  size = 'xs',
 }: {
   id: string;
   name: string;
   pendingReview?: boolean;
+  size?: 'xs' | 'default';
 }) {
   return (
     <div
@@ -31,8 +33,8 @@ export function PlaceRowActions({
     >
       {pendingReview ? (
         <>
-          <ApproveButton id={id} />
-          <RejectButton id={id} name={name} />
+          <ApproveButton id={id} size={size} />
+          <RejectButton id={id} name={name} size={size} />
         </>
       ) : (
         <LogVisitDialog placeId={id} placeName={name} />
@@ -41,24 +43,24 @@ export function PlaceRowActions({
   );
 }
 
-function ApproveButton({ id }: { id: string }) {
+function ApproveButton({ id, size }: { id: string; size: 'xs' | 'default' }) {
   const [, formAction, pending] = useActionToast(approvePlace, 'Đã duyệt');
   return (
     <form action={formAction}>
       <input type="hidden" name="id" value={id} />
-      <Button type="submit" size="xs" disabled={pending}>
+      <Button type="submit" size={size} disabled={pending}>
         Duyệt
       </Button>
     </form>
   );
 }
 
-function RejectButton({ id, name }: { id: string; name: string }) {
+function RejectButton({ id, name, size }: { id: string; name: string; size: 'xs' | 'default' }) {
   const [open, setOpen] = useState(false);
   const [, formAction, pending] = useActionToast(deletePlace);
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button type="button" size="xs" variant="neutral" />}>
+      <DialogTrigger render={<Button type="button" size={size} variant="neutral" />}>
         Từ chối
       </DialogTrigger>
       <DialogContent>

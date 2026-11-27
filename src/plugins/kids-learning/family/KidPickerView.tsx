@@ -8,7 +8,7 @@ export async function KidPickerView() {
   if (kids.length === 0) return <p>Nhà mình chưa có bé nào. Nhờ admin thêm nhé.</p>;
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-center text-3xl">Ai làm bài nào? 🎒</h1>
+      <h1 className="text-center text-3xl">Ai làm bài nào?</h1>
       <KidPicker kids={kids} />
     </div>
   );

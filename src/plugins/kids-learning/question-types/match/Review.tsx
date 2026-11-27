@@ -32,7 +32,6 @@ export function Review({
         return (
           <li key={i} className="flex flex-col gap-1 rounded-base border border-border/40 p-2.5">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-base">{isCorrect ? '✅' : '❌'}</span>
               <span className="font-bold text-foreground">{leftItem}</span>
               <span className="text-foreground/60">→</span>
               <span className={isCorrect ? 'font-medium text-foreground' : 'text-foreground/70'}>

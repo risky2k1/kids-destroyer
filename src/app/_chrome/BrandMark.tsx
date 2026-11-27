@@ -39,7 +39,7 @@ export function BrandMark({
       />
     );
   }
-  const letter = siteName?.trim().charAt(0).toUpperCase() || 'K';
+  const letter = siteName?.trim().charAt(0).toUpperCase() || 'T';
   return (
     <span
       className={`flex shrink-0 items-center justify-center rounded-sm border-2 border-border bg-main font-bold ${styles.letter} ${hardShadow} ${className ?? ''}`}

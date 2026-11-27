@@ -4,7 +4,7 @@ import { requireModule } from '@/core/modules/server';
 import { PlacesPickerSkeleton } from '@/core/ui/PageSkeletons';
 import { PickerView } from '@/plugins/places/picker';
 
-const title = 'Đi đâu giờ? 🎲';
+const title = 'Đi đâu giờ?';
 const description = 'Hết ý tưởng đi đâu thì bấm xáo nhé.';
 
 export const metadata: Metadata = {

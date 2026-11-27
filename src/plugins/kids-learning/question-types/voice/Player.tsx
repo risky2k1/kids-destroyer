@@ -240,7 +240,7 @@ export function Player({
   if (value?.path && !isReRecording) {
     return (
       <div className="flex flex-col items-center gap-4 p-4">
-        <span className="text-xl font-bold text-foreground">Đã thu âm ✅</span>
+        <span className="text-xl font-bold text-foreground">Đã thu âm</span>
         <Button
           variant="neutral"
           disabled={disabled}
@@ -267,7 +267,7 @@ export function Player({
         className="h-16 min-h-[44px] px-8 text-xl"
         onClick={startRecording}
       >
-        🎙️ Bắt đầu thu
+        Bắt đầu thu
       </Button>
     </div>
   );

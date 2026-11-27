@@ -8,7 +8,7 @@ export type AppSettings = {
 };
 
 export const DEFAULT_SETTINGS: AppSettings = {
-  siteName: 'Kids CMS',
+  siteName: 'T-CMS',
   allowRetry: true,
   logoUrl: null,
   faviconUrl: null,

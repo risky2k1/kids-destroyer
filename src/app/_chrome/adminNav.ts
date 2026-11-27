@@ -1,13 +1,16 @@
-import { activeKey, buildNav } from '@/core/modules';
+import { activeKey, buildAdminNav } from '@/core/modules';
 import { PATHS } from '@/core/routes';
 import { PACKAGES } from '@/packages/registry';
 import { PLUGINS } from '@/plugins/registry';
 
+const without = (modules: typeof PLUGINS, disabledIds: readonly string[]) =>
+  modules.filter((module) => !disabledIds.includes(module.id));
+
 export const MODULES = [...PLUGINS, ...PACKAGES];
-export const ADMIN_NAV = buildNav(MODULES);
+export const ADMIN_NAV = buildAdminNav(PLUGINS, PACKAGES);
 
 export function adminNav(disabledIds: readonly string[]) {
-  return buildNav(MODULES.filter((m) => !disabledIds.includes(m.id)));
+  return buildAdminNav(without(PLUGINS, disabledIds), without(PACKAGES, disabledIds));
 }
 
 /** 'home' for /admin; otherwise the matching nav key. Paths outside /admin never match. */

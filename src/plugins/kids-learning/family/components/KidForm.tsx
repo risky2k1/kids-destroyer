@@ -59,7 +59,7 @@ export function KidForm({
         </div>
         <PinField id={`${p}-pin`} editing={!!kid} />
       </div>
-      {locked && <p className="text-sm font-bold">🔒 Đang bị khóa PIN. Đặt PIN mới để mở khóa.</p>}
+      {locked && <p className="text-sm font-bold">Đang bị khóa PIN. Đặt PIN mới để mở khóa.</p>}
       <Button type="submit" size="sm" disabled={pending} className="self-start">
         {kid ? 'Lưu' : 'Thêm bé'}
       </Button>

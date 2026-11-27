@@ -46,8 +46,8 @@ export async function KidAssignmentsView() {
           <div className="rounded-base border-2 border-dashed border-border bg-background p-6 text-center">
             <p className="text-xl font-bold">
               {assignments.length === 0
-                ? 'Chưa có bài nào. Đi chơi đi 🎉'
-                : 'Không có bài nào cần làm 🎉'}
+                ? 'Chưa có bài nào. Đi chơi đi'
+                : 'Không có bài nào cần làm'}
             </p>
           </div>
         ) : (

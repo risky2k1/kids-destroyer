@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ModuleManifest, NavSection } from './nav';
-import { activeKey, buildNav, visibleNav } from './nav';
+import { activeKey, buildAdminNav, buildNav, pluginItems, visibleNav } from './nav';
 
 const DummyIcon = () => null;
 
@@ -36,6 +36,69 @@ describe('nav', () => {
     expect(sections.map((s) => s.id)).toEqual(['content', 'system']);
     expect(sections[0].items[0].key).toBe('content-item');
     expect(sections[1].items[0].key).toBe('sys-item');
+  });
+
+  it('puts each plugin on one cấp-1 row and flattens nested links', () => {
+    const learning: ModuleManifest = {
+      id: 'kids-learning',
+      name: 'Học tập cho trẻ',
+      description: '',
+      version: '1.0.0',
+      permissions: [],
+      nav: [
+        {
+          group: 'content',
+          key: 'catalog',
+          label: 'Danh mục',
+          icon: DummyIcon,
+          iconClass: 'text-chart-5',
+          children: [
+            {
+              key: 'subjects',
+              label: 'Môn học',
+              href: '/admin/subjects',
+              icon: DummyIcon,
+              iconClass: 'text-chart-5',
+            },
+          ],
+        },
+        {
+          group: 'system',
+          key: 'plugins',
+          label: 'Dạng câu',
+          href: '/admin/plugins',
+          icon: DummyIcon,
+          iconClass: 'text-chart-1',
+        },
+      ],
+    };
+    const oneScreen: ModuleManifest = {
+      id: 'places',
+      name: 'Đi đâu',
+      description: '',
+      version: '1.0.0',
+      permissions: [],
+      nav: [
+        {
+          group: 'apps',
+          key: 'places',
+          label: 'Đi đâu',
+          href: '/admin/places',
+          icon: DummyIcon,
+          iconClass: 'text-chart-3',
+        },
+      ],
+    };
+    const sections = buildAdminNav([learning, oneScreen], []);
+    expect(sections).toHaveLength(1);
+    expect(sections[0].label).toBe('');
+    expect(sections[0].items.map((item) => item.key)).toEqual(['kids-learning', 'places']);
+    const parent = sections[0].items[0];
+    expect('children' in parent && parent.children.map((child) => child.key)).toEqual([
+      'subjects',
+      'plugins',
+    ]);
+    expect(pluginItems([oneScreen])[0]).toMatchObject({ key: 'places', label: 'Đi đâu' });
   });
 
   it('buildNav drops empty groups', () => {
@@ -106,6 +169,26 @@ describe('nav', () => {
 
     // Non-match when prefix is not a segment boundary (/a/bc)
     expect(activeKey('/a/bc', sections)).toBeNull();
+
+    // A longer sibling wins over a shorter prefix (/a/b vs /a/b/tags)
+    const withTags = buildNav([
+      {
+        ...testManifest,
+        nav: [
+          ...testManifest.nav,
+          {
+            group: 'content' as const,
+            key: 'tags',
+            label: 'Tag',
+            href: '/a/b/tags',
+            icon: DummyIcon,
+            iconClass: 'text-chart-5',
+          },
+        ],
+      },
+    ]);
+    expect(activeKey('/a/b/tags', withTags)).toBe('tags');
+    expect(activeKey('/a/b/x', withTags)).toBe('child-1');
 
     // Exact match on regular item
     expect(activeKey('/other', sections)).toBe('standalone-item');

@@ -1,4 +1,4 @@
-import { MapPin } from 'lucide-react';
+import { MapPin, Tags } from 'lucide-react';
 import type { ModuleManifest } from '@/core/modules';
 import { PLACES_PATHS } from './shared/lib/paths';
 
@@ -12,9 +12,18 @@ export const placesManifest: ModuleManifest = {
     {
       group: 'apps',
       key: 'places',
-      label: 'Đi đâu',
+      label: 'Quán',
       href: PLACES_PATHS.admin,
       icon: MapPin,
+      iconClass: 'text-chart-3',
+      permission: 'places.manage',
+    },
+    {
+      group: 'apps',
+      key: 'places-tags',
+      label: 'Tag',
+      href: PLACES_PATHS.tags,
+      icon: Tags,
       iconClass: 'text-chart-3',
       permission: 'places.manage',
     },

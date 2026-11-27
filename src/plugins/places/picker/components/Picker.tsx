@@ -54,7 +54,7 @@ export function Picker({
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-5 bg-background px-4 py-6">
-      <h1 className="text-3xl font-heading">Đi đâu giờ? 🎲</h1>
+      <h1 className="text-3xl font-heading">Đi đâu giờ?</h1>
 
       {places.length === 0 ? (
         <p className="rounded-base border-2 border-border bg-secondary-background p-4">
@@ -95,7 +95,7 @@ export function Picker({
                 disabled={rolling}
                 className="h-16 w-full text-xl font-heading"
               >
-                XÁO QUÁN! 🎲
+                XÁO QUÁN!
               </Button>
             </>
           )}

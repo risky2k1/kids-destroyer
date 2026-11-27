@@ -11,7 +11,7 @@ export default async function ParentHome() {
   const user = await getCurrentUser();
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-2xl">Xin chào {user?.displayName} 👋</h1>
+      <h1 className="text-2xl">Xin chào {user?.displayName}</h1>
       {user && canEnter('kid', user) && (
         <Button
           render={<Link href={PATHS.parent.kidMode} />}
@@ -19,7 +19,7 @@ export default async function ParentHome() {
           size="lg"
           className="self-start"
         >
-          🎒 Cho bé làm bài
+          Cho bé làm bài
         </Button>
       )}
       <Suspense fallback={<AssignmentsPageSkeleton />}>

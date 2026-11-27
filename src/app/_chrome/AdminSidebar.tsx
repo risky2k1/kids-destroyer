@@ -100,9 +100,11 @@ export function AdminSidebar({
         </SidebarMenu>
         {nav.map((section) => (
           <SidebarGroup key={section.id} className="border-b-0! py-1">
-            <SidebarGroupLabel className="h-6 px-2 font-base! text-xs text-foreground/50">
-              {section.label}
-            </SidebarGroupLabel>
+            {section.label ? (
+              <SidebarGroupLabel className="h-6 px-2 font-base! text-xs text-foreground/50">
+                {section.label}
+              </SidebarGroupLabel>
+            ) : null}
             <SidebarGroupContent>
               <SidebarMenu>
                 {section.items.map((item) => {

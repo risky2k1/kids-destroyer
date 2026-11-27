@@ -38,8 +38,7 @@ export function Review({
             const isCorrect = itemIdx === answer.order[pos];
             return (
               <li key={pos} className={isCorrect ? 'text-foreground' : 'text-foreground/60'}>
-                <span className="font-bold">{pos + 1}.</span> {isCorrect ? '✅ ' : '❌ '}
-                {content.items[itemIdx]}
+                <span className="font-bold">{pos + 1}.</span> {content.items[itemIdx]}
               </li>
             );
           })}

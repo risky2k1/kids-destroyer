@@ -86,9 +86,9 @@ export function ReviewForm({
                     <Badge className="px-1.5 py-0 text-xs">
                       Vòng 1:{' '}
                       {item.r1Score === 1
-                        ? '✅ Đúng'
+                        ? 'Đúng'
                         : item.r1Score === 0
-                          ? '❌ Sai'
+                          ? 'Sai'
                           : `${Math.round(item.r1Score * 100)}%`}
                     </Badge>
                   )}
@@ -96,9 +96,9 @@ export function ReviewForm({
                     <Badge className="px-1.5 py-0 text-xs">
                       Vòng 2:{' '}
                       {item.r2Score === 1
-                        ? '✅ Đúng'
+                        ? 'Đúng'
                         : item.r2Score === 0
-                          ? '❌ Sai'
+                          ? 'Sai'
                           : `${Math.round(item.r2Score * 100)}%`}
                     </Badge>
                   )}

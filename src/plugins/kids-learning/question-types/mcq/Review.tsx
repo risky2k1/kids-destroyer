@@ -23,7 +23,6 @@ export function Review({
         const wrong = isSelected && !isCorrect;
         return (
           <li key={index} className={wrong ? 'text-foreground/40' : undefined}>
-            {isCorrect ? '✅ ' : ''}
             {option || `Phương án ${index + 1}`}
             {isSelected ? ' · đã chọn' : ''}
           </li>

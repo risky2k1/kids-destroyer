@@ -57,14 +57,14 @@ export function KidResult({
           const plugin = getPlugin(question.type) as any;
           const PluginReview = plugin?.Review;
 
-          let statusBadge = '❌ Chưa làm';
+          let statusBadge = 'Chưa làm';
           if (res?.needsManual) {
-            statusBadge = '⏳ Chờ ba mẹ chấm';
+            statusBadge = 'Chờ ba mẹ chấm';
           } else if (res?.r2 !== undefined) {
             const best = Math.max(res.r1 ?? 0, res.r2);
-            statusBadge = best === 1 ? '✅ Đúng' : '❌ Sai';
+            statusBadge = best === 1 ? 'Đúng' : 'Sai';
           } else if (res?.r1 !== undefined) {
-            statusBadge = res.r1 === 1 ? '✅ Đúng' : '❌ Sai';
+            statusBadge = res.r1 === 1 ? 'Đúng' : 'Sai';
           }
 
           const itemScoreVal =

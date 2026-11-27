@@ -10,6 +10,7 @@ import {
 import { deletePlace } from './actions';
 import { PhotoManager } from './components/PhotoManager';
 import { PlaceForm } from './components/PlaceForm';
+import { PlaceRowActions } from './components/PlaceRowActions';
 import { VisitManager } from './components/VisitManager';
 
 export function PlaceEditView({ place, tags }: { place: Place | null; tags: Tag[] }) {
@@ -21,12 +22,15 @@ export function PlaceEditView({ place, tags }: { place: Place | null; tags: Tag[
         title={place ? place.name : 'Thêm quán'}
         crumbs={[{ href: PLACES_PATHS.admin, label: 'Đi đâu' }]}
         actions={
-          // ConfirmDelete's trigger hides at md+ until a table row is hovered; keep it visible here.
-          place && (
+          place &&
+          (place.reviewStatus === 'pending' ? (
+            <PlaceRowActions id={place.id} name={place.name} pendingReview size="default" />
+          ) : (
+            // ConfirmDelete's trigger hides at md+ until a table row is hovered; keep it visible here.
             <div className="[&_button]:opacity-100">
               <ConfirmDelete id={place.id} label={place.name} action={deletePlace} />
             </div>
-          )
+          ))
         }
       />
       <div className="flex flex-col gap-8 p-3">

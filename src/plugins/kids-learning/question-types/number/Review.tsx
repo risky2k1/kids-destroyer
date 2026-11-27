@@ -7,7 +7,6 @@ export function Review({
   content,
   answer,
   response,
-  result,
 }: {
   content: NumberContent;
   answer: NumberAnswer;
@@ -15,13 +14,9 @@ export function Review({
   result: GradeResult | undefined;
 }) {
   const unit = content.unit ? ` ${content.unit}` : '';
-  const ok =
-    result !== undefined
-      ? result.score === 1
-      : response !== undefined && Math.abs(response.value - answer.value) <= answer.tolerance;
   return (
     <p className="text-sm">
-      {response ? `${ok ? '✅' : '❌'} ${response.value}${unit}` : '…'} — đáp án {answer.value}
+      {response ? `${response.value}${unit}` : '…'} — đáp án {answer.value}
       {answer.tolerance > 0 ? ` ± ${answer.tolerance}` : ''}
       {unit}
     </p>

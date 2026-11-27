@@ -1,7 +1,6 @@
 'use client';
 
 import type { GradeResult } from '@/plugins/kids-learning/question-types';
-import { normalizeFill } from './lib/normalize';
 import type { FillAnswer, FillContent, FillResponse } from './schema';
 
 export function Review({
@@ -20,11 +19,9 @@ export function Review({
       <ul className="flex flex-col gap-1">
         {answer.blanks.map((accepted, index) => {
           const given = response?.values[index] ?? '';
-          const norm = normalizeFill(given);
-          const ok = norm !== '' && accepted.some((option) => normalizeFill(option) === norm);
           return (
             <li key={index}>
-              {ok ? '✅' : '❌'} {given || '…'} — chấp nhận: {accepted.join(', ')}
+              {given || '…'} — chấp nhận: {accepted.join(', ')}
             </li>
           );
         })}

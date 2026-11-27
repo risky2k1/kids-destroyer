@@ -28,9 +28,9 @@ describe('activeNav', () => {
     const fullKeys = full.flatMap((s) => s.items.map((i) => i.key));
     const withoutKidsKeys = withoutKids.flatMap((s) => s.items.map((i) => i.key));
 
-    expect(fullKeys).toContain('catalog');
+    expect(fullKeys).toContain('kids-learning');
     expect(fullKeys).toContain('media');
-    expect(withoutKidsKeys).not.toContain('catalog');
+    expect(withoutKidsKeys).not.toContain('kids-learning');
     expect(withoutKidsKeys).toContain('modules');
   });
 });

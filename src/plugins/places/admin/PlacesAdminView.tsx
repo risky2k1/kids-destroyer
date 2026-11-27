@@ -26,18 +26,8 @@ export function PlacesAdminView({ places, tags }: { places: Place[]; tags: Tag[]
                 className: `h-7 border-2 ${hardShadow}`,
               })}
             >
-              Trang công khai ↗
+              Trang công khai
             </a>
-            <Link
-              href={PLACES_PATHS.tags}
-              className={buttonVariants({
-                size: 'sm',
-                variant: 'neutral',
-                className: `h-7 border-2 ${hardShadow}`,
-              })}
-            >
-              Quản lý tag
-            </Link>
             <Link
               href={PLACES_PATHS.new}
               className={buttonVariants({ size: 'sm', className: `h-7 border-2 ${hardShadow}` })}

@@ -42,6 +42,35 @@ export function buildNav(modules: ModuleManifest[]): NavSection[] {
   })).filter((section) => section.items.length > 0);
 }
 
+function flatLinks(item: NavItem): NavLink[] {
+  return isParent(item) ? item.children : [item];
+}
+
+/** One cấp-1 row per plugin. Several screens become children. One screen stays a link. */
+export function pluginItems(plugins: ModuleManifest[]): NavItem[] {
+  return plugins.flatMap((plugin) => {
+    const links = plugin.nav.flatMap(flatLinks);
+    if (links.length === 0) return [];
+    if (links.length === 1) return [{ ...links[0], key: plugin.id, label: plugin.name }];
+    return [
+      {
+        key: plugin.id,
+        label: plugin.name,
+        icon: links[0].icon,
+        iconClass: links[0].iconClass,
+        children: links,
+      },
+    ];
+  });
+}
+
+/** Plugins sit at the top with no section title. Packages keep their groups. */
+export function buildAdminNav(plugins: ModuleManifest[], packages: ModuleManifest[]): NavSection[] {
+  const items = pluginItems(plugins);
+  const pluginSection: NavSection[] = items.length ? [{ id: 'apps', label: '', items }] : [];
+  return [...pluginSection, ...buildNav(packages)];
+}
+
 export function isParent(item: NavItem): item is NavParent {
   return 'children' in item;
 }
@@ -69,11 +98,14 @@ export function visibleNav(
     .filter((section) => section.items.length > 0);
 }
 
-/** Key of the link whose href equals pathname or is its prefix at a segment boundary. */
+/** Longest href that equals pathname or is its prefix at a segment boundary. */
 export function activeKey(pathname: string, sections: NavSection[]): string | null {
+  let best: { key: string; href: string } | null = null;
   for (const section of sections)
     for (const item of section.items)
-      for (const link of isParent(item) ? item.children : [item])
-        if (pathname === link.href || pathname.startsWith(`${link.href}/`)) return link.key;
-  return null;
+      for (const link of isParent(item) ? item.children : [item]) {
+        const hit = pathname === link.href || pathname.startsWith(`${link.href}/`);
+        if (hit && (!best || link.href.length > best.href.length)) best = link;
+      }
+  return best?.key ?? null;
 }

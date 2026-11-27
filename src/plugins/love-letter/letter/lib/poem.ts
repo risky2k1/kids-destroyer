@@ -5,7 +5,7 @@ export type Screen = {
 };
 
 export const SCREENS: Screen[] = [
-  { kind: 'envelope', lines: ['Có thư gửi tới bà nè,', 'Chạm vào mở thử, nghe tôi kể này.'] },
+  { kind: 'envelope', lines: ['A letter, just for you,', 'Tap to open. Let me tell you.'] },
   {
     kind: 'verse',
     lines: [
@@ -43,9 +43,9 @@ export const SCREENS: Screen[] = [
   },
   {
     kind: 'yes',
-    lines: ['Vậy là tớ hết ngóng trông,', 'Ngẩng lên nhìn tớ, cười cùng nhau nha 🙂'],
+    lines: ['Vậy là tớ hết ngóng trông,', 'Ngẩng lên nhìn tớ, cười cùng nhau nha'],
   },
 ];
 
-export const YES_LABEL = 'Bằng lòng 💗';
+export const YES_LABEL = 'Bằng lòng';
 export const NO_LABEL = 'Không bằng lòng';
