@@ -121,6 +121,12 @@ describe('placeInput', () => {
     expect(empty.error!.issues[0].message).toBe('Nhập tên quán');
     expect(parse({ name: 'x'.repeat(101), status: 'visited' }).success).toBe(false);
   });
+
+  it('folds styled letters in the name before trim', () => {
+    const r = parse({ name: '\u{1D40B}ẩu  ', status: 'visited' });
+    expect(r.success).toBe(true);
+    expect(r.data!.name).toBe('Lẩu');
+  });
 });
 
 describe('visitInput', () => {

@@ -1,4 +1,6 @@
 import { z } from 'zod';
+
+import { asPlain } from '@/core/text/plain';
 import { parseTimeMinutes } from './hours';
 import { PLACE_ICON_KEYS } from './icons';
 import { vietnamInputToIso } from './today';
@@ -24,7 +26,7 @@ export type PlaceInput = {
 const blankToNull = (v: unknown) => (typeof v === 'string' && v.trim() === '' ? null : v);
 const optional = <T extends z.ZodType>(schema: T) => z.preprocess(blankToNull, schema.nullable());
 const optionalText = (max: number, message: string) =>
-  optional(z.string().trim().max(max, message));
+  optional(z.preprocess(asPlain, z.string().trim().max(max, message)));
 
 export const openingSlotSchema = z.object({
   open: z.string().refine((v) => parseTimeMinutes(v) !== null, 'Giờ mở không hợp lệ'),
@@ -47,7 +49,10 @@ export const openHoursSchema = z.preprocess(
 );
 
 export const placeInput = z.object({
-  name: z.string().trim().min(1, 'Nhập tên quán').max(100, 'Tên tối đa 100 ký tự'),
+  name: z.preprocess(
+    asPlain,
+    z.string().trim().min(1, 'Nhập tên quán').max(100, 'Tên tối đa 100 ký tự'),
+  ),
   status: z.enum(['visited', 'wishlist'], 'Trạng thái không hợp lệ'),
   rating: optional(z.coerce.number().int().min(1).max(5, 'Sao từ 1 đến 5')),
   priceLevel: optional(z.coerce.number().int().min(1).max(3, 'Mức giá không hợp lệ')).transform(
@@ -120,7 +125,7 @@ export const visitInput = z.object({
 
 export const tagInput = z.object({
   kind: z.enum(['category', 'vibe', 'area'], 'Loại tag không hợp lệ'),
-  name: z.string().trim().min(1, 'Nhập tên').max(40, 'Tên tối đa 40 ký tự'),
+  name: z.preprocess(asPlain, z.string().trim().min(1, 'Nhập tên').max(40, 'Tên tối đa 40 ký tự')),
   emoji: optional(z.string().trim().max(8, 'Emoji quá dài')),
   icon: optional(
     z
