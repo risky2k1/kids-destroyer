@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { placeFormValues, placeInput, tagInput, visitInput } from './schema';
+import {
+  placeFormValues,
+  placeInput,
+  suggestionFormValues,
+  suggestionInput,
+  tagInput,
+  visitInput,
+} from './schema';
 
 const U1 = '11111111-1111-4111-8111-111111111111';
 const U2 = '22222222-2222-4222-8222-222222222222';
@@ -155,6 +162,27 @@ describe('visitInput', () => {
     });
     expect(r.success).toBe(true);
     expect(r.data).toMatchObject({ rating: null, note: null });
+  });
+});
+
+describe('suggestionInput', () => {
+  it('accepts a suggestion and rejects a non-https map link', () => {
+    const ok = suggestionInput.safeParse(
+      suggestionFormValues(form({ name: '  Bún  ', note: '', mapsUrl: '' })),
+    );
+    expect(ok.success).toBe(true);
+    expect(ok.data).toMatchObject({ name: 'Bún', note: null, mapsUrl: null, openHours: [] });
+
+    const styled = suggestionInput.safeParse(
+      suggestionFormValues(form({ name: '\u{1D40B}ẩu', note: '\u{1D40B}ẩu' })),
+    );
+    expect(styled.success).toBe(true);
+    expect(styled.data).toMatchObject({ name: 'Lẩu', note: 'Lẩu' });
+
+    const bad = suggestionInput.safeParse(
+      suggestionFormValues(form({ name: 'Bún', mapsUrl: 'http://maps.example' })),
+    );
+    expect(bad.success).toBe(false);
   });
 });
 

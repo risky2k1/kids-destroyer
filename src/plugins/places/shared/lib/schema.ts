@@ -105,6 +105,37 @@ export function placeFormValues(fd: FormData): unknown {
   };
 }
 
+export const suggestionInput = z.object({
+  name: z.preprocess(
+    asPlain,
+    z.string().trim().min(1, 'Nhập tên quán').max(100, 'Tên tối đa 100 ký tự'),
+  ),
+  note: optionalText(2000, 'Ghi chú tối đa 2000 ký tự'),
+  mapsUrl: optional(
+    z
+      .string()
+      .trim()
+      .regex(/^https:\/\/\S+$/, 'Link phải bắt đầu bằng https://')
+      .max(2000),
+  ),
+  openHours: openHoursSchema,
+  categoryIds: z.array(z.uuid()),
+  vibeIds: z.array(z.uuid()),
+});
+
+/** Raw object for suggestionInput from the public suggestion form. */
+export function suggestionFormValues(fd: FormData): unknown {
+  const one = (key: string) => fd.get(key) ?? '';
+  return {
+    name: one('name'),
+    note: one('note'),
+    mapsUrl: one('mapsUrl'),
+    openHours: one('openHours'),
+    categoryIds: fd.getAll('categoryIds'),
+    vibeIds: fd.getAll('vibeIds'),
+  };
+}
+
 export const visitInput = z.object({
   placeId: z.uuid('Không tìm thấy quán'),
   visitedAt: z
