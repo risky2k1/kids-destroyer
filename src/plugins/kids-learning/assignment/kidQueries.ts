@@ -1,6 +1,6 @@
 import 'server-only';
 import { createClient } from '@/core/supabase/server';
-import { questionImageUrl } from '@/plugins/kids-learning/question-bank';
+import { questionImageUrl } from '@/plugins/kids-learning/question-bank/server';
 import { getCurrentKid } from '@/plugins/kids-learning/family';
 import { getSettings } from '@/packages/settings';
 import {

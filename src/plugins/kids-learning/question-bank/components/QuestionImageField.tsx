@@ -13,11 +13,24 @@ function extFor(type: string) {
   return type.slice('image/'.length);
 }
 
-export function QuestionImageField({ uid, imagePath }: { uid: string; imagePath: string | null }) {
+export function QuestionImageField({
+  uid,
+  imagePath,
+  onChange,
+}: {
+  uid: string;
+  imagePath: string | null;
+  onChange?: (path: string) => void;
+}) {
   const [path, setPath] = useState(imagePath ?? '');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const url = questionImageUrl(path || null);
+
+  function update(next: string) {
+    setPath(next);
+    onChange?.(next);
+  }
 
   async function onFile(file: File | undefined) {
     if (!file) return;
@@ -40,7 +53,7 @@ export function QuestionImageField({ uid, imagePath }: { uid: string; imagePath:
       return;
     }
     setError('');
-    setPath(objectPath);
+    update(objectPath);
   }
 
   return (
@@ -64,7 +77,7 @@ export function QuestionImageField({ uid, imagePath }: { uid: string; imagePath:
           variant="neutral"
           size="sm"
           className="self-start"
-          onClick={() => setPath('')}
+          onClick={() => update('')}
         >
           Xóa ảnh
         </Button>

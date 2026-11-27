@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import { getCurrentUser } from '@/core/auth/session';
 import { listCatalog } from '@/plugins/kids-learning/catalog';
-import { listQuestions } from '@/plugins/kids-learning/question-bank';
+import { listQuestions } from '@/plugins/kids-learning/question-bank/server';
 import { QuizForm } from './components/QuizForm';
 import { type Area } from './lib/area';
 import { getQuiz } from './queries';

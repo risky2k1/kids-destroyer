@@ -4,7 +4,7 @@ import { CircleHelp } from 'lucide-react';
 import { PATHS } from '@/core/routes';
 import { PageHeader } from '@/core/ui/PageHeader';
 import { TableSkeleton } from '@/core/ui/PageSkeletons';
-import { QuestionsView } from '@/plugins/kids-learning/question-bank';
+import { QuestionsView } from '@/plugins/kids-learning/question-bank/server';
 import { buttonVariants } from '@/themes/neobrutal/ui/button';
 
 const hardShadow = 'shadow-[2px_2px_0_0_var(--color-border)]';

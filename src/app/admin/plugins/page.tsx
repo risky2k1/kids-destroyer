@@ -1,4 +1,4 @@
-import { PluginsView } from '@/plugins/kids-learning/question-bank';
+import { PluginsView } from '@/plugins/kids-learning/question-bank/server';
 
 export default function PluginsPage() {
   return <PluginsView />;

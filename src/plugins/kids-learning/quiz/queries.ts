@@ -1,5 +1,5 @@
 import 'server-only';
-import { questionImageUrl } from '@/plugins/kids-learning/question-bank';
+import { questionImageUrl } from '@/plugins/kids-learning/question-bank/server';
 import { getPlugin } from '@/plugins/kids-learning/question-types';
 import { createClient } from '@/core/supabase/server';
 import { isQuizLocked } from './lib/lock';
