@@ -83,13 +83,12 @@ export async function saveQuestion(_: ActionState, fd: FormData): Promise<Action
   if (cross) return { ok: false, error: cross };
 
   const rawImage = String(fd.get('imagePath') ?? '');
-  let imagePath: string | null = null;
-  if (rawImage) {
-    const allowed =
-      isOwnImagePath(rawImage, user.id) || (can(user, 'questions.manage') && isImagePath(rawImage));
-    if (!allowed) return { ok: false, error: 'Ảnh không hợp lệ' };
-    imagePath = rawImage;
-  }
+  const imagePath = rawImage || null;
+  // A duplicated question keeps its source's image; the update path accepts that unchanged path.
+  const imageAllowed =
+    !rawImage ||
+    isOwnImagePath(rawImage, user.id) ||
+    (can(user, 'questions.manage') && isImagePath(rawImage));
 
   const id = optionalId.safeParse(fd.get('id'));
   const sb = await createClient();
@@ -106,6 +105,7 @@ export async function saveQuestion(_: ActionState, fd: FormData): Promise<Action
   };
 
   if (!id.success) {
+    if (!imageAllowed) return { ok: false, error: 'Ảnh không hợp lệ' };
     const map = await enabledMap();
     if (map[meta.data.type] === false) return { ok: false, error: 'Dạng câu đang tắt' };
     const inserted = await sb.from('questions').insert(row).select('id').single();
@@ -118,9 +118,15 @@ export async function saveQuestion(_: ActionState, fd: FormData): Promise<Action
   const gate = await locked(sb, id.data);
   if (gate === true) return { ok: false, error: 'Câu đã được giao, không sửa được' };
   if (gate && typeof gate === 'object') return gate;
-  const existing = await sb.from('questions').select('type').eq('id', id.data).maybeSingle();
+  const existing = await sb
+    .from('questions')
+    .select('type, image_path')
+    .eq('id', id.data)
+    .maybeSingle();
   if (existing.error) return { ok: false, error: questionErrorMessage(existing.error) };
   if (!existing.data) return { ok: false, error: 'Không tìm thấy câu' };
+  if (!imageAllowed && imagePath !== existing.data.image_path)
+    return { ok: false, error: 'Ảnh không hợp lệ' };
   if (existing.data.type !== meta.data.type) return { ok: false, error: 'Không đổi được dạng câu' };
   const updated = await sb.from('questions').update(row).eq('id', id.data).select('id');
   if (updated.error) return { ok: false, error: questionErrorMessage(updated.error) };

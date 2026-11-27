@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { z } from 'zod';
 import type { ActionState } from '@/core/actions';
 import { requirePermission } from '@/core/auth/session';
 import { PATHS } from '@/core/routes';
@@ -107,24 +108,43 @@ export async function generateQuizDraft(_: DraftState, fd: FormData): Promise<Dr
 
 type SaveItem = DraftItem & { imagePath?: string };
 
+const saveHead = z.object({ subjectId: z.uuid(), gradeId: z.uuid(), topicId: z.uuid().nullable() });
+const saveItems = z
+  .array(
+    z.object({
+      type: z.string(),
+      prompt: z.string().trim().min(1, 'Nhập đề bài').max(500, 'Đề bài tối đa 500 ký tự'),
+      content: z.unknown(),
+      answer: z.unknown(),
+      imagePath: z.string().optional(),
+    }),
+  )
+  .min(1, 'Đề cần ít nhất 1 câu')
+  .max(50, 'Đề tối đa 50 câu');
+
 export async function saveDraftQuiz(_: ActionState, fd: FormData): Promise<ActionState> {
   const user = await requirePermission('quizzes.author');
   const title = String(fd.get('title') ?? '')
     .trim()
     .slice(0, 100);
-  const subjectId = String(fd.get('subjectId') ?? '');
-  const gradeId = String(fd.get('gradeId') ?? '');
-  const topicRaw = String(fd.get('topicId') ?? '');
-  const topicId = topicRaw || null;
+  const head = saveHead.safeParse({
+    subjectId: fd.get('subjectId'),
+    gradeId: fd.get('gradeId'),
+    topicId: fd.get('topicId') || null,
+  });
   const lang = fd.get('lang') === 'en' ? 'en' : 'vi';
-  if (!title || !subjectId || !gradeId) return { ok: false, error: 'Thiếu thông tin đề' };
-  let items: SaveItem[] = [];
+  if (!title || !head.success) return { ok: false, error: 'Thiếu thông tin đề' };
+  const { subjectId, gradeId, topicId } = head.data;
+  let raw: unknown;
   try {
-    items = JSON.parse(String(fd.get('items') ?? '[]')) as SaveItem[];
+    raw = JSON.parse(String(fd.get('items') ?? '[]'));
   } catch {
     return { ok: false, error: 'Danh sách câu không hợp lệ' };
   }
-  if (items.length === 0) return { ok: false, error: 'Đề cần ít nhất 1 câu' };
+  const list = saveItems.safeParse(raw);
+  if (!list.success)
+    return { ok: false, error: list.error.issues[0]?.message ?? 'Câu không hợp lệ' };
+  const items: SaveItem[] = list.data;
 
   const map = await enabledMap();
   const ready: SaveItem[] = [];

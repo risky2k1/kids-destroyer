@@ -3,8 +3,10 @@ import 'server-only';
 type Success = { ok: true; json: unknown; model: string };
 type Failure = { ok: false; reason: 'busy' | 'config' };
 
+export const DEFAULT_MODELS = 'gemini-4-hydrogen,gemini-3.5-flash-lite,gemini-3.6-flash';
+
 function modelsFrom(opts?: { models?: string[] }) {
-  const raw = opts?.models ?? (process.env.GEMINI_MODELS ?? '').split(',');
+  const raw = opts?.models ?? (process.env.GEMINI_MODELS || DEFAULT_MODELS).split(',');
   return raw.map((model) => model.trim()).filter(Boolean);
 }
 

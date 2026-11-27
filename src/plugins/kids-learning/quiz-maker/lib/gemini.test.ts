@@ -11,6 +11,14 @@ function jsonResponse(text: string, status = 200) {
 }
 
 describe('generateJson', () => {
+  it('falls back to the default model list when GEMINI_MODELS is unset', async () => {
+    vi.stubEnv('GEMINI_MODELS', '');
+    const fetchImpl = vi.fn().mockResolvedValue(jsonResponse('{"ok":true}'));
+    const result = await generateJson('prompt', { type: 'OBJECT' }, { fetchImpl });
+    expect(result).toEqual({ ok: true, json: { ok: true }, model: 'gemini-4-hydrogen' });
+    vi.unstubAllEnvs();
+  });
+
   it('uses the next model when the first is unavailable', async () => {
     const fetchImpl = vi
       .fn()
