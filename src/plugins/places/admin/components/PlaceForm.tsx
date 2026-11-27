@@ -7,6 +7,7 @@ import {
   PRICE_LABELS,
   PRICE_LEVELS,
   STATUS_LABELS,
+  OpeningHoursInput,
   TagIcon,
   formatRatingSummary,
   type Place,
@@ -29,7 +30,6 @@ import {
 import { Textarea } from '@/themes/neobrutal/ui/textarea';
 import { savePlace } from '../actions';
 import { InlineTagCreator } from './InlineTagCreator';
-import { OpeningHoursInput } from './OpeningHoursInput';
 import { StarInput } from './StarInput';
 
 function Field({

@@ -19,6 +19,7 @@ import { FilterBar } from './FilterBar';
 import { PlaceDetail } from './PlaceDetail';
 import { PlaceList } from './PlaceList';
 import { ShuffleCard } from './ShuffleCard';
+import { SuggestForm } from './SuggestForm';
 import { useShuffle } from './useShuffle';
 
 export function Picker({
@@ -102,6 +103,15 @@ export function Picker({
           <PlaceList places={matching} tagsById={tagsById} onOpen={setDetail} />
         </>
       )}
+
+      <details className="rounded-base border-2 border-border bg-secondary-background">
+        <summary className="flex min-h-11 cursor-pointer items-center px-3 font-heading">
+          Đề xuất quán
+        </summary>
+        <div className="border-t-2 border-border p-3">
+          <SuggestForm tags={tags} />
+        </div>
+      </details>
 
       <PlaceDetail place={detail} tagsById={tagsById} onClose={() => setDetail(null)} />
     </main>

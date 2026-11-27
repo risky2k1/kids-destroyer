@@ -2,10 +2,11 @@
 
 import { useState } from 'react';
 import { Plus, X } from 'lucide-react';
-import { OPENING_PRESETS, parseTimeMinutes, type OpeningSlot } from '@/plugins/places/shared';
 import { Badge } from '@/themes/neobrutal/ui/badge';
 import { Button } from '@/themes/neobrutal/ui/button';
 import { TimePicker } from '@/themes/neobrutal/ui/time-picker';
+import { OPENING_PRESETS, parseTimeMinutes } from '../lib/hours';
+import type { OpeningSlot } from '../lib/types';
 
 const MAX_SLOTS = 5;
 
