@@ -4,7 +4,13 @@ import { getPlugin } from '@/plugins/kids-learning/question-types';
 import { QuestionForm } from './components/QuestionForm';
 import { getQuestion, listEnabledTypes } from './queries';
 
-export async function QuestionEditView({ id }: { id?: string }) {
+export async function QuestionEditView({
+  id,
+  area = 'admin',
+}: {
+  id?: string;
+  area?: 'admin' | 'parent';
+}) {
   const [catalog, enabled, question] = await Promise.all([
     listCatalog(),
     listEnabledTypes(),
@@ -17,6 +23,7 @@ export async function QuestionEditView({ id }: { id?: string }) {
       : enabled;
   return (
     <QuestionForm
+      area={area}
       question={question}
       subjects={catalog.subjects}
       grades={catalog.grades}

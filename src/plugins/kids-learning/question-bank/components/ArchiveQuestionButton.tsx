@@ -14,7 +14,13 @@ import {
 import { useActionToast } from '@/core/ui/useActionToast';
 import { archiveQuestion } from '../actions';
 
-export function ArchiveQuestionButton({ id }: { id: string }) {
+export function ArchiveQuestionButton({
+  id,
+  area = 'admin',
+}: {
+  id: string;
+  area?: 'admin' | 'parent';
+}) {
   const [open, setOpen] = useState(false);
   const [, formAction, pending] = useActionToast(archiveQuestion, 'Đã lưu trữ');
   return (
@@ -32,6 +38,7 @@ export function ArchiveQuestionButton({ id }: { id: string }) {
         </p>
         <form action={formAction} onSubmit={() => setOpen(false)}>
           <input type="hidden" name="id" value={id} />
+          <input type="hidden" name="area" value={area} />
           <DialogFooter className="gap-2">
             <DialogClose render={<Button type="button" variant="neutral" />}>Thôi</DialogClose>
             <Button type="submit" disabled={pending}>

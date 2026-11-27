@@ -15,16 +15,20 @@ export async function QuestionsView({
   subject,
   grade,
   type,
+  area = 'admin',
 }: {
   subject: string;
   grade: string;
   type: string;
+  area?: 'admin' | 'parent';
 }) {
+  const root = area === 'parent' ? PATHS.parent : PATHS.admin;
   const [questions, catalog] = await Promise.all([
     listQuestions({
       subjectId: subject || undefined,
       gradeId: grade || undefined,
       type: type || undefined,
+      scope: area === 'parent' ? 'systemOrMine' : 'all',
     }),
     listCatalog(),
   ]);
@@ -39,7 +43,7 @@ export async function QuestionsView({
         title="Câu hỏi"
         actions={
           <Link
-            href={PATHS.admin.newQuestion}
+            href={root.newQuestion}
             className={buttonVariants({ size: 'sm', className: `h-7 border-2 ${hardShadow}` })}
           >
             + Tạo
@@ -48,6 +52,7 @@ export async function QuestionsView({
       />
       <QuestionsTable
         rows={questions}
+        area={area}
         header={
           <>
             <QuestionFilters
@@ -57,6 +62,7 @@ export async function QuestionsView({
               subject={subject}
               grade={grade}
               type={type}
+              listPath={root.questions}
             />
             <span className="text-foreground/60">· {questions.length}</span>
           </>

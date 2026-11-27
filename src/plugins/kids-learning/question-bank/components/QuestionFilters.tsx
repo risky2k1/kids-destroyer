@@ -1,7 +1,6 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { PATHS } from '@/core/routes';
 import { NativeSelect } from '@/themes/neobrutal/ui/native-select';
 
 type Option = { id: string; name: string };
@@ -13,6 +12,7 @@ export function QuestionFilters({
   subject,
   grade,
   type,
+  listPath,
 }: {
   subjects: Option[];
   grades: Option[];
@@ -20,6 +20,7 @@ export function QuestionFilters({
   subject: string;
   grade: string;
   type: string;
+  listPath: string;
 }) {
   const router = useRouter();
 
@@ -32,7 +33,7 @@ export function QuestionFilters({
     if (gradeId) params.set('grade', gradeId);
     if (typeId) params.set('type', typeId);
     const qs = params.toString();
-    router.push(qs ? `${PATHS.admin.questions}?${qs}` : PATHS.admin.questions);
+    router.push(qs ? `${listPath}?${qs}` : listPath);
   }
 
   const selectClass = 'h-7 w-36 py-0';

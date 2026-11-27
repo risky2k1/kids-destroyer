@@ -5,6 +5,7 @@ import { getPlugin, PLUGIN_IDS } from '@/plugins/kids-learning/question-types';
 import { createClient } from '@/core/supabase/server';
 import { isQuestionLocked } from './lib/lock';
 import type { QuestionSummary } from './lib/questionRow';
+import { scopeFilter } from './lib/scope';
 
 const LIST =
   'id, prompt, type, subject_id, grade_id, created_at, subjects!questions_subject_id_fkey(name), grades!questions_grade_id_fkey(name), topics!questions_topic_id_fkey(name)';
@@ -32,6 +33,7 @@ export async function listQuestions(filter: {
   subjectId?: string;
   gradeId?: string;
   type?: string;
+  scope?: 'all' | 'systemOrMine';
 }): Promise<QuestionSummary[]> {
   const sb = await createClient();
   let query = sb
@@ -39,6 +41,11 @@ export async function listQuestions(filter: {
     .select(LIST)
     .is('archived_at', null)
     .order('created_at', { ascending: false });
+  if (filter.scope === 'systemOrMine') {
+    const { data: auth } = await sb.auth.getUser();
+    if (!auth.user) return [];
+    query = query.or(scopeFilter(auth.user.id));
+  }
   if (filter.subjectId && uuid.safeParse(filter.subjectId).success) {
     query = query.eq('subject_id', filter.subjectId);
   }

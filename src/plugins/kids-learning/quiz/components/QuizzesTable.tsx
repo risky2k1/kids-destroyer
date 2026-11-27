@@ -2,8 +2,8 @@
 
 import Link from 'next/link';
 import { BookOpen, GraduationCap, Hash, Sigma, Text } from 'lucide-react';
-import { PATHS } from '@/core/routes';
 import { RecordTable } from '@/core/ui/RecordTable';
+import { areaPaths, type Area } from '../lib/area';
 
 type Row = {
   id: string;
@@ -14,7 +14,8 @@ type Row = {
   totalPoints: number;
 };
 
-export function QuizzesTable({ rows }: { rows: Row[] }) {
+export function QuizzesTable({ rows, area = 'admin' }: { rows: Row[]; area?: Area }) {
+  const paths = areaPaths(area);
   return (
     <RecordTable
       view={{ label: 'đề' }}
@@ -62,10 +63,10 @@ export function QuizzesTable({ rows }: { rows: Row[] }) {
       ]}
       rows={rows}
       getId={(row) => row.id}
-      getHref={(row) => PATHS.admin.quiz(row.id)}
+      getHref={(row) => paths.quiz(row.id)}
       empty="Chưa có đề nào."
       addRow={
-        <Link href={PATHS.admin.newQuiz} className="text-[13px] text-foreground/60">
+        <Link href={paths.newQuiz} className="text-[13px] text-foreground/60">
           + Thêm mới
         </Link>
       }

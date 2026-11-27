@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { ClipboardList } from 'lucide-react';
-import { PATHS } from '@/core/routes';
 import { PageHeader } from '@/core/ui/PageHeader';
 import { useActionToast } from '@/core/ui/useActionToast';
 import { Chips } from '@/core/ui/RecordTable';
@@ -11,6 +10,7 @@ import { Input } from '@/themes/neobrutal/ui/input';
 import { Label } from '@/themes/neobrutal/ui/label';
 import { NativeSelect } from '@/themes/neobrutal/ui/native-select';
 import { duplicateQuiz, saveQuiz } from '../actions';
+import { areaPaths, type Area } from '../lib/area';
 import { move } from '../lib/order';
 import { ArchiveQuizButton } from './ArchiveQuizButton';
 
@@ -40,13 +40,19 @@ export function QuizForm({
   subjects,
   grades,
   questions,
+  area = 'admin',
+  readOnly = false,
 }: {
   quiz: Quiz | null;
   subjects: Option[];
   grades: Option[];
   questions: BankQuestion[];
+  area?: Area;
+  readOnly?: boolean;
 }) {
+  const paths = areaPaths(area);
   const locked = quiz?.locked ?? false;
+  const disabled = locked || readOnly;
   const [title, setTitle] = useState(quiz?.title ?? '');
   const [subjectId, setSubjectId] = useState(quiz?.subjectId ?? subjects[0]?.id ?? '');
   const [gradeId, setGradeId] = useState(quiz?.gradeId ?? grades[0]?.id ?? '');
@@ -74,11 +80,12 @@ export function QuizForm({
     <PageHeader
       icon={ClipboardList}
       title={quiz ? 'Sửa đề' : 'Tạo đề'}
-      crumbs={[{ href: PATHS.admin.quizzes, label: 'Đề' }]}
+      crumbs={[{ href: paths.quizzes, label: 'Đề' }]}
       actions={
-        locked && quiz ? (
+        disabled && quiz ? (
           <form action={duplicateAction}>
             <input type="hidden" name="id" value={quiz.id} />
+            <input type="hidden" name="area" value={area} />
             <Button
               type="submit"
               size="sm"
@@ -117,13 +124,15 @@ export function QuizForm({
       {header}
       <form id="quiz-form" action={formAction} className="grid gap-6 p-4 md:grid-cols-[20rem_1fr]">
         {quiz ? <input type="hidden" name="id" value={quiz.id} /> : null}
+        <input type="hidden" name="area" value={area} />
         <input
           type="hidden"
           name="items"
           value={JSON.stringify(items.map(({ questionId, points }) => ({ questionId, points })))}
         />
-        <fieldset disabled={locked} className="m-0 flex min-w-0 flex-col gap-3 border-0 p-0">
+        <fieldset disabled={disabled} className="m-0 flex min-w-0 flex-col gap-3 border-0 p-0">
           {locked ? <p className="text-sm">Đề đã được giao. Nhân bản để sửa.</p> : null}
+          {readOnly && !locked ? <p className="text-sm">Bạn chỉ xem được đề này.</p> : null}
           <div className="flex flex-col gap-1">
             <Label htmlFor="quiz-title">Tên</Label>
             <Input
@@ -168,7 +177,7 @@ export function QuizForm({
               ))}
             </NativeSelect>
           </div>
-          {quiz && !locked ? <ArchiveQuizButton id={quiz.id} /> : null}
+          {quiz && !disabled ? <ArchiveQuizButton id={quiz.id} area={area} /> : null}
         </fieldset>
         <div className="flex min-w-0 flex-col gap-6">
           <section className="flex flex-col gap-2">
@@ -193,7 +202,7 @@ export function QuizForm({
                     min={0.5}
                     value={item.points}
                     aria-label={`Điểm câu ${index + 1}`}
-                    disabled={locked}
+                    disabled={disabled}
                     className="h-8 w-20"
                     onChange={(event) => {
                       const points = Number(event.target.value);
@@ -208,7 +217,7 @@ export function QuizForm({
                     variant="neutral"
                     size="xs"
                     className="h-7 border shadow-none hover:translate-x-0 hover:translate-y-0"
-                    disabled={locked || index === 0}
+                    disabled={disabled || index === 0}
                     onClick={() => setItems((current) => move(current, index, -1))}
                   >
                     ↑
@@ -218,7 +227,7 @@ export function QuizForm({
                     variant="neutral"
                     size="xs"
                     className="h-7 border shadow-none hover:translate-x-0 hover:translate-y-0"
-                    disabled={locked || index === items.length - 1}
+                    disabled={disabled || index === items.length - 1}
                     onClick={() => setItems((current) => move(current, index, 1))}
                   >
                     ↓
@@ -228,7 +237,7 @@ export function QuizForm({
                     variant="neutral"
                     size="xs"
                     className="h-7 border shadow-none hover:translate-x-0 hover:translate-y-0"
-                    disabled={locked}
+                    disabled={disabled}
                     onClick={() => setItems((current) => current.filter((_, i) => i !== index))}
                   >
                     Bỏ
@@ -257,7 +266,7 @@ export function QuizForm({
                     variant="neutral"
                     size="xs"
                     className="h-7 border shadow-none hover:translate-x-0 hover:translate-y-0"
-                    disabled={locked}
+                    disabled={disabled}
                     onClick={() =>
                       setItems((current) => [
                         ...current,

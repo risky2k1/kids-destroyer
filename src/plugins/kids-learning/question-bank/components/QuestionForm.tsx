@@ -44,12 +44,14 @@ export function QuestionForm({
   grades,
   topics,
   types,
+  area = 'admin',
 }: {
   question: Question | null;
   subjects: Option[];
   grades: Option[];
   topics: Topic[];
   types: Option[];
+  area?: 'admin' | 'parent';
 }) {
   const locked = question?.locked ?? false;
   const plugin0 = getPlugin(question?.type ?? types[0]?.id ?? '');
@@ -65,6 +67,7 @@ export function QuestionForm({
   const [, formAction, pending] = useActionToast(saveQuestion, 'Đã lưu');
   const [, duplicateAction, duplicating] = useActionToast(duplicateQuestion);
   const plugin = getPlugin(type);
+  const root = area === 'parent' ? PATHS.parent : PATHS.admin;
   const topicChoices = topics.filter(
     (item) => item.subjectId === subjectId && item.gradeId === gradeId,
   );
@@ -105,11 +108,12 @@ export function QuestionForm({
     <PageHeader
       icon={CircleHelp}
       title={title}
-      crumbs={[{ href: PATHS.admin.questions, label: 'Câu hỏi' }]}
+      crumbs={[{ href: root.questions, label: 'Câu hỏi' }]}
       actions={
         locked && question ? (
           <form action={duplicateAction}>
             <input type="hidden" name="id" value={question.id} />
+            <input type="hidden" name="area" value={area} />
             <Button
               type="submit"
               size="sm"
@@ -170,6 +174,7 @@ export function QuestionForm({
         className="grid gap-6 p-4 md:grid-cols-[20rem_1fr]"
       >
         {question ? <input type="hidden" name="id" value={question.id} /> : null}
+        <input type="hidden" name="area" value={area} />
         <input type="hidden" name="content" value={JSON.stringify(content ?? {})} />
         <input type="hidden" name="answer" value={JSON.stringify(answer ?? {})} />
         {question ? <input type="hidden" name="type" value={type} /> : null}
@@ -265,7 +270,7 @@ export function QuestionForm({
               onChange={(event) => setPrompt(event.target.value)}
             />
           </div>
-          {question && !locked ? <ArchiveQuestionButton id={question.id} /> : null}
+          {question && !locked ? <ArchiveQuestionButton id={question.id} area={area} /> : null}
         </fieldset>
         <div className="flex min-w-0 flex-col gap-6">
           <fieldset disabled={locked} className="m-0 min-w-0 border-0 p-0">

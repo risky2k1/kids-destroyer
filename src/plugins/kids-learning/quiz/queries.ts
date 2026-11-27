@@ -4,10 +4,10 @@ import { createClient } from '@/core/supabase/server';
 import { isQuizLocked } from './lib/lock';
 
 const LIST =
-  'id, title, subjects!quizzes_subject_id_fkey(name), grades!quizzes_grade_id_fkey(name), quiz_questions(points)';
+  'id, title, origin, created_by, subjects!quizzes_subject_id_fkey(name), grades!quizzes_grade_id_fkey(name), quiz_questions(points)';
 
 const DETAIL =
-  'id, title, subject_id, grade_id, quiz_questions(position, points, question_id, questions!quiz_questions_question_id_fkey(prompt, type))';
+  'id, title, subject_id, grade_id, created_by, quiz_questions(position, points, question_id, questions!quiz_questions_question_id_fkey(prompt, type))';
 
 type Named = { name: string } | { name: string }[] | null;
 
@@ -23,11 +23,15 @@ export type QuizSummary = {
   gradeName: string;
   questionCount: number;
   totalPoints: number;
+  origin: 'system' | 'parent';
+  mine: boolean;
 };
 
 type ListRow = {
   id: string;
   title: string;
+  origin: string;
+  created_by: string;
   subjects: Named;
   grades: Named;
   quiz_questions: { points: number }[] | null;
@@ -35,6 +39,8 @@ type ListRow = {
 
 export async function listQuizzes(): Promise<QuizSummary[]> {
   const sb = await createClient();
+  const { data: auth } = await sb.auth.getUser();
+  const uid = auth.user?.id ?? '';
   const { data } = await sb
     .from('quizzes')
     .select(LIST)
@@ -49,6 +55,8 @@ export async function listQuizzes(): Promise<QuizSummary[]> {
       gradeName: oneName(row.grades),
       questionCount: points.length,
       totalPoints: points.reduce((sum, value) => sum + value, 0),
+      origin: row.origin === 'parent' ? 'parent' : 'system',
+      mine: row.created_by === uid,
     };
   });
 }
@@ -60,6 +68,7 @@ type DetailRow = {
   title: string;
   subject_id: string;
   grade_id: string;
+  created_by: string;
   quiz_questions:
     | {
         position: number;
@@ -101,6 +110,7 @@ export async function getQuiz(id: string) {
     title: row.title,
     subjectId: row.subject_id,
     gradeId: row.grade_id,
+    createdBy: row.created_by,
     locked: await isQuizLocked(sb, id),
     items,
   };

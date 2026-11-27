@@ -9,7 +9,16 @@ import type { QuestionSummary } from '../lib/questionRow';
 
 const when = new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short', timeStyle: 'short' });
 
-export function QuestionsTable({ rows, header }: { rows: QuestionSummary[]; header?: ReactNode }) {
+export function QuestionsTable({
+  rows,
+  header,
+  area = 'admin',
+}: {
+  rows: QuestionSummary[];
+  header?: ReactNode;
+  area?: 'admin' | 'parent';
+}) {
+  const root = area === 'parent' ? PATHS.parent : PATHS.admin;
   return (
     <RecordTable
       view={{ label: 'câu hỏi', header }}
@@ -73,10 +82,10 @@ export function QuestionsTable({ rows, header }: { rows: QuestionSummary[]; head
       ]}
       rows={rows}
       getId={(row) => row.id}
-      getHref={(row) => PATHS.admin.question(row.id)}
+      getHref={(row) => root.question(row.id)}
       empty="Chưa có câu nào."
       addRow={
-        <Link href={PATHS.admin.newQuestion} className="text-[13px] text-foreground/60">
+        <Link href={root.newQuestion} className="text-[13px] text-foreground/60">
           + Thêm mới
         </Link>
       }

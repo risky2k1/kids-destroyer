@@ -22,6 +22,28 @@ export default async function ParentHome() {
           Cho bé làm bài
         </Button>
       )}
+      <div className="flex flex-wrap gap-2">
+        <Button
+          render={<Link href={PATHS.parent.quizzes} />}
+          nativeButton={false}
+          size="lg"
+          variant="neutral"
+          className="self-start"
+        >
+          Kho đề
+        </Button>
+        {process.env.GEMINI_API_KEY ? (
+          <Button
+            render={<Link href={PATHS.parent.aiQuiz} />}
+            nativeButton={false}
+            size="lg"
+            variant="neutral"
+            className="self-start"
+          >
+            Tạo đề bằng AI
+          </Button>
+        ) : null}
+      </div>
       <Suspense fallback={<AssignmentsPageSkeleton />}>
         <AssignmentsView basePath="parent" />
       </Suspense>
