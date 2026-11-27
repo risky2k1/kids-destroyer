@@ -1,18 +1,15 @@
 import { Suspense } from 'react';
-import type { Metadata } from 'next';
 import { requireModule } from '@/core/modules/server';
 import { PlacesPickerSkeleton } from '@/core/ui/PageSkeletons';
+import { shareMeta } from '@/packages/seo';
 import { PickerView } from '@/plugins/places/picker';
 
-const title = 'Đi đâu giờ?';
-const description = 'Hết ý tưởng đi đâu thì bấm xáo nhé.';
-
-export const metadata: Metadata = {
-  title,
-  description,
-  robots: { index: false, follow: false },
-  openGraph: { title, description },
-};
+export const metadata = shareMeta({
+  title: 'Đi đâu giờ?',
+  description: 'Hết ý tưởng đi đâu thì bấm xáo nhé.',
+  path: '/di-dau',
+  index: false,
+});
 
 export default async function Page() {
   await requireModule('places');
