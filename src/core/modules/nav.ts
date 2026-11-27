@@ -48,20 +48,23 @@ function flatLinks(item: NavItem): NavLink[] {
 
 /** One cấp-1 row per plugin. Several screens become children. One screen stays a link. */
 export function pluginItems(plugins: ModuleManifest[]): NavItem[] {
-  return plugins.flatMap((plugin) => {
+  const items: NavItem[] = [];
+  for (const plugin of plugins) {
     const links = plugin.nav.flatMap(flatLinks);
-    if (links.length === 0) return [];
-    if (links.length === 1) return [{ ...links[0], key: plugin.id, label: plugin.name }];
-    return [
-      {
-        key: plugin.id,
-        label: plugin.name,
-        icon: links[0].icon,
-        iconClass: links[0].iconClass,
-        children: links,
-      },
-    ];
-  });
+    if (links.length === 0) continue;
+    if (links.length === 1) {
+      items.push({ ...links[0], key: plugin.id, label: plugin.name });
+      continue;
+    }
+    items.push({
+      key: plugin.id,
+      label: plugin.name,
+      icon: links[0].icon,
+      iconClass: links[0].iconClass,
+      children: links,
+    });
+  }
+  return items;
 }
 
 /** Plugins sit at the top with no section title. Packages keep their groups. */
