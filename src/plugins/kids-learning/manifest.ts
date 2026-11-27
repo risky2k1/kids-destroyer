@@ -17,11 +17,12 @@ export const kidsLearningManifest: ModuleManifest = {
   id: 'kids-learning',
   name: 'Học tập cho trẻ',
   description: 'Bài tập, đề, giao bài và chấm cho các bé',
-  version: '1.0.0',
+  version: '2.0.0',
   permissions: [
     { key: 'catalog.manage', label: 'Danh mục' },
     { key: 'questions.manage', label: 'Câu hỏi' },
     { key: 'quizzes.manage', label: 'Đề' },
+    { key: 'quizzes.author', label: 'Tự soạn đề' },
     { key: 'families.manage', label: 'Gia đình' },
     { key: 'assignments.manage', label: 'Giao bài' },
     { key: 'plugins.manage', label: 'Dạng câu' },
