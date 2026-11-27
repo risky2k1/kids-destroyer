@@ -23,7 +23,27 @@ export type Database = {
           }
         },"public": {
           Tables: {
-            "assignments": {
+            "ai_generations": {
+                  Row: {
+                    "created_at": string,"id": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"user_id"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "ai_generations_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"assignments": {
                   Row: {
                     "assigned_by": string,"created_at": string,"due_at": string | null,"id": string,"kid_id": string,"parent_comment": string | null,"quiz_id": string,"status": Database["public"]['Enums']["assignment_status"]
                   }
@@ -299,14 +319,14 @@ isOneToOne: false
                   ]
                 },"questions": {
                   Row: {
-                    "answer": NonNullable<Json>,"archived_at": string | null,"content": NonNullable<Json>,"created_at": string,"created_by": string,"grade_id": string,"id": string,"lang": Database["public"]['Enums']["question_lang"],"prompt": string,"subject_id": string,"topic_id": string | null,"type": string
+                    "answer": NonNullable<Json>,"archived_at": string | null,"content": NonNullable<Json>,"created_at": string,"created_by": string,"grade_id": string,"id": string,"image_path": string | null,"lang": Database["public"]['Enums']["question_lang"],"origin": string,"prompt": string,"subject_id": string,"topic_id": string | null,"type": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "answer"?: NonNullable<Json>,"archived_at"?: string | null,"content"?: NonNullable<Json>,"created_at"?: string,"created_by"?: string,"grade_id": string,"id"?: string,"lang"?: Database["public"]['Enums']["question_lang"],"prompt": string,"subject_id": string,"topic_id"?: string | null,"type": string
+                    "answer"?: NonNullable<Json>,"archived_at"?: string | null,"content"?: NonNullable<Json>,"created_at"?: string,"created_by"?: string,"grade_id": string,"id"?: string,"image_path"?: string | null,"lang"?: Database["public"]['Enums']["question_lang"],"origin"?: string,"prompt": string,"subject_id": string,"topic_id"?: string | null,"type": string
                   }
                   Update: {
-                    "answer"?: NonNullable<Json>,"archived_at"?: string | null,"content"?: NonNullable<Json>,"created_at"?: string,"created_by"?: string,"grade_id"?: string,"id"?: string,"lang"?: Database["public"]['Enums']["question_lang"],"prompt"?: string,"subject_id"?: string,"topic_id"?: string | null,"type"?: string
+                    "answer"?: NonNullable<Json>,"archived_at"?: string | null,"content"?: NonNullable<Json>,"created_at"?: string,"created_by"?: string,"grade_id"?: string,"id"?: string,"image_path"?: string | null,"lang"?: Database["public"]['Enums']["question_lang"],"origin"?: string,"prompt"?: string,"subject_id"?: string,"topic_id"?: string | null,"type"?: string
                   }
                   Relationships: [
                     {
@@ -363,14 +383,14 @@ isOneToOne: false
                   ]
                 },"quizzes": {
                   Row: {
-                    "archived_at": string | null,"created_at": string,"created_by": string,"grade_id": string,"id": string,"subject_id": string,"title": string
+                    "archived_at": string | null,"created_at": string,"created_by": string,"grade_id": string,"id": string,"origin": string,"subject_id": string,"title": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "archived_at"?: string | null,"created_at"?: string,"created_by"?: string,"grade_id": string,"id"?: string,"subject_id": string,"title": string
+                    "archived_at"?: string | null,"created_at"?: string,"created_by"?: string,"grade_id": string,"id"?: string,"origin"?: string,"subject_id": string,"title": string
                   }
                   Update: {
-                    "archived_at"?: string | null,"created_at"?: string,"created_by"?: string,"grade_id"?: string,"id"?: string,"subject_id"?: string,"title"?: string
+                    "archived_at"?: string | null,"created_at"?: string,"created_by"?: string,"grade_id"?: string,"id"?: string,"origin"?: string,"subject_id"?: string,"title"?: string
                   }
                   Relationships: [
                     {
@@ -561,6 +581,12 @@ isOneToOne: false
                            },
 "plc_suggestion_is_open":
 { Args: { "place_id": string }; Returns: boolean
+                           },
+"question_in_use":
+{ Args: { "p_question_id": string }; Returns: boolean
+                           },
+"quiz_in_use":
+{ Args: { "p_quiz_id": string }; Returns: boolean
                            }
           }
           Enums: {
