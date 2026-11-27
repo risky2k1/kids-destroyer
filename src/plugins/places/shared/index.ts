@@ -10,5 +10,6 @@ export * from './lib/today';
 export * from './lib/errors';
 export * from './lib/mapping';
 export * from './lib/origin';
+export * from './lib/saveTarget';
 export * from './components/TagIcon';
 export * from './components/OpeningHoursInput';

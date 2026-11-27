@@ -10,8 +10,10 @@ import {
   TagIcon,
   formatOpeningHours,
   formatRatingSummary,
+  isApprovedPlace,
   isOpenAt,
   nowMinutesInVietnam,
+  originLabel,
   primaryCategoryTag,
   type Place,
   type PlaceStatus,
@@ -21,12 +23,7 @@ import { Badge } from '@/themes/neobrutal/ui/badge';
 import { Checkbox } from '@/themes/neobrutal/ui/checkbox';
 import { PlaceRowActions } from './PlaceRowActions';
 
-type StatusTab = 'all' | PlaceStatus;
-const TABS: { id: StatusTab; label: string }[] = [
-  { id: 'all', label: 'Tất cả' },
-  { id: 'visited', label: STATUS_LABELS.visited },
-  { id: 'wishlist', label: STATUS_LABELS.wishlist },
-];
+type StatusTab = 'all' | PlaceStatus | 'pending';
 
 const formatDate = (d: string) => d.split('-').reverse().join('/');
 
@@ -44,10 +41,20 @@ export function PlacesTable({
   const [nowMinute, setNowMinute] = useState(initialNowMinute);
 
   const tagsById = useMemo(() => new Map(tags.map((t) => [t.id, t])), [tags]);
-  const rows = useMemo(
-    () => (statusTab === 'all' ? places : places.filter((p) => p.status === statusTab)),
-    [places, statusTab],
-  );
+  const approved = useMemo(() => places.filter(isApprovedPlace), [places]);
+  const pendingPlaces = useMemo(() => places.filter((p) => !isApprovedPlace(p)), [places]);
+  const activeTab: StatusTab =
+    statusTab === 'pending' && pendingPlaces.length === 0 ? 'all' : statusTab;
+  const tabs: { id: StatusTab; label: string }[] = [
+    { id: 'all', label: 'Tất cả' },
+    { id: 'visited', label: STATUS_LABELS.visited },
+    { id: 'wishlist', label: STATUS_LABELS.wishlist },
+  ];
+  if (pendingPlaces.length > 0) tabs.push({ id: 'pending', label: 'Chờ duyệt' });
+  const rows = useMemo(() => {
+    if (activeTab === 'pending') return pendingPlaces;
+    return activeTab === 'all' ? approved : approved.filter((p) => p.status === activeTab);
+  }, [activeTab, approved, pendingPlaces]);
 
   return (
     <RecordTable
@@ -55,12 +62,12 @@ export function PlacesTable({
         label: 'quán',
         actions: (
           <div role="tablist" className="mr-1 flex items-center gap-1">
-            {TABS.map((t) => (
+            {tabs.map((t) => (
               <button
                 key={t.id}
                 type="button"
                 role="tab"
-                aria-selected={statusTab === t.id}
+                aria-selected={activeTab === t.id}
                 onClick={() => setStatusTab(t.id)}
                 className="rounded-base border border-border/20 px-2 py-0.5 text-xs aria-selected:border-border aria-selected:bg-main aria-selected:font-heading aria-selected:text-main-foreground"
               >
@@ -95,9 +102,10 @@ export function PlacesTable({
           sortValue: (p) => p.name,
           filterValue: (p) => [p.name, p.dishes ?? ''],
           render: (p) => (
-            <span className="inline-flex items-center gap-1.5 font-heading">
+            <span className="inline-flex flex-wrap items-center gap-1.5 font-heading">
               <TagIcon tag={primaryCategoryTag(p, tagsById)} fallbackPin className="size-4" />
               {p.name}
+              <Badge variant="neutral">{originLabel(p.origin, p.reviewStatus)}</Badge>
             </span>
           ),
         },
@@ -163,7 +171,9 @@ export function PlacesTable({
           key: 'actions',
           label: '',
           icon: Clock,
-          render: (p) => <PlaceRowActions id={p.id} name={p.name} />,
+          render: (p) => (
+            <PlaceRowActions id={p.id} name={p.name} pendingReview={!isApprovedPlace(p)} />
+          ),
         },
       ]}
       rows={rows}

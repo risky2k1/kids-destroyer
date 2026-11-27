@@ -2,6 +2,7 @@ import {
   PRICE_LABELS,
   formatOpeningHours,
   formatRatingSummary,
+  originLabel,
   type Place,
   type Tag,
 } from '@/plugins/places/shared';
@@ -17,6 +18,7 @@ export function PlaceMeta({ place, tagsById }: { place: Place; tagsById: Map<str
   return (
     <div className="flex flex-wrap items-center gap-1.5">
       <Badge>{score}</Badge>
+      <Badge variant="neutral">{originLabel(place.origin, place.reviewStatus)}</Badge>
       {area && <Badge variant="neutral">{area}</Badge>}
       {place.priceLevel && <Badge variant="neutral">{PRICE_LABELS[place.priceLevel]}</Badge>}
       {hours && <Badge variant="neutral">{hours}</Badge>}

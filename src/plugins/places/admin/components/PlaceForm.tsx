@@ -3,10 +3,8 @@
 import { startTransition, useMemo, useState, type FormEvent, type ReactNode } from 'react';
 import { useActionToast } from '@/core/ui/useActionToast';
 import {
-  PLACE_STATUSES,
   PRICE_LABELS,
   PRICE_LEVELS,
-  STATUS_LABELS,
   OpeningHoursInput,
   TagIcon,
   formatRatingSummary,
@@ -15,7 +13,6 @@ import {
   type Tag,
 } from '@/plugins/places/shared';
 import { Badge } from '@/themes/neobrutal/ui/badge';
-import { Button } from '@/themes/neobrutal/ui/button';
 import { Card, CardContent } from '@/themes/neobrutal/ui/card';
 import { DateTimePicker } from '@/themes/neobrutal/ui/date-time-picker';
 import { Input } from '@/themes/neobrutal/ui/input';
@@ -30,6 +27,7 @@ import {
 import { Textarea } from '@/themes/neobrutal/ui/textarea';
 import { savePlace } from '../actions';
 import { InlineTagCreator } from './InlineTagCreator';
+import { PlaceFormAside } from './PlaceFormAside';
 import { StarInput } from './StarInput';
 
 function Field({
@@ -131,178 +129,164 @@ export function PlaceForm({
   // which would wipe a long form when the server only rejects one field.
   function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const fd = new FormData(e.currentTarget);
+    const submitter = (e.nativeEvent as SubmitEvent).submitter;
+    const fd = new FormData(e.currentTarget, submitter);
     startTransition(() => formAction(fd));
   }
 
   return (
-    <form onSubmit={onSubmit} className="flex max-w-2xl flex-col gap-4">
-      {place && <input type="hidden" name="id" value={place.id} />}
+    <form
+      onSubmit={onSubmit}
+      className="grid items-start gap-4 lg:grid-cols-[minmax(0,42rem)_16rem]"
+    >
+      <div className="flex min-w-0 flex-col gap-4">
+        {place && <input type="hidden" name="id" value={place.id} />}
 
-      <Field label="Tên quán" htmlFor="name">
-        <Input id="name" name="name" defaultValue={place?.name} maxLength={100} required />
-      </Field>
+        <Field label="Tên quán" htmlFor="name">
+          <Input id="name" name="name" defaultValue={place?.name} maxLength={100} required />
+        </Field>
 
-      <Field label="Trạng thái">
-        <div className="flex gap-2">
-          {PLACE_STATUSES.map((s) => (
-            <label
-              key={s}
-              className="inline-flex min-h-9 cursor-pointer items-center gap-2 rounded-base border-2 border-border bg-secondary-background px-3 text-sm has-checked:bg-main has-checked:font-heading has-checked:text-main-foreground"
-            >
-              <input
-                type="radio"
-                name="status"
-                value={s}
-                checked={status === s}
-                onChange={() => setStatus(s)}
-                className="sr-only"
-              />
-              {STATUS_LABELS[s]}
-            </label>
-          ))}
-        </div>
-      </Field>
-
-      {place ? (
-        <Card size="sm" className="bg-secondary-background shadow-none">
-          <CardContent className="flex flex-wrap items-center gap-2 text-sm">
-            <span className="font-heading">Đánh giá trung bình:</span>
-            <Badge>{formatRatingSummary(place.rating, place.visitCount)}</Badge>
-            <span className="text-foreground/60">
-              (tính tự động từ lịch sử các lần đi ở bên dưới)
-            </span>
-          </CardContent>
-        </Card>
-      ) : (
-        status === 'visited' && (
+        {place ? (
           <Card size="sm" className="bg-secondary-background shadow-none">
-            <CardContent className="flex flex-col gap-3">
-              <span className="text-sm font-heading">Lần đi đầu tiên (tùy chọn)</span>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <Field label="Thời gian đi" htmlFor="visitedOn">
-                  <DateTimePicker id="visitedOn" name="visitedOn" defaultValue={defaultVisitedAt} />
-                </Field>
-                <Field label="Đánh giá lần này">
-                  <StarInput defaultValue={null} />
-                </Field>
-              </div>
-              <Field label="Cảm nhận / lý do lần này" htmlFor="visitNote">
-                <Input
-                  id="visitNote"
-                  name="visitNote"
-                  maxLength={1000}
-                  placeholder="Ví dụ: Nước dùng đậm đà, phục vụ nhanh…"
-                />
-              </Field>
+            <CardContent className="flex flex-wrap items-center gap-2 text-sm">
+              <span className="font-heading">Đánh giá trung bình:</span>
+              <Badge>{formatRatingSummary(place.rating, place.visitCount)}</Badge>
+              <span className="text-foreground/60">
+                (tính tự động từ lịch sử các lần đi ở bên dưới)
+              </span>
             </CardContent>
           </Card>
-        )
-      )}
+        ) : (
+          status === 'visited' && (
+            <Card size="sm" className="bg-secondary-background shadow-none">
+              <CardContent className="flex flex-col gap-3">
+                <span className="text-sm font-heading">Lần đi đầu tiên (tùy chọn)</span>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <Field label="Thời gian đi" htmlFor="visitedOn">
+                    <DateTimePicker
+                      id="visitedOn"
+                      name="visitedOn"
+                      defaultValue={defaultVisitedAt}
+                    />
+                  </Field>
+                  <Field label="Đánh giá lần này">
+                    <StarInput defaultValue={null} />
+                  </Field>
+                </div>
+                <Field label="Cảm nhận / lý do lần này" htmlFor="visitNote">
+                  <Input
+                    id="visitNote"
+                    name="visitNote"
+                    maxLength={1000}
+                    placeholder="Ví dụ: Nước dùng đậm đà, phục vụ nhanh…"
+                  />
+                </Field>
+              </CardContent>
+            </Card>
+          )
+        )}
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Giá" htmlFor="priceLevel">
-          <input type="hidden" name="priceLevel" value={priceLevel} />
-          <Select
-            value={priceLevel || NONE_OPTION}
-            onValueChange={(v) => setPriceLevel(!v || v === NONE_OPTION ? '' : v)}
-          >
-            <SelectTrigger id="priceLevel" className="bg-secondary-background text-foreground">
-              <SelectValue>
-                {priceLevel ? PRICE_LABELS[Number(priceLevel) as 1 | 2 | 3] : '—'}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={NONE_OPTION}>—</SelectItem>
-              {PRICE_LEVELS.map((p) => (
-                <SelectItem key={p} value={String(p)}>
-                  {PRICE_LABELS[p]}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </Field>
-        <Field label="Khu vực" htmlFor="areaId">
-          <div className="flex flex-col gap-2">
-            <input type="hidden" name="areaId" value={areaId} />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Giá" htmlFor="priceLevel">
+            <input type="hidden" name="priceLevel" value={priceLevel} />
             <Select
-              value={areaId || NONE_OPTION}
-              onValueChange={(v) => setAreaId(!v || v === NONE_OPTION ? '' : v)}
+              value={priceLevel || NONE_OPTION}
+              onValueChange={(v) => setPriceLevel(!v || v === NONE_OPTION ? '' : v)}
             >
-              <SelectTrigger id="areaId" className="bg-secondary-background text-foreground">
-                <SelectValue>{selectedAreaName}</SelectValue>
+              <SelectTrigger id="priceLevel" className="bg-secondary-background text-foreground">
+                <SelectValue>
+                  {priceLevel ? PRICE_LABELS[Number(priceLevel) as 1 | 2 | 3] : '—'}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value={NONE_OPTION}>—</SelectItem>
-                {areas.map((t) => (
-                  <SelectItem key={t.id} value={t.id}>
-                    {t.name}
+                {PRICE_LEVELS.map((p) => (
+                  <SelectItem key={p} value={String(p)}>
+                    {PRICE_LABELS[p]}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            <InlineTagCreator kind="area" onCreated={handleCreatedTag} />
-          </div>
+          </Field>
+          <Field label="Khu vực" htmlFor="areaId">
+            <div className="flex flex-col gap-2">
+              <input type="hidden" name="areaId" value={areaId} />
+              <Select
+                value={areaId || NONE_OPTION}
+                onValueChange={(v) => setAreaId(!v || v === NONE_OPTION ? '' : v)}
+              >
+                <SelectTrigger id="areaId" className="bg-secondary-background text-foreground">
+                  <SelectValue>{selectedAreaName}</SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={NONE_OPTION}>—</SelectItem>
+                  {areas.map((t) => (
+                    <SelectItem key={t.id} value={t.id}>
+                      {t.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <InlineTagCreator kind="area" onCreated={handleCreatedTag} />
+            </div>
+          </Field>
+        </div>
+
+        <Field label="Loại quán">
+          <TagChips
+            name="categoryIds"
+            tags={ofKind('category')}
+            selected={categoryIds}
+            onToggle={(id) => setCategoryIds((prev) => toggleId(prev, id))}
+          />
+          <InlineTagCreator kind="category" onCreated={handleCreatedTag} />
+        </Field>
+
+        <Field label="Vibe">
+          <TagChips
+            name="vibeIds"
+            tags={ofKind('vibe')}
+            selected={vibeIds}
+            onToggle={(id) => setVibeIds((prev) => toggleId(prev, id))}
+          />
+          <InlineTagCreator kind="vibe" onCreated={handleCreatedTag} />
+        </Field>
+
+        <Field label="Giờ mở cửa">
+          <OpeningHoursInput defaultValue={place?.openHours ?? []} />
+        </Field>
+
+        <Field label="Món nên gọi (mỗi dòng một món)" htmlFor="dishes">
+          <Textarea
+            id="dishes"
+            name="dishes"
+            defaultValue={place?.dishes ?? ''}
+            maxLength={1000}
+            rows={3}
+          />
+        </Field>
+        <Field label="Ghi chú chung về quán" htmlFor="note">
+          <Textarea
+            id="note"
+            name="note"
+            defaultValue={place?.note ?? ''}
+            maxLength={2000}
+            rows={3}
+          />
+        </Field>
+
+        <Field label="Link Google Maps" htmlFor="mapsUrl">
+          <Input
+            id="mapsUrl"
+            name="mapsUrl"
+            type="url"
+            inputMode="url"
+            placeholder="https://maps.app.goo.gl/…"
+            defaultValue={place?.mapsUrl ?? ''}
+          />
         </Field>
       </div>
-
-      <Field label="Loại quán">
-        <TagChips
-          name="categoryIds"
-          tags={ofKind('category')}
-          selected={categoryIds}
-          onToggle={(id) => setCategoryIds((prev) => toggleId(prev, id))}
-        />
-        <InlineTagCreator kind="category" onCreated={handleCreatedTag} />
-      </Field>
-
-      <Field label="Vibe">
-        <TagChips
-          name="vibeIds"
-          tags={ofKind('vibe')}
-          selected={vibeIds}
-          onToggle={(id) => setVibeIds((prev) => toggleId(prev, id))}
-        />
-        <InlineTagCreator kind="vibe" onCreated={handleCreatedTag} />
-      </Field>
-
-      <Field label="Giờ mở cửa">
-        <OpeningHoursInput defaultValue={place?.openHours ?? []} />
-      </Field>
-
-      <Field label="Món nên gọi (mỗi dòng một món)" htmlFor="dishes">
-        <Textarea
-          id="dishes"
-          name="dishes"
-          defaultValue={place?.dishes ?? ''}
-          maxLength={1000}
-          rows={3}
-        />
-      </Field>
-      <Field label="Ghi chú chung về quán" htmlFor="note">
-        <Textarea
-          id="note"
-          name="note"
-          defaultValue={place?.note ?? ''}
-          maxLength={2000}
-          rows={3}
-        />
-      </Field>
-
-      <Field label="Link Google Maps" htmlFor="mapsUrl">
-        <Input
-          id="mapsUrl"
-          name="mapsUrl"
-          type="url"
-          inputMode="url"
-          placeholder="https://maps.app.goo.gl/…"
-          defaultValue={place?.mapsUrl ?? ''}
-        />
-      </Field>
-
-      <Button type="submit" disabled={pending} className="w-fit">
-        {place ? 'Lưu' : 'Tạo quán'}
-      </Button>
+      <PlaceFormAside pending={pending} status={status} onStatus={setStatus} />
     </form>
   );
 }

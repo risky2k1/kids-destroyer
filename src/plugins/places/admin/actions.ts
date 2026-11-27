@@ -15,6 +15,7 @@ import {
   photoPath,
   placeFormValues,
   placeInput,
+  placeSaveTarget,
   tagInput,
   vietnamInputToIso,
   visitInput,
@@ -67,7 +68,11 @@ export async function savePlace(_: ActionState, fd: FormData): Promise<ActionSta
     if (error) return fail(error);
     id = existingId;
   } else {
-    const { data, error } = await sb.from('plc_places').insert(baseRow).select('id').single();
+    const { data, error } = await sb
+      .from('plc_places')
+      .insert({ ...baseRow, origin: 'admin', review_status: 'approved' })
+      .select('id')
+      .single();
     if (error) return fail(error);
     id = data.id;
 
@@ -101,7 +106,23 @@ export async function savePlace(_: ActionState, fd: FormData): Promise<ActionSta
   }
 
   refresh();
-  if (!existingId) redirect(PLACES_PATHS.edit(id));
+  const rawIntent = fd.get('intent');
+  const target = placeSaveTarget(typeof rawIntent === 'string' ? rawIntent : null, id, !existingId);
+  if (target) redirect(target);
+  return { ok: true };
+}
+
+export async function approvePlace(_: ActionState, fd: FormData): Promise<ActionState> {
+  await requirePermission(PERMISSION);
+  const id = String(fd.get('id') ?? '');
+  if (!uuid.safeParse(id).success) return badId;
+  const sb = await createClient();
+  const { error } = await sb
+    .from('plc_places')
+    .update({ review_status: 'approved', updated_at: new Date().toISOString() })
+    .eq('id', id);
+  if (error) return fail(error);
+  refresh();
   return { ok: true };
 }
 
